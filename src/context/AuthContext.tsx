@@ -37,10 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Debug: log user and token changes
   React.useEffect(() => {
-    console.log('[AuthProvider] user state changed:', user);
   }, [user]);
   React.useEffect(() => {
-    console.log('[AuthProvider] token state changed:', token);
   }, [token]);
 
   /**
@@ -74,7 +72,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           avatar: userData.avatar != null ? String(userData.avatar) : "",
           phone: userData.phone != null ? String(userData.phone) : "",
         };
-        console.log('[AuthContext] setUser (login):', userToSet);
         setUser(userToSet);
       } catch (e) {
         const userData = response.user;
@@ -111,7 +108,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         avatar: response.user.avatar != null ? String(response.user.avatar) : "",
         phone: response.user.phone != null ? String(response.user.phone) : "",
       };
-      console.log('[AuthContext] setUser (register):', userToSet);
       setUser(userToSet);
     } finally {
       setLoading(false);
@@ -124,7 +120,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const handleLogout = async () => {
     setLoading(true);
-    console.log('[AuthProvider] handleLogout called');
     try {
       await logout();
       setUser(null);
@@ -133,10 +128,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem("access_token");
       await AsyncStorage.removeItem("refresh_token");
       await AsyncStorage.removeItem("access_token_expires_at");
-      console.log('[AuthProvider] Logout completed, user and token set to null');
     } finally {
       setLoading(false);
-      console.log('[AuthProvider] handleLogout finished, loading set to false');
     }
   };
 
@@ -159,7 +152,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         address: "",
         avatar: "",
       };
-      console.log('[AuthContext] setUser (setIsAuthenticated):', userToSet);
       setUser(userToSet);
     } else {
       setUser(null);

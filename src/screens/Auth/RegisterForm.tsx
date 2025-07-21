@@ -29,7 +29,6 @@ const RegisterForm: React.FC = () => {
     setLoading(true);
     try {
       const response = await register({ firstName, lastName, email, password, confirmPassword, acceptTerms: true, phone, avatar });
-      console.log('[RegisterForm] Réponse backend register:', response);
       if (response && response.user) {
         Toast.show({
           type: 'success',

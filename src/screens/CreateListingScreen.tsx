@@ -1,3 +1,4 @@
+import Toast from 'react-native-toast-message';
 // Formulaire pour déclarer un objet trouvé
 import React, { useState } from "react";
 import { View, Text, Alert, ScrollView } from "react-native";
@@ -86,7 +87,7 @@ const CreateListingScreen: React.FC = () => {
       };
       // Utilise le mock si l'API n'est pas dispo
       const res = mockCreateListing(body);
-      Alert.alert("Succès", "Annonce mockée créée !");
+      Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce mockée créée !' });
       setTitle("");
       setType("");
       setDescription("");

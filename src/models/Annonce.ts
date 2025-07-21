@@ -11,6 +11,7 @@ export interface Listing {
   address?: string;
   city: string;
   photoUrl?: string;
+  thumbnailUrl?: string;
   contactPhone?: string;
   contactEmail?: string;
   userId: string;

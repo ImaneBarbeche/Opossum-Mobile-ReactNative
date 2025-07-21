@@ -31,6 +31,6 @@ export const ANNOUNCE_ENDPOINTS = {
   create: `${API_BASE_URL}/listings/create`,
   update: (id: string) => `${API_BASE_URL}/listings/${id}/update`,
   delete: (id: string) => `${API_BASE_URL}/listings/${id}/delete`,
-  search: `${API_BASE_URL}/listings/search`,
+  search: `${API_BASE_URL}/listings/advanced-search`,
   filter: `${API_BASE_URL}/listings/filter`,
 };

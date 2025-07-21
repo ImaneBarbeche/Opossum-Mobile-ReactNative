@@ -1,7 +1,8 @@
 // Écran de mot de passe oublié
 import React, { useState } from 'react';
 // (navigation supprimée, types inutiles retirés)
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { forgotPassword } from '../../services/auth.password';
 import { colors, spacing, typography, componentStyles } from '../../theme';
 import ScreenBackground from '../../components/ScreenBackground';
@@ -14,9 +15,9 @@ const ForgotPasswordScreen: React.FC = () => {
 	setLoading(true);
 	try {
 	  const res = await forgotPassword(email);
-	  Alert.alert('Succès', res.message);
+	  Toast.show({ type: 'success', text1: 'Succès', text2: res.message });
 	} catch (err: any) {
-	  Alert.alert('Erreur', err.message || "Erreur lors de la demande de réinitialisation");
+	  Toast.show({ type: 'error', text1: 'Erreur', text2: err.message || "Erreur lors de la demande de réinitialisation" });
 	} finally {
 	  setLoading(false);
 	}

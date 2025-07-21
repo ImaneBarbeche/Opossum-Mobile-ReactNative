@@ -1,3 +1,4 @@
+import Toast from 'react-native-toast-message';
 // Accueil après connexion
 
 import React, { useEffect, useState, useRef } from "react";
@@ -6,7 +7,6 @@ import { componentStyles, colors, spacing, typography } from '../theme';
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { getMyListings, deleteListing } from "../services/annonce.service";
-import { getMockListings, mockUpdateListing } from "../services/mockApi";
 import EditListingModal from "../components/EditListingModal";
 import { Listing } from "../models/Annonce";
 import { Ionicons } from '@expo/vector-icons';
@@ -15,8 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 const ListingScreen: React.FC = () => {
   const { user, token, logout } = useAuth();
   const [annonces, setAnnonces] = useState<Listing[]>([]);
-  // Stockage local des annonces mockées pour éviter la perte au reload
-  const localMockRef = useRef<Listing[]>([]);
+  // Plus de stockage local, tout passe par l'API
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation() as any;
@@ -24,50 +23,66 @@ const ListingScreen: React.FC = () => {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
   useEffect(() => {
-    // Au premier montage, charge les annonces mockées en mémoire locale
-    if (localMockRef.current.length === 0) {
-      localMockRef.current = getMockListings("any", true);
-    }
-    // Trie par date décroissante
-    const sorted = [...localMockRef.current].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    setAnnonces(sorted);
-    setIsLoading(false);
-  }, []);
+    const fetchListings = async () => {
+      if (!token) return;
+      setIsLoading(true);
+      try {
+        const data = await getMyListings(token);
+        // Trie par date décroissante
+        const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setAnnonces(sorted);
+      } catch (e: any) {
+        setError(e.message || 'Erreur lors du chargement des annonces');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchListings();
+  }, [token]);
 
   const handleDelete = (id: string) => {
-    const exists = localMockRef.current.some(item => item.id === id);
-    if (!exists) {
-      Alert.alert("Erreur", "L'annonce n'existe plus ou a déjà été supprimée.");
-      return;
-    }
     Alert.alert("Confirmation", "Supprimer cette annonce ?", [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",
         style: "destructive",
-        onPress: () => {
-          // Supprime localement si elle existe
-          localMockRef.current = localMockRef.current.filter(item => item.id !== id);
-          setAnnonces([...localMockRef.current]);
+        onPress: async () => {
+          try {
+            await deleteListing(token!, id);
+            setAnnonces((prev) => prev.filter(item => item.id !== id));
+            Toast.show({ type: 'success', text1: 'Annonce supprimée' });
+          } catch (e: any) {
+            Toast.show({ type: 'error', text1: 'Erreur', text2: e.message || "Erreur lors de la suppression." });
+          }
         },
       },
     ]);
   };
 
-  const renderItem = ({ item }: { item: Listing }) => (
-    <TouchableOpacity
-      style={[
-        componentStyles.card,
-        { padding: 10, marginBottom: 16, flexDirection: 'column', backgroundColor: item.type === 'FOUND' ? '#DFF6E0' : '#FDF6E3' }
-      ]}
-      activeOpacity={0.8}
-      onPress={() => navigation.navigate('ObjectDetail', { id: item.id })}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <RNImage
-          source={{ uri: item.photoUrl || 'https://via.placeholder.com/80' }}
-          style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12, backgroundColor: colors.mediumGray }}
-        />
+  const renderItem = ({ item }: { item: Listing }) => {
+    console.log('[ListingScreen] renderItem', item.id);
+    const safeUri = item.thumbnailUrl && item.thumbnailUrl.trim() !== ''
+      ? item.thumbnailUrl.startsWith('http')
+        ? item.thumbnailUrl
+        : `${process.env.EXPO_PUBLIC_API_BASE_URL || ''}${item.thumbnailUrl}`
+      : 'https://via.placeholder.com/80';
+    return (
+      <TouchableOpacity
+        style={[
+          componentStyles.card,
+          { padding: 10, marginBottom: 16, flexDirection: 'column', backgroundColor: item.type === 'FOUND' ? '#DFF6E0' : '#FDF6E3' }
+        ]}
+        activeOpacity={0.8}
+        onPress={() => {
+          console.log('[ListingScreen] Card pressed, id:', item.id, 'type:', item.type, 'owner:', item.userId);
+          navigation.navigate('ObjectDetail', { id: item.id });
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <RNImage
+            source={{ uri: safeUri }}
+            style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12, backgroundColor: colors.mediumGray }}
+          />
         <View style={{ flex: 1 }}>
           <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>{item.title}</Text>
           <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>{item.description}</Text>
@@ -88,8 +103,10 @@ const ListingScreen: React.FC = () => {
         {item.type === 'LOST' ? 'Objet perdu' : 'Objet trouvé'}
       </Text>
     </TouchableOpacity>
-  );
+    );
+  };
 
+  console.log('[ListingScreen] render main', annonces.length);
   return (
     <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 40 }]}> 
       <FloatingLogoutButton onLogout={logout} />
@@ -105,17 +122,23 @@ const ListingScreen: React.FC = () => {
           renderItem={renderItem}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
           refreshing={isLoading}
-          onRefresh={() => {
-            if (token && user?.id) {
-              const refreshed = getMockListings(user.id);
-              // Trie par date décroissante
-              const sorted = [...refreshed].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          onRefresh={async () => {
+            if (!token) return;
+            setIsLoading(true);
+            try {
+              const data = await getMyListings(token);
+              const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
               setAnnonces(sorted);
+            } catch (e: any) {
+              setError(e.message || 'Erreur lors du rafraîchissement');
+            } finally {
+              setIsLoading(false);
             }
           }}
           ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 32 }}>Aucune annonce trouvée.</Text>}
         />
       )}
+      {/*
       {selectedListing && (
         <EditListingModal
           visible={editModalVisible}
@@ -141,6 +164,7 @@ const ListingScreen: React.FC = () => {
           }}
         />
       )}
+      */}
     </View>
   );
 };

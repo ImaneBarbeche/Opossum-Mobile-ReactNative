@@ -1,3 +1,67 @@
+/**
+ * Recherche avancée mockée sur les annonces.
+ * @param params { q, type, category, city, page, size }
+ * @returns Objet au format API (success, data: { content, page }, timestamp)
+ */
+export function searchMockListings(params: {
+  q?: string;
+  type?: string;
+  category?: string;
+  city?: string;
+  page?: number;
+  size?: number;
+} = {}) {
+  let results = mockListings.map(listing => ({ ...listing }));
+  // Recherche textuelle (q sur title/description)
+  if (params.q) {
+    const q = params.q.toLowerCase();
+    results = results.filter(item =>
+      item.title.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q)
+    );
+  }
+  if (params.type) {
+    results = results.filter(item => item.type === params.type);
+  }
+  if (params.category) {
+    results = results.filter(item => item.category === params.category);
+  }
+  if (params.city) {
+    const city = params.city;
+    results = results.filter(item => item.location.city.toLowerCase().includes(city ? city.toLowerCase() : ""));
+  }
+  // Pagination
+  const page = params.page ?? 0;
+  const size = params.size ?? 10;
+  const totalElements = results.length;
+  const totalPages = Math.ceil(totalElements / size);
+  const content = results.slice(page * size, (page + 1) * size).map(item => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    type: item.type,
+    category: item.category,
+    status: item.status || 'ACTIVE',
+    location: item.location,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    // Ajoute d'autres champs si besoin (thumbnailUrl, etc.)
+    thumbnailUrl: item.photos?.[0] || '',
+  }));
+  return {
+    success: true,
+    data: {
+      content,
+      page: {
+        number: page,
+        size,
+        totalElements,
+        totalPages,
+      },
+    },
+    timestamp: new Date().toISOString(),
+  };
+}
 import { Listing } from "../models/Annonce";
 
 import { User } from "../models/User";

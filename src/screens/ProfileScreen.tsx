@@ -33,7 +33,6 @@ const ProfileScreen: React.FC = () => {
   const { user, logout, loading, setUser } = useAuth();
   // Log du user à chaque rendu pour debug
   React.useEffect(() => {
-    console.log('[ProfileScreen] user context:', user);
   }, [user]);
 
   const [editMode, setEditMode] = useState(false);
@@ -85,7 +84,6 @@ const ProfileScreen: React.FC = () => {
       try {
         const { fetchCurrentUserProfile } = await import("../services/user.service");
         const updatedProfile = await fetchCurrentUserProfile(token);
-        console.log('Profil utilisateur après update:', updatedProfile);
         if (updatedProfile) {
           setUser(updatedProfile);
         }

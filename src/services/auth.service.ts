@@ -18,7 +18,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
     });
 
     const result = await response.json();
-    console.log('Réponse backend login:', result);
 
     if (!response.ok) {
       const errorMsg =
@@ -55,7 +54,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
       await AsyncStorage.setItem('access_token_expires_at', expiresAt);
     }
 
-    console.log('[auth.service] userData utilisé pour mapping:', userData);
     return {
       access_token: tokens.accessToken,
       refresh_token: tokens.refreshToken,

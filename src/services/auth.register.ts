@@ -56,7 +56,6 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
       message: 'Inscription réussie',
     };
   } catch (error) {
-    console.log('Erreur réseau lors de register:', error);
     handleNetworkError(error);
     throw error;
   }

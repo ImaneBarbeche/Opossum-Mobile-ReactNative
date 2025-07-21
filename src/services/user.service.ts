@@ -87,7 +87,6 @@ export const fetchCurrentUserProfile = async (token: string): Promise<User | nul
   });
   if (!response.ok) return null;
   const data = await response.json();
-  console.log('[user.service] fetchCurrentUserProfile data:', data);
   if (!data || typeof data !== 'object') return null;
   // Adaptation stricte au modèle User, fallback sur "" si null/undefined
   return {

@@ -41,7 +41,8 @@ export const getMyListings = async (
       },
       params,
     });
-    return Array.isArray(response.data) ? response.data : [];
+    // Retourne le tableau d'annonces (data.content)
+    return response.data.data.content;
   } catch (error) {
     throw error;
   }
@@ -101,10 +102,13 @@ export const deleteListing = async (id: string, token: string) => {
 
 export const searchListings = async (params?: SearchListingsParams, token?: string) => {
   try {
+    // Nettoie les paramètres pour ne pas envoyer de valeurs undefined
+    const cleanParams = Object.fromEntries(Object.entries(params || {}).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
     const response = await axios.get<ListingsResponse>(ANNOUNCE_ENDPOINTS.search, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      params,
+      params: cleanParams,
     });
+    // Retourne le tableau d'annonces (data.content)
     return response.data.data.content;
   } catch (error) {
     throw error;
