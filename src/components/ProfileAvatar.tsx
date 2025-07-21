@@ -22,7 +22,7 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ avatarUrl, firstName }) =
     shadowRadius: 6,
     elevation: 2,
   }}>
-    {avatarUrl ? (
+    {avatarUrl && avatarUrl.trim() !== "" ? (
       <Image source={{ uri: avatarUrl }} style={{ width: 76, height: 76, borderRadius: 38, resizeMode: 'cover' }} />
     ) : (
       <View style={{ width: 76, height: 76, borderRadius: 38, backgroundColor: '#bbdefb', justifyContent: 'center', alignItems: 'center' }}>
