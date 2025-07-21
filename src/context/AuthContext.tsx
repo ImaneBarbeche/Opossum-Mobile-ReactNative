@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../models/User";
 import { login, logout, register } from "../services/auth.service";
 import {
+  AuthContextType,
   AuthResponse,
   LoginRequest,
   RegisterRequest,
@@ -17,18 +18,6 @@ import {
  * - loading : booléen pour indiquer si une action d'auth est en cours
  * - login/register/logout : fonctions pour gérer la session
  */
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  token: string | null;
-  login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
-  logout: () => Promise<void>;
-  setIsAuthenticated: (value: boolean) => void;
-  setUser: (user: User | null) => void;
-  setToken: (token: string | null) => void;
-}
 
 // Création du contexte d'authentification (valeur par défaut : undefined)
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,20 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        loading,
-        token,
-        login: handleLogin,
-        register: handleRegister,
-        logout: handleLogout,
-        setIsAuthenticated,
-        setUser,
-        setToken,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, token, login: handleLogin, register: handleRegister, logout: handleLogout, setIsAuthenticated, setUser }}>
       {children}
     </AuthContext.Provider>
   );

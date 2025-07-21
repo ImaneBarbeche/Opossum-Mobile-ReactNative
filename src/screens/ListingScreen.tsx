@@ -1,7 +1,8 @@
 // Accueil après connexion
 
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, StyleSheet, Alert, Image as RNImage } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, Image as RNImage } from "react-native";
+import { componentStyles, colors, spacing, typography } from '../theme';
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { getMyListings, deleteListing } from "../services/annonce.service";
@@ -55,44 +56,46 @@ const ListingScreen: React.FC = () => {
 
   const renderItem = ({ item }: { item: Listing }) => (
     <TouchableOpacity
-      style={[styles.card, item.type === 'FOUND' ? styles.cardFound : styles.cardLost]}
+      style={[
+        componentStyles.card,
+        { padding: 10, marginBottom: 16, flexDirection: 'column', backgroundColor: item.type === 'FOUND' ? '#DFF6E0' : '#FDF6E3' }
+      ]}
       activeOpacity={0.8}
       onPress={() => navigation.navigate('ObjectDetail', { id: item.id })}
     >
-      <View style={styles.cardRow}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <RNImage
           source={{ uri: item.photoUrl || 'https://via.placeholder.com/80' }}
-          style={styles.cardImage}
+          style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12, backgroundColor: colors.mediumGray }}
         />
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>{item.title}</Text>
+          <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>{item.description}</Text>
         </View>
-        <View style={styles.iconRow}>
-        <TouchableOpacity onPress={() => {
-            // Correction : on met à jour selectedListing à chaque clic
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={() => {
             setSelectedListing({ ...item });
             setEditModalVisible(true);
           }}>
-            <Ionicons name="create-outline" size={22} color="#4F8EF7" style={styles.icon} />
+            <Ionicons name="create-outline" size={22} color={colors.primary} style={{ marginLeft: 12 }} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDelete(item.id)}>
-            <Ionicons name="trash-outline" size={22} color="#E9446A" style={styles.icon} />
+            <Ionicons name="trash-outline" size={22} color={colors.error} style={{ marginLeft: 12 }} />
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={[styles.status, { color: item.type === 'LOST' ? '#E9446A' : '#4F8EF7' }]}> 
+      <Text style={{ fontSize: 14, fontWeight: 'bold', color: item.type === 'LOST' ? colors.error : colors.primary }}>
         {item.type === 'LOST' ? 'Objet perdu' : 'Objet trouvé'}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 40 }]}> 
       <FloatingLogoutButton onLogout={logout} />
-      <Text style={styles.header}>Mes annonces</Text>
+      <Text style={[typography.h1, { color: colors.primary, marginBottom: spacing.md, alignSelf: 'center' }]}>Mes annonces</Text>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#4F8EF7" style={{ marginTop: 32 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32 }} />
       ) : error ? (
         <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       ) : (
@@ -100,7 +103,7 @@ const ListingScreen: React.FC = () => {
           data={annonces}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
           refreshing={isLoading}
           onRefresh={() => {
             if (token && user?.id) {
@@ -142,79 +145,6 @@ const ListingScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F8FA',
-    paddingTop: 40,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4F8EF7',
-    marginBottom: 16,
-    alignSelf: 'center',
-  },
-  list: {
-    paddingHorizontal: 16,
-    paddingBottom: 80,
-  },
-  card: {
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    flexDirection: 'column',
-  },
-  cardFound: {
-    backgroundColor: '#DFF6E0',
-  },
-  cardLost: {
-    backgroundColor: '#FDF6E3',
-  },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-    backgroundColor: '#eee',
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-    flex: 1,
-  },
-  iconRow: {
-    flexDirection: 'row',
-  },
-  icon: {
-    marginLeft: 12,
-  },
-  description: {
-    fontSize: 15,
-    color: '#555',
-    marginBottom: 8,
-  },
-  status: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  // Navigation bar styles removed
-});
+
 
 export default ListingScreen;

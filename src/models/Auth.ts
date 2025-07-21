@@ -9,6 +9,20 @@ export interface AuthResponse {
   expiresIn?: number;
   timestamp?: string;
 }
+
+export interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  token: string | null;
+  login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  setIsAuthenticated: (value: boolean) => void;
+  setUser: (user: User | null) => void;
+  // setToken: (token: string | null) => void;
+}
+
 export interface RegisterResponse {
   user: {
     id: string;

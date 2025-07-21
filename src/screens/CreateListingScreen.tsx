@@ -1,6 +1,7 @@
 // Formulaire pour déclarer un objet trouvé
 import React, { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Alert, ScrollView, TouchableOpacity, StyleSheet, Image, Platform } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, Alert, ScrollView, TouchableOpacity, Image, Platform, StyleSheet } from "react-native";
+import { componentStyles, colors, spacing, typography } from '../theme';
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { createListing } from "../services/annonce.service";
@@ -122,61 +123,61 @@ const CreateListingScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#eae6d6' }}>
-      <View style={styles.formBox}>
+      <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
         <FloatingLogoutButton onLogout={logout} />
-        <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+        <TouchableOpacity style={{ alignItems: 'center', marginBottom: 16 }} onPress={handleImagePick}>
           {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
+            <Image source={{ uri: image }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 8 }} />
           ) : (
-            <Ionicons name="camera" size={64} color="#4F8EF7" />
+            <Ionicons name="camera" size={64} color={colors.primary} />
           )}
-          <Text style={styles.imageText}>Cliquez pour ajouter la photo de votre objet</Text>
+          <Text style={{ fontSize: 13, color: colors.darkGray, marginTop: 4, marginBottom: 8 }}>Cliquez pour ajouter la photo de votre objet</Text>
         </TouchableOpacity>
-        <View style={styles.radioRow}>
-          <Text style={styles.radioLabel}>Mon objet est :</Text>
-          <TouchableOpacity style={styles.radioOption} onPress={() => setType("LOST")}>  
-            <View style={styles.radioCircle}>{type === "LOST" && <View style={styles.radioDot} />}</View>
-            <Text style={styles.radioText}>Perdu</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ fontSize: 15, marginRight: 8 }}>Mon objet est :</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 }} onPress={() => setType("LOST")}>  
+            <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 4 }}>{type === "LOST" && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary }} />}</View>
+            <Text style={{ fontSize: 15 }}>Perdu</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.radioOption} onPress={() => setType("FOUND")}>  
-            <View style={styles.radioCircle}>{type === "FOUND" && <Ionicons name="checkmark" size={18} color="#4F8EF7" />}</View>
-            <Text style={styles.radioText}>Trouvé</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 }} onPress={() => setType("FOUND")}>  
+            <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 4 }}>{type === "FOUND" && <Ionicons name="checkmark" size={18} color={colors.primary} />}</View>
+            <Text style={{ fontSize: 15 }}>Trouvé</Text>
           </TouchableOpacity>
         </View>
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="De quel objet s'agit-il ? (5-200 caractères)"
           value={title}
           onChangeText={setTitle}
         />
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Description (10-2000 caractères)"
           value={description}
           onChangeText={setDescription}
           multiline
         />
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Catégorie (ex: électronique, vêtement...)"
           value={category}
           onChangeText={setCategory}
         />
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Ville"
           value={city}
           onChangeText={setCity}
         />
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Latitude (optionnel)"
           value={latitude}
           onChangeText={setLatitude}
           keyboardType="numeric"
         />
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Longitude (optionnel)"
           value={longitude}
           onChangeText={setLongitude}
@@ -185,21 +186,21 @@ const CreateListingScreen: React.FC = () => {
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ marginRight: 8 }}>Utiliser la localisation GPS</Text>
           <TouchableOpacity
-            style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#4F8EF7', justifyContent: 'center', alignItems: 'center' }}
+            style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => setUseCurrentLocation(!useCurrentLocation)}
           >
-            {useCurrentLocation && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#4F8EF7' }} />}
+            {useCurrentLocation && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary }} />}
           </TouchableOpacity>
         </View>
-        <Text style={styles.label}>Quand l'avez-vous perdu/trouvé ?</Text>
-        <View style={styles.dateRow}>
-          <TouchableOpacity style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
-            <Ionicons name="calendar" size={20} color="#4F8EF7" />
-            <Text style={styles.dateText}>{date.toLocaleDateString()}</Text>
+        <Text style={{ fontSize: 15, marginBottom: 4, alignSelf: 'flex-start' }}>Quand l'avez-vous perdu/trouvé ?</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, width: '100%' }}>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowDatePicker(true)}>
+            <Ionicons name="calendar" size={20} color={colors.primary} />
+            <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleDateString()}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.dateInput} onPress={() => setShowTimePicker(true)}>
-            <Ionicons name="time" size={20} color="#4F8EF7" />
-            <Text style={styles.dateText}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowTimePicker(true)}>
+            <Ionicons name="time" size={20} color={colors.primary} />
+            <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
           </TouchableOpacity>
         </View>
         {showDatePicker && (
@@ -219,17 +220,17 @@ const CreateListingScreen: React.FC = () => {
           />
         )}
         <TextInput
-          style={styles.input}
+          style={[componentStyles.input, { marginBottom: spacing.sm }]}
           placeholder="Adresse (requis si GPS non utilisé)"
           value={address}
           onChangeText={setAddress}
         />
-        {error && <Text style={{ color: "red", marginBottom: 12 }}>{error}</Text>}
+        {error && <Text style={{ color: colors.error, marginBottom: 12 }}>{error}</Text>}
         {isLoading ? (
-          <ActivityIndicator size="large" color="#000" style={{ marginVertical: 16 }} />
+          <ActivityIndicator size="large" color={colors.primaryDark} style={{ marginVertical: 16 }} />
         ) : (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitText}>Publier</Text>
+          <TouchableOpacity style={[componentStyles.buttonPrimary, { width: '100%', marginTop: 12 }]} onPress={handleSubmit}>
+            <Text style={componentStyles.buttonTextPrimary}>Publier</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -237,118 +238,6 @@ const CreateListingScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  formBox: {
-    backgroundColor: '#fdf6e3',
-    borderRadius: 16,
-    padding: 20,
-    width: '95%',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    marginVertical: 24,
-    alignItems: 'center',
-  },
-  imagePicker: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  image: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 8,
-  },
-  imageText: {
-    fontSize: 13,
-    color: '#555',
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  radioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  radioLabel: {
-    fontSize: 15,
-    marginRight: 8,
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#4F8EF7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 4,
-  },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#4F8EF7',
-  },
-  radioText: {
-    fontSize: 15,
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    width: '100%',
-  },
-  label: {
-    fontSize: 15,
-    marginBottom: 4,
-    alignSelf: 'flex-start',
-  },
-  dateRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    width: '100%',
-  },
-  dateInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    marginRight: 8,
-    minWidth: 120,
-  },
-  dateText: {
-    marginLeft: 6,
-    fontSize: 15,
-  },
-  submitButton: {
-    backgroundColor: '#222',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 12,
-    width: '100%',
-  },
-  submitText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
+
 
 export default CreateListingScreen;

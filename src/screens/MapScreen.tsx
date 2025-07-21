@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { componentStyles, colors, spacing, typography } from '../theme';
 import { Modal } from "react-native";
 import { FlatList } from "react-native";
 import { TextInput } from "react-native";
@@ -122,32 +123,69 @@ const MapScreen: React.FC = () => {
    <View style={{ flex: 1 }}>
       <FloatingLogoutButton onLogout={logout} />
       {/* Barre de recherche simple */}
-      <View style={styles.searchBarContainer}>
-        <View style={styles.searchBar}>
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: spacing.sm,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.xs,
+        backgroundColor: colors.white,
+        zIndex: 2,
+        marginTop: 80,
+      }}>
+        <View style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.mediumGray,
+          borderRadius: 8,
+          paddingHorizontal: spacing.sm,
+          height: 40,
+        }}>
           <TextInput
-            style={styles.searchInput}
+            style={{
+              flex: 1,
+              fontSize: 16,
+              color: colors.black,
+              backgroundColor: colors.lightGray,
+              borderRadius: 8,
+              paddingHorizontal: spacing.xs,
+              height: 40,
+            }}
             placeholder="Rechercher..."
             value={search}
             onChangeText={setSearch}
-            placeholderTextColor="#888"
+            placeholderTextColor={colors.darkGray}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
-          <Text style={styles.filterText}>Filtres</Text>
+        <TouchableOpacity style={{
+          marginLeft: spacing.xs,
+          backgroundColor: colors.primary,
+          borderRadius: 8,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.xs,
+        }} onPress={() => setFilterModalVisible(true)}>
+          <Text style={{ color: colors.white, fontWeight: 'bold' }}>Filtres</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.listButton} onPress={goToListView}>
-          <Text style={styles.listText}>Vue liste</Text>
+        <TouchableOpacity style={{
+          marginLeft: spacing.xs,
+          backgroundColor: colors.error,
+          borderRadius: 8,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.xs,
+        }} onPress={goToListView}>
+          <Text style={{ color: colors.white, fontWeight: 'bold' }}>Vue liste</Text>
         </TouchableOpacity>
       </View>
       {/* Vue liste ou carte */}
       {showList ? (
-        <View style={styles.listContainer}>
+        <View style={[componentStyles.container, { backgroundColor: colors.lightGray }]}> 
           {/* ...existing code pour la liste... */}
         </View>
       ) : (
         Platform.OS !== 'web' && MapView ? (
           <MapView
-            style={styles.map}
+            style={{ flex: 1 }}
             initialRegion={{
               latitude: userLocation.latitude,
               longitude: userLocation.longitude,
@@ -186,49 +224,94 @@ const MapScreen: React.FC = () => {
         transparent={true}
         onRequestClose={() => setFilterModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Recherche avancée</Text>
+        <View style={{
+          flex: 1,
+          backgroundColor: colors.overlay,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            width: '90%',
+            backgroundColor: colors.white,
+            borderRadius: 16,
+            padding: 24,
+            shadowColor: colors.black,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 4,
+          }}>
+            <Text style={[typography.h2, { color: colors.primary, marginBottom: spacing.md, alignSelf: 'center' }]}>Recherche avancée</Text>
             {/* Type perdu/trouvé */}
-            <View style={styles.modalRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
               <TouchableOpacity
-                style={[styles.modalTypeButton, filterType === "LOST" && styles.modalTypeSelected]}
+                style={[
+                  { flex: 1, backgroundColor: colors.mediumGray, borderRadius: 8, padding: 10, marginHorizontal: 4, alignItems: 'center' },
+                  filterType === "LOST" && { backgroundColor: colors.error }
+                ]}
                 onPress={() => setFilterType(filterType === "LOST" ? null : "LOST")}
               >
-                <Text style={styles.modalTypeText}>Perdu</Text>
+                <Text style={{ color: colors.black, fontWeight: 'bold' }}>Perdu</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalTypeButton, filterType === "FOUND" && styles.modalTypeSelected]}
+                style={[
+                  { flex: 1, backgroundColor: colors.mediumGray, borderRadius: 8, padding: 10, marginHorizontal: 4, alignItems: 'center' },
+                  filterType === "FOUND" && { backgroundColor: colors.primary }
+                ]}
                 onPress={() => setFilterType(filterType === "FOUND" ? null : "FOUND")}
               >
-                <Text style={styles.modalTypeText}>Trouvé</Text>
+                <Text style={{ color: colors.black, fontWeight: 'bold' }}>Trouvé</Text>
               </TouchableOpacity>
             </View>
             {/* Catégorie */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Catégorie :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Catégorie :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="ex: keys, electronics, accessories..."
                 value={filterCategory || ""}
                 onChangeText={setFilterCategory}
               />
             </View>
             {/* Ville/adresse */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Ville / Adresse :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Ville / Adresse :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="ex: Paris, Lyon..."
                 value={filterCity}
                 onChangeText={setFilterCity}
               />
             </View>
             {/* Rayon (km) */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Rayon (km) :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Rayon (km) :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="ex: 10"
                 value={filterRadius}
                 onChangeText={setFilterRadius}
@@ -236,71 +319,112 @@ const MapScreen: React.FC = () => {
               />
             </View>
             {/* Date min */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Date min :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Date min :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="YYYY-MM-DD"
                 value={filterDateFrom}
                 onChangeText={setFilterDateFrom}
               />
             </View>
             {/* Date max */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Date max :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Date max :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="YYYY-MM-DD"
                 value={filterDateTo}
                 onChangeText={setFilterDateTo}
               />
             </View>
             {/* Tri */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Tri :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Tri :</Text>
               <TouchableOpacity
-                style={[styles.modalTypeButton, filterSortBy === "relevance" && styles.modalTypeSelected]}
+                style={[
+                  { flex: 1, backgroundColor: colors.mediumGray, borderRadius: 8, padding: 10, marginHorizontal: 4, alignItems: 'center' },
+                  filterSortBy === "relevance" && { backgroundColor: colors.primary }
+                ]}
                 onPress={() => setFilterSortBy("relevance")}
               >
-                <Text style={styles.modalTypeText}>Pertinence</Text>
+                <Text style={{ color: colors.black, fontWeight: 'bold' }}>Pertinence</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalTypeButton, filterSortBy === "date" && styles.modalTypeSelected]}
+                style={[
+                  { flex: 1, backgroundColor: colors.mediumGray, borderRadius: 8, padding: 10, marginHorizontal: 4, alignItems: 'center' },
+                  filterSortBy === "date" && { backgroundColor: colors.primary }
+                ]}
                 onPress={() => setFilterSortBy("date")}
               >
-                <Text style={styles.modalTypeText}>Date</Text>
+                <Text style={{ color: colors.black, fontWeight: 'bold' }}>Date</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalTypeButton, filterSortBy === "distance" && styles.modalTypeSelected]}
+                style={[
+                  { flex: 1, backgroundColor: colors.mediumGray, borderRadius: 8, padding: 10, marginHorizontal: 4, alignItems: 'center' },
+                  filterSortBy === "distance" && { backgroundColor: colors.primary }
+                ]}
                 onPress={() => setFilterSortBy("distance")}
               >
-                <Text style={styles.modalTypeText}>Distance</Text>
+                <Text style={{ color: colors.black, fontWeight: 'bold' }}>Distance</Text>
               </TouchableOpacity>
             </View>
             {/* Pagination */}
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Page :</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Page :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="0"
                 value={filterPage}
                 onChangeText={setFilterPage}
                 keyboardType="numeric"
               />
-              <Text style={styles.modalLabel}>Taille :</Text>
+              <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Taille :</Text>
               <TextInput
-                style={styles.modalInput}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: colors.black,
+                  backgroundColor: colors.lightGray,
+                  borderRadius: 8,
+                  paddingHorizontal: spacing.xs,
+                  height: 38,
+                }}
                 placeholder="20"
                 value={filterSize}
                 onChangeText={setFilterSize}
                 keyboardType="numeric"
               />
             </View>
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setFilterModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Valider</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
+              <TouchableOpacity style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, marginHorizontal: 4 }} onPress={() => setFilterModalVisible(false)}>
+                <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 16 }}>Valider</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={() => {
+              <TouchableOpacity style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, marginHorizontal: 4 }} onPress={() => {
                 setFilterType(null);
                 setFilterCategory(null);
                 setFilterCity("");
@@ -312,7 +436,7 @@ const MapScreen: React.FC = () => {
                 setFilterSize("20");
                 setFilterModalVisible(false);
               }}>
-                <Text style={styles.modalButtonText}>Réinitialiser</Text>
+                <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 16 }}>Réinitialiser</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -322,268 +446,6 @@ const MapScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  ownerAvatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  ownerAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  ownerAvatarFallback: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ownerAvatarFallbackText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  ownerName: {
-    fontSize: 15,
-    color: '#222',
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  profileButton: {
-    backgroundColor: '#4F8EF7',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  profileButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4F8EF7',
-    marginBottom: 16,
-    alignSelf: 'center',
-  },
-  modalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTypeButton: {
-    flex: 1,
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    padding: 10,
-    marginHorizontal: 4,
-    alignItems: 'center',
-  },
-  modalTypeSelected: {
-    backgroundColor: '#4F8EF7',
-  },
-  modalTypeText: {
-    color: '#222',
-    fontWeight: 'bold',
-  },
-  modalLabel: {
-    fontSize: 15,
-    color: '#555',
-    marginRight: 8,
-    minWidth: 90,
-  },
-  modalInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#222',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    height: 38,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
-  modalButton: {
-    backgroundColor: '#4F8EF7',
-    borderRadius: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginHorizontal: 4,
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  cardFound: {
-    backgroundColor: '#DFF6E0',
-  },
-  cardLost: {
-    backgroundColor: '#FDF6E3',
-  },
-  listContainer: {
-    flex: 1,
-    backgroundColor: '#F7F8FA',
-  },
-  backToMapButton: {
-    alignSelf: 'flex-start',
-    margin: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#4F8EF7',
-    borderRadius: 8,
-  },
-  backToMapText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  listHeader: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#4F8EF7',
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-  listCard: {
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    backgroundColor: '#fff',
-  },
-  listImageContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  listImageText: {
-    fontSize: 22,
-    color: '#888',
-    fontWeight: 'bold',
-  },
-  listTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  listDescription: {
-    fontSize: 15,
-    color: '#555',
-    marginBottom: 8,
-  },
-  listStatus: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  listStatusText: {
-    fontSize: 13,
-    color: '#888',
-    marginTop: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#222",
-    backgroundColor: "#F0F0F0",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    height: 40,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  searchBarContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingTop: 16,
-    paddingBottom: 8,
-    backgroundColor: "#fff",
-    zIndex: 2,
-    marginTop: 80, // Décale la barre sous le bouton logout
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0F0F0",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 40,
-  },
-  searchLabel: {
-    color: "#888",
-    fontSize: 16,
-  },
-  filterButton: {
-    marginLeft: 8,
-    backgroundColor: "#4F8EF7",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  filterText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  listButton: {
-    marginLeft: 8,
-    backgroundColor: "#E9446A",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  listText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  map: {
-    flex: 1,
-  },
-  text: {
-    fontSize: 20,
-    color: "#333",
-  },
-});
+
 
 export default MapScreen;

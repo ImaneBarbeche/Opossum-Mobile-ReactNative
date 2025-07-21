@@ -1,63 +1,12 @@
 // Écran de mot de passe oublié
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-// Définition des types de navigation pour l'auth stack
-type AuthStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
-};
+// (navigation supprimée, types inutiles retirés)
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import * as Linking from 'expo-linking';
 import { forgotPassword } from '../../services/auth.service';
 import { colors, spacing, typography, componentStyles } from '../../theme';
 import ScreenBackground from '../../components/ScreenBackground';
 
-const styles = StyleSheet.create({
-  container: {
-	...componentStyles.centerContainer,
-	padding: spacing.lg,
-	backgroundColor: colors.primaryLight,
-  },
-  card: {
-	...componentStyles.card,
-	width: '100%',
-	maxWidth: 400,
-	alignSelf: 'center',
-	padding: spacing.xl,
-	backgroundColor: colors.white,
-  },
-  title: {
-	...typography.h2,
-	color: colors.primary,
-	textAlign: 'center',
-	marginBottom: spacing.md,
-  },
-  subtitle: {
-	...typography.body,
-	color: colors.darkGray,
-	textAlign: 'center',
-	marginBottom: spacing.lg,
-  },
-  input: {
-	backgroundColor: colors.primaryLight,
-	borderRadius: 10,
-	padding: spacing.md,
-	marginBottom: spacing.md,
-	fontSize: 16,
-	borderWidth: 1,
-	borderColor: colors.mediumGray,
-	color: colors.black,
-  },
-  buttonWrapper: {
-	marginTop: spacing.lg,
-	marginBottom: spacing.sm,
-  },
-});
-
 const ForgotPasswordScreen: React.FC = () => {
-  const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -75,19 +24,19 @@ const ForgotPasswordScreen: React.FC = () => {
 
   return (
   <ScreenBackground>
-	<View style={styles.card}>
-	  <Text style={styles.title}>Mot de passe oublié</Text>
-	  <Text style={styles.subtitle}>Entrez votre email pour recevoir le lien de réinitialisation.</Text>
+	<View style={[componentStyles.card, { width: '100%', maxWidth: 400, alignSelf: 'center', padding: spacing.xl, backgroundColor: colors.white }]}> 
+	  <Text style={[typography.h2, { color: colors.primary, textAlign: 'center', marginBottom: spacing.md }]}>Mot de passe oublié</Text>
+	  <Text style={[typography.body, { color: colors.darkGray, textAlign: 'center', marginBottom: spacing.lg }]}>Entrez votre email pour recevoir le lien de réinitialisation.</Text>
 	  <TextInput
 		placeholder="Email"
 		value={email}
 		onChangeText={setEmail}
 		autoCapitalize="none"
 		keyboardType="email-address"
-		style={styles.input}
+		style={[componentStyles.input, { marginBottom: spacing.md }]}
 		placeholderTextColor={colors.darkGray}
 	  />
-	  <View style={styles.buttonWrapper}>
+	  <View style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
 		<Button
 		  title={loading ? "Envoi..." : "Envoyer le lien"}
 		  onPress={handleForgot}
@@ -95,7 +44,6 @@ const ForgotPasswordScreen: React.FC = () => {
 		  color={colors.primary}
 		/>
 	  </View>
-  {/* Ancien bouton reset password supprimé */}
 	</View>
   </ScreenBackground>
   );

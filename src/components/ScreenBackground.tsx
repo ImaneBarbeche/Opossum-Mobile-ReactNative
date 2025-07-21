@@ -1,5 +1,6 @@
 import React from 'react';
 import { ImageBackground, View, StyleSheet } from 'react-native';
+import { componentStyles } from '../theme';
 
 interface ScreenBackgroundProps {
   children: React.ReactNode;
@@ -8,24 +9,14 @@ interface ScreenBackgroundProps {
 const ScreenBackground: React.FC<ScreenBackgroundProps> = ({ children }) => (
   <ImageBackground
     source={require('../../assets/images/background.png')}
-    style={styles.bgContainer}
+    style={[componentStyles.container, { justifyContent: 'center', alignItems: 'center' }]}
     resizeMode="cover"
   >
-    <View style={styles.overlay} />
+    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(255,255,255,0.4)' }} />
     {children}
   </ImageBackground>
 );
 
-const styles = StyleSheet.create({
-  bgContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-  },
-});
+
 
 export default ScreenBackground;
