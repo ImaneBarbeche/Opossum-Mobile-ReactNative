@@ -18,16 +18,27 @@ export async function resetPassword(token: string, newPassword: string): Promise
       body: JSON.stringify({ token, newPassword }),
     });
     let result = {};
+    let text = '';
     try {
-      const text = await response.text();
+      text = await response.text();
       result = text ? JSON.parse(text) : {};
     } catch (e) {
       result = {};
     }
-    if (!response.ok || !(result && typeof result === 'object' && 'success' in result && result.success)) {
+    if (!response.ok) {
+      // On lit le message d'erreur du backend si présent
       const errorMsg =
         (result && typeof result === 'object' && 'error' in result && result.error && typeof result.error === 'object' && 'message' in result.error ? result.error.message : undefined) ||
         (result && typeof result === 'object' && 'message' in result ? result.message : undefined) ||
+        text ||
+        "Erreur lors de la réinitialisation du mot de passe";
+      throw new Error(String(errorMsg));
+    }
+    if (!(result && typeof result === 'object' && 'success' in result && result.success)) {
+      const errorMsg =
+        (result && typeof result === 'object' && 'error' in result && result.error && typeof result.error === 'object' && 'message' in result.error ? result.error.message : undefined) ||
+        (result && typeof result === 'object' && 'message' in result ? result.message : undefined) ||
+        text ||
         "Erreur lors de la réinitialisation du mot de passe";
       throw new Error(String(errorMsg));
     }

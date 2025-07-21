@@ -48,8 +48,11 @@ const styles = StyleSheet.create({
   },
 });
 
+
 const ResetPasswordScreen = ({ route, navigation }: any) => {
-  const { token } = route.params;
+  // Permettre la saisie manuelle du token si non fourni
+  const initialToken = route?.params?.token || '';
+  const [token, setToken] = useState(initialToken);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,7 +73,13 @@ const ResetPasswordScreen = ({ route, navigation }: any) => {
         { text: 'OK', onPress: () => navigation.navigate('Login') }
       ]);
     } catch (err: any) {
-      Alert.alert('Erreur', err.message || "Erreur lors de la réinitialisation");
+      let message = '';
+      if (err && typeof err === 'object') {
+        message = err.message || JSON.stringify(err);
+      } else {
+        message = String(err);
+      }
+      Alert.alert('Erreur', message);
     } finally {
       setLoading(false);
     }
@@ -80,7 +89,15 @@ const ResetPasswordScreen = ({ route, navigation }: any) => {
     <ScreenBackground>
       <View style={styles.card}>
         <Text style={styles.title}>Réinitialiser le mot de passe</Text>
-        <Text style={styles.subtitle}>Choisissez un nouveau mot de passe.</Text>
+        <Text style={styles.subtitle}>Collez le token reçu par email pour activer la réinitialisation.</Text>
+        <TextInput
+          placeholder="Token de réinitialisation"
+          value={token}
+          onChangeText={setToken}
+          style={styles.input}
+          autoCapitalize="none"
+          placeholderTextColor={colors.darkGray}
+        />
         <TextInput
           placeholder="Nouveau mot de passe"
           value={password}
@@ -88,6 +105,7 @@ const ResetPasswordScreen = ({ route, navigation }: any) => {
           secureTextEntry
           style={styles.input}
           placeholderTextColor={colors.darkGray}
+          editable={!!token}
         />
         <TextInput
           placeholder="Confirmer le mot de passe"
@@ -96,12 +114,13 @@ const ResetPasswordScreen = ({ route, navigation }: any) => {
           secureTextEntry
           style={styles.input}
           placeholderTextColor={colors.darkGray}
+          editable={!!token}
         />
         <View style={styles.buttonWrapper}>
           <Button
             title={loading ? "Envoi..." : "Réinitialiser"}
             onPress={handleReset}
-            disabled={loading || !password || !confirm}
+            disabled={loading || !password || !confirm || !token}
             color={colors.primary}
           />
         </View>

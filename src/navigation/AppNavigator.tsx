@@ -7,12 +7,13 @@ import { Linking } from 'react-native';
 import MainTab from "./MainTab";
 import { useAuth } from "../context/AuthContext"; // Import du contexte d'authentification
 
+
 const AppNavigator = () => {
   const { isAuthenticated } = useAuth();
 
   // Deep linking config
   const linking = {
-    prefixes: ["http://192.168.1.7:8081", "opossum://"],
+    prefixes: ["http://192.168.1.7:8081", "https://opossum.app", "opossum://"],
     config: {
       screens: {
         // AuthStack screens

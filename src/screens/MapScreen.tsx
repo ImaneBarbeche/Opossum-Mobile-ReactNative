@@ -3,13 +3,22 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Modal } from "react-native";
 import { FlatList } from "react-native";
 import { TextInput } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { Platform } from "react-native";
 import { getMockListings } from "../services/mockApi";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { useNavigation } from '@react-navigation/native';
 
+
 const MapScreen: React.FC = () => {
+  // Dynamically require MapView and Marker only on mobile
+  let MapView: any = null, Marker: any = null;
+  if (Platform.OS !== 'web') {
+    // @ts-ignore
+    MapView = require('react-native-maps').default;
+    // @ts-ignore
+    Marker = require('react-native-maps').Marker;
+  }
   // Etats pour les filtres avancés
   const [filterType, setFilterType] = React.useState<string | null>(null);
   const [filterCategory, setFilterCategory] = React.useState<string | null>(null);
@@ -133,77 +142,42 @@ const MapScreen: React.FC = () => {
       {/* Vue liste ou carte */}
       {showList ? (
         <View style={styles.listContainer}>
-          <TouchableOpacity style={styles.backToMapButton} onPress={() => setShowList(false)}>
-            <Text style={styles.backToMapText}>← Carte</Text>
-          </TouchableOpacity>
-          <Text style={styles.listHeader}>Annonces autour de moi</Text>
-          <FlatList
-            data={filteredListings}
-            keyExtractor={item => item.id}
-            contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.listCard, item.type === "FOUND" ? styles.cardFound : styles.cardLost]}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate('Mes annonces', { screen: 'ObjectDetail', params: { id: item.id } })}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={styles.listImageContainer}>
-                    <Text style={styles.listImageText}>{item.title.charAt(0)}</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.listTitle}>{item.title}</Text>
-                    <Text style={styles.listDescription}>{item.description}</Text>
-                    <Text style={styles.listStatusText}>Statut : {item.status || "-"}</Text>
-                    {/* Boutons modifier/supprimer si auteur */}
-                    {item.userId === user?.id && (
-                      <View style={{ flexDirection: 'row', marginTop: 6 }}>
-                        <TouchableOpacity style={{ marginRight: 12 }} onPress={() => alert('Modifier') }>
-                          <Text style={{ color: '#4F8EF7', fontWeight: 'bold' }}>Modifier</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => alert('Supprimer') }>
-                          <Text style={{ color: '#E9446A', fontWeight: 'bold' }}>Supprimer</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                <Text style={[styles.listStatus, { color: item.type === "LOST" ? "#E9446A" : "#4F8EF7" }] }>
-                  {item.type === "LOST" ? "Objet perdu" : "Objet trouvé"}
-                </Text>
-              </TouchableOpacity>
-            )}
-            ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 32 }}>Aucune annonce trouvée.</Text>}
-          />
+          {/* ...existing code pour la liste... */}
         </View>
       ) : (
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-        >
-          {/* Marqueur utilisateur (bleu) */}
-          <Marker
-            coordinate={userLocation}
-            title="Vous"
-            pinColor="#4F8EF7"
-          />
-          {/* Marqueurs annonces mockées filtrées */}
-          {filteredListings.map(obj => (
-            obj.latitude && obj.longitude ? (
-              <Marker
-                key={obj.id}
-                coordinate={{ latitude: obj.latitude, longitude: obj.longitude }}
-                title={obj.title}
-                pinColor={obj.type === "LOST" ? "#E9446A" : "#4EC97B"}
-              />
-            ) : null
-          ))}
-        </MapView>
+        Platform.OS !== 'web' && MapView ? (
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            {/* Marqueur utilisateur (bleu) */}
+            <Marker
+              coordinate={userLocation}
+              title="Vous"
+              pinColor="#4F8EF7"
+            />
+            {/* Marqueurs annonces mockées filtrées */}
+            {filteredListings.map(obj => (
+              obj.latitude && obj.longitude ? (
+                <Marker
+                  key={obj.id}
+                  coordinate={{ latitude: obj.latitude, longitude: obj.longitude }}
+                  title={obj.title}
+                  pinColor={obj.type === "LOST" ? "#E9446A" : "#4EC97B"}
+                />
+              ) : null
+            ))}
+          </MapView>
+        ) : (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>La carte n'est pas disponible sur le web.</Text>
+          </View>
+        )
       )}
       {/* Modale de recherche avancée */}
       <Modal
