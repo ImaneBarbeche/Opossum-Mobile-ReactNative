@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator } from "react-native";
 import { componentStyles, colors, spacing, typography } from '../theme';
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { mockUsers } from "../services/mockApi";
+
 
 type PublicProfileRouteParams = { userId: string };
 const PublicProfileScreen = () => {
@@ -13,12 +13,8 @@ const PublicProfileScreen = () => {
 
   useEffect(() => {
     setLoading(true);
-    // Simule un appel API pour le profil public
-    const found = mockUsers.find(u => u.id === userId);
-    setTimeout(() => {
-      setUser(found || null);
-      setLoading(false);
-    }, 500);
+    // TODO: Remplacer par un appel API réel pour le profil public
+    setLoading(false);
   }, [userId]);
 
   if (loading) {

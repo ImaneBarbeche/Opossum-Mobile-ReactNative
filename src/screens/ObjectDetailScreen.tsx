@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { componentStyles, colors, spacing, typography } from '../theme';
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { getListingDetailsMock } from "../services/annonce.service";
+import { getListingDetails } from "../services/annonce.service";
 
 type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 
@@ -19,15 +19,15 @@ const ObjectDetailScreen = () => {
 
   useEffect(() => {
     setLoading(true);
-    getListingDetailsMock(id).then((res: any) => {
-      if (res.success) {
-        setData(res.data);
+    getListingDetails(id)
+      .then((res: any) => {
+        setData(res);
         setError(null);
-      } else {
-        setError(res.error?.message || "Erreur inconnue");
-      }
-      setLoading(false);
-    });
+      })
+      .catch((err: any) => {
+        setError(err.message || "Erreur inconnue");
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {

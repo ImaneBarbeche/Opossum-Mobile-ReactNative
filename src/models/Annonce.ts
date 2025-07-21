@@ -30,14 +30,8 @@ export interface FilterParams {
   type?: string;
   category?: string;
   city?: string;
-  latitude?: number;
-  longitude?: number;
-  radius?: number;
-  dateFrom?: string;
-  dateTo?: string;
   page?: number;
   size?: number;
-  sort?: string;
 }
 
 export interface ListingsResponse {
@@ -57,8 +51,20 @@ export interface ListingsResponse {
 export interface CreateListingBody {
   title: string;
   description: string;
-  isLost: boolean;
-  userId: string;
+  type: "LOST" | "FOUND";
+  category: string;
+  location: {
+    latitude?: number;
+    longitude?: number;
+    address?: string;
+    city: string;
+  };
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+  };
+  photos?: string[];
+  useCurrentLocation?: boolean;
 }
 
 export interface UpdateListingBody {
@@ -72,13 +78,23 @@ export interface SearchListingsParams {
   q?: string;
   type?: string;
   category?: string;
-  latitude?: number;
-  longitude?: number;
-  radius?: number;
   city?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  sortBy?: string;
   page?: number;
   size?: number;
+}
+
+export interface MapFilterModalProps {
+  visible: boolean;
+  onClose: () => void;
+  filterType: string | null;
+  setFilterType: (v: string | null) => void;
+  filterCategory: string | null;
+  setFilterCategory: (v: string | null) => void;
+  filterCity: string;
+  setFilterCity: (v: string) => void;
+  filterPage: string;
+  setFilterPage: (v: string) => void;
+  filterSize: string;
+  setFilterSize: (v: string) => void;
+  onReset: () => void;
 }

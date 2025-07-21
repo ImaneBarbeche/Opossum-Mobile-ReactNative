@@ -5,14 +5,14 @@ import { View, Text, Alert, ScrollView } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import CreateListingForm from "../components/CreateListingForm";
-import { mockCreateListing } from "../services/mockApi";
+import { createListing } from "../services/annonce.service";
 import * as ImagePicker from 'expo-image-picker';
 import { validateCreateListingForm } from '../utils/createListingValidation';
 
 const CreateListingScreen: React.FC = () => {
   const { token, user, logout } = useAuth();
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<"LOST" | "FOUND" | "">("");
+  const [type, setType] = useState<"" | "LOST" | "FOUND">("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [address, setAddress] = useState("");
@@ -63,31 +63,41 @@ const CreateListingScreen: React.FC = () => {
       setError(validation.error || "Erreur inconnue.");
       return;
     }
+    // Validation géoloc/adresse obligatoire
+    const hasLatLng = latitude && longitude;
+    const hasAddress = address && city;
+    if (!hasLatLng && !hasAddress) {
+      setError("Veuillez renseigner soit la latitude/longitude, soit une adresse et une ville.");
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
       if (!token || !user) throw new Error("Utilisateur non authentifié.");
+      // Always send latitude/longitude, defaulting to 0 if missing, to satisfy backend NOT NULL constraints
+      const lat = latitude ? Number(latitude) : 0;
+      const lng = longitude ? Number(longitude) : 0;
       const body = {
         title,
         description,
-        type: type === "" ? undefined : type,
+        type: type as "LOST" | "FOUND",
         category,
         location: {
-          latitude: latitude ? Number(latitude) : undefined,
-          longitude: longitude ? Number(longitude) : undefined,
-          address: address,
+          latitude: lat,
+          longitude: lng,
+          address: address || undefined,
           city: city,
         },
         contactInfo: {
-          phone: user.phone || "0600000000",
-          email: user.email,
+          phone: user.phone || undefined,
+          email: user.email || undefined,
         },
         photos: image ? [image] : [],
         useCurrentLocation,
       };
-      // Utilise le mock si l'API n'est pas dispo
-      const res = mockCreateListing(body);
-      Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce mockée créée !' });
+      await createListing(token, body);
+      Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce créée !' });
       setTitle("");
       setType("");
       setDescription("");

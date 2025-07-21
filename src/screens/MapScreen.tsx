@@ -9,7 +9,7 @@ import { Modal } from "react-native";
 import { FlatList } from "react-native";
 import { TextInput } from "react-native";
 import { Platform } from "react-native";
-import { getMockListings } from "../services/mockApi";
+import { searchListings } from "../services/annonce.service";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 
@@ -24,20 +24,16 @@ const MapScreen: React.FC = () => {
     Marker = require('react-native-maps').Marker;
   }
   // Etats pour les filtres avancés
+  const [filterQ, setFilterQ] = React.useState<string>("");
   const [filterType, setFilterType] = React.useState<string | null>(null);
   const [filterCategory, setFilterCategory] = React.useState<string | null>(null);
   const [filterCity, setFilterCity] = React.useState<string>("");
-  const [filterRadius, setFilterRadius] = React.useState<string>("");
-  const [filterDateFrom, setFilterDateFrom] = React.useState<string>("");
-  const [filterDateTo, setFilterDateTo] = React.useState<string>("");
-  const [filterSortBy, setFilterSortBy] = React.useState<string>("relevance");
   const [filterPage, setFilterPage] = React.useState<string>("0");
   const [filterSize, setFilterSize] = React.useState<string>("20");
   // Etat pour basculer entre carte et liste
   const [showList, setShowList] = React.useState(false);
   const { user, logout, loading } = useAuth();
-  // Etat pour la barre de recherche simple
-  const [search, setSearch] = React.useState("");
+  // Etat pour la barre de recherche simple (fusionné avec filterQ)
   // Etat pour la modale de recherche avancée
   const [filterModalVisible, setFilterModalVisible] = React.useState(false);
 
@@ -51,120 +47,67 @@ const MapScreen: React.FC = () => {
     latitude: 50.6938,
     longitude: 3.1746,
   };
-  // Récupère toutes les annonces mockées (affichage global)
-  const allMockListings = getMockListings("any", true);
-  // Filtrage combiné (recherche simple + filtres avancés)
-  function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-    // Haversine formula
-    const R = 6371; // km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
+  // Etat pour les annonces récupérées via l'API
+  const [listings, setListings] = React.useState<any[]>([]);
+  const { token } = useAuth();
 
-  let filteredListings = allMockListings
-    .map(item => {
-      // Ajoute la distance si latitude/longitude utilisateur et objet présents
-      let distance = undefined;
-      if (
-        filterRadius && item.latitude && item.longitude && userLocation.latitude && userLocation.longitude
-      ) {
-        distance = getDistanceKm(userLocation.latitude, userLocation.longitude, item.latitude, item.longitude);
+  React.useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const params = {
+          q: filterQ || undefined,
+          type: filterType || undefined,
+          category: filterCategory || undefined,
+          city: filterCity || undefined,
+          page: filterPage ? Number(filterPage) : 0,
+          size: filterSize ? Number(filterSize) : 20,
+        };
+        const data = await searchListings(params, token || undefined);
+        setListings(data);
+      } catch (e) {
+        setListings([]);
       }
-      return { ...item, distance };
-    })
-    .filter(item => {
-      // Recherche textuelle
-      const matchesSearch =
-        item.title.toLowerCase().includes(search.toLowerCase()) ||
-        item.description.toLowerCase().includes(search.toLowerCase());
-      // Type
-      const matchesType = filterType ? item.type === filterType : true;
-      // Catégorie
-      const matchesCategory = filterCategory ? item.category === filterCategory : true;
-      // Ville
-      const matchesCity = filterCity ? item.city?.toLowerCase().includes(filterCity.toLowerCase()) : true;
-      // Rayon
-      const matchesRadius = filterRadius && item.distance !== undefined ? item.distance <= Number(filterRadius) : true;
-      // Date min
-      const matchesDateFrom = filterDateFrom && item.createdAt ? new Date(item.createdAt) >= new Date(filterDateFrom) : true;
-      // Date max
-      const matchesDateTo = filterDateTo && item.createdAt ? new Date(item.createdAt) <= new Date(filterDateTo) : true;
-      return matchesSearch && matchesType && matchesCategory && matchesCity && matchesRadius && matchesDateFrom && matchesDateTo;
-    });
-
-  // Tri
-  if (filterSortBy === "distance") {
-    filteredListings = filteredListings.sort((a, b) => {
-      if (a.distance === undefined) return 1;
-      if (b.distance === undefined) return -1;
-      return a.distance - b.distance;
-    });
-  } else if (filterSortBy === "date") {
-    filteredListings = filteredListings.sort((a, b) => {
-      if (!a.createdAt) return 1;
-      if (!b.createdAt) return -1;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  } // sinon pertinence = ordre initial
-
-  // Pagination
-  const page = Number(filterPage) || 0;
-  const size = Number(filterSize) || 20;
-  filteredListings = filteredListings.slice(page * size, (page + 1) * size);
+    };
+    fetchListings();
+  }, [filterQ, filterType, filterCategory, filterCity, filterPage, filterSize, token]);
 
   return (
     <View style={{ flex: 1 }}>
       <FloatingLogoutButton onLogout={logout} />
       {/* Barre de recherche simple extraite */}
       <MapSearchBar
-        search={search}
-        setSearch={setSearch}
+        search={filterQ}
+        setSearch={setFilterQ}
         onOpenFilters={() => setFilterModalVisible(true)}
         onListView={goToListView}
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <MapListView listings={filteredListings} />
+        <MapListView listings={listings} />
       ) : (
-        <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={filteredListings} />
+        <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={listings} />
       )}
       {/* Modale de recherche avancée extraite */}
       <MapFilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
+        filterQ={filterQ}
+        setFilterQ={setFilterQ}
         filterType={filterType}
         setFilterType={setFilterType}
         filterCategory={filterCategory}
         setFilterCategory={setFilterCategory}
         filterCity={filterCity}
         setFilterCity={setFilterCity}
-        filterRadius={filterRadius}
-        setFilterRadius={setFilterRadius}
-        filterDateFrom={filterDateFrom}
-        setFilterDateFrom={setFilterDateFrom}
-        filterDateTo={filterDateTo}
-        setFilterDateTo={setFilterDateTo}
-        filterSortBy={filterSortBy}
-        setFilterSortBy={setFilterSortBy}
         filterPage={filterPage}
         setFilterPage={setFilterPage}
         filterSize={filterSize}
         setFilterSize={setFilterSize}
         onReset={() => {
+          setFilterQ("");
           setFilterType(null);
           setFilterCategory(null);
           setFilterCity("");
-          setFilterRadius("");
-          setFilterDateFrom("");
-          setFilterDateTo("");
-          setFilterSortBy("relevance");
           setFilterPage("0");
           setFilterSize("20");
           setFilterModalVisible(false);

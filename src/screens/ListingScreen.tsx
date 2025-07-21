@@ -60,7 +60,6 @@ const ListingScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Listing }) => {
-    console.log('[ListingScreen] renderItem', item.id);
     const safeUri = item.thumbnailUrl && item.thumbnailUrl.trim() !== ''
       ? item.thumbnailUrl.startsWith('http')
         ? item.thumbnailUrl
@@ -74,7 +73,6 @@ const ListingScreen: React.FC = () => {
         ]}
         activeOpacity={0.8}
         onPress={() => {
-          console.log('[ListingScreen] Card pressed, id:', item.id, 'type:', item.type, 'owner:', item.userId);
           navigation.navigate('ObjectDetail', { id: item.id });
         }}
       >
@@ -106,7 +104,6 @@ const ListingScreen: React.FC = () => {
     );
   };
 
-  console.log('[ListingScreen] render main', annonces.length);
   return (
     <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 40 }]}> 
       <FloatingLogoutButton onLogout={logout} />
