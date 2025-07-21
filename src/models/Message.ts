@@ -1,0 +1,1 @@
+// Interface TypeScript pour Message
