@@ -7,7 +7,6 @@ type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  ResetPassword: { token: string };
 };
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import * as Linking from 'expo-linking';
@@ -96,15 +95,7 @@ const ForgotPasswordScreen: React.FC = () => {
 		  color={colors.primary}
 		/>
 	  </View>
-  <View style={{ marginTop: 16 }}>
-	<Button
-	  title="Aller à l'écran de reset avec un token"
-	  onPress={() => {
-		navigation.navigate('ResetPassword', { token: 'VOTRE_TOKEN' });
-	  }}
-	  color="#888"
-	/>
-  </View>
+  {/* Ancien bouton reset password supprimé */}
 	</View>
   </ScreenBackground>
   );
