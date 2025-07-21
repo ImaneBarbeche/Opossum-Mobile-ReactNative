@@ -5,17 +5,16 @@ import { RegisterRequest, RegisterResponse } from '../models/Auth';
 
 export async function register(data: RegisterRequest): Promise<RegisterResponse> {
   try {
-    // On s'assure d'envoyer tous les champs attendus par l'API
-    const body = {
+    // On s'assure d'envoyer uniquement les champs attendus par l'API backend
+    const body: any = {
       email: data.email,
       password: data.password,
       firstName: data.firstName,
       lastName: data.lastName,
-      phone: data.phone,
-      avatar: data.avatar,
-      confirmPassword: data.confirmPassword,
-      acceptTerms: data.acceptTerms,
     };
+    if (data.phone) body.phone = data.phone;
+    if (data.avatar) body.avatar = data.avatar;
+    // confirmPassword et acceptTerms ne sont pas envoyés si non attendus par l'API
     const response = await fetch(AUTH_ENDPOINTS.register, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,6 +46,8 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
         firstName: result.firstName,
         lastName: result.lastName,
         role: result.role,
+        phone: result.phone ?? "",
+        avatar: result.avatar ?? "",
       },
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
@@ -60,3 +61,5 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
     throw error;
   }
 }
+
+export default register;

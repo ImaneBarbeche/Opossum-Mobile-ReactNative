@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../models/User";
 import { login, logout } from "../services/auth.service";
-import { register } from "../services/auth.register";
+import register from "../services/auth.register";
 import {
   AuthContextType,
   AuthResponse,
@@ -35,6 +35,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // État pour le token JWT
   const [token, setToken] = useState<string | null>(null);
 
+  // Debug: log user and token changes
+  React.useEffect(() => {
+    console.log('[AuthProvider] user state changed:', user);
+  }, [user]);
+  React.useEffect(() => {
+    console.log('[AuthProvider] token state changed:', token);
+  }, [token]);
+
   /**
    * Fonction login
    * Appelle le service login, met à jour l'utilisateur et l'état loading
@@ -49,18 +57,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // On récupère le token d'accès depuis AsyncStorage
         const accessToken = await AsyncStorage.getItem("access_token");
         setToken(accessToken);
+        let userData = response.user;
         if (accessToken) {
           // Import dynamique pour éviter les cycles
           const { fetchCurrentUserProfile } = await import(
             "../services/user.service"
           );
           const profile = await fetchCurrentUserProfile(accessToken);
-          setUser(profile || response.user);
-        } else {
-          setUser(response.user);
+          if (profile) userData = profile;
         }
+        // Normalisation : toujours fournir les champs attendus
+        const userToSet = {
+          ...userData,
+          firstName: userData.firstName != null ? userData.firstName : "",
+          lastName: userData.lastName != null ? userData.lastName : "",
+          avatar: userData.avatar != null ? String(userData.avatar) : "",
+          phone: userData.phone != null ? String(userData.phone) : "",
+        };
+        console.log('[AuthContext] setUser (login):', userToSet);
+        setUser(userToSet);
       } catch (e) {
-        setUser(response.user);
+        const userData = response.user;
+        setUser({
+          ...userData,
+          firstName: userData.firstName ?? "",
+          lastName: userData.lastName ?? "",
+          avatar: userData.avatar ?? "",
+          phone: userData.phone ?? "",
+        });
         setToken(null);
       }
     } finally {
@@ -76,13 +100,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const response: RegisterResponse = await register(data);
-      setUser({
+      // Utilise strictement la réponse backend
+      const userToSet = {
         ...response.user,
-        isActive: true, // Valeur par défaut
-        role: "USER", // Valeur par défaut (adapter si besoin)
+        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-      });
+        firstName: response.user.firstName != null ? response.user.firstName : "",
+        lastName: response.user.lastName != null ? response.user.lastName : "",
+        avatar: response.user.avatar != null ? String(response.user.avatar) : "",
+        phone: response.user.phone != null ? String(response.user.phone) : "",
+      };
+      console.log('[AuthContext] setUser (register):', userToSet);
+      setUser(userToSet);
     } finally {
       setLoading(false);
     }
@@ -94,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const handleLogout = async () => {
     setLoading(true);
+    console.log('[AuthProvider] handleLogout called');
     try {
       await logout();
       setUser(null);
@@ -102,8 +133,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem("access_token");
       await AsyncStorage.removeItem("refresh_token");
       await AsyncStorage.removeItem("access_token_expires_at");
+      console.log('[AuthProvider] Logout completed, user and token set to null');
     } finally {
       setLoading(false);
+      console.log('[AuthProvider] handleLogout finished, loading set to false');
     }
   };
 
@@ -111,24 +144,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const setIsAuthenticated = (value: boolean) => {
     if (value) {
       // Simule un utilisateur connecté minimal (à adapter selon ton modèle User)
-      setUser(
-        (prev) =>
-          prev ?? {
-            id: "temp",
-            email: "",
-            firstName: "",
-            lastName: "",
-            isActive: true,
-            role: "USER",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isEmailVerified: false,
-            lastLoginAt: new Date(),
-            phone: "",
-            address: "",
-            avatar: "",
-          }
-      );
+      const userToSet = {
+        id: "temp",
+        email: "",
+        firstName: "",
+        lastName: "",
+        isActive: true,
+        role: "USER",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isEmailVerified: false,
+        lastLoginAt: new Date(),
+        phone: "",
+        address: "",
+        avatar: "",
+      };
+      console.log('[AuthContext] setUser (setIsAuthenticated):', userToSet);
+      setUser(userToSet);
     } else {
       setUser(null);
     }

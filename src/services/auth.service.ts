@@ -55,6 +55,7 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
       await AsyncStorage.setItem('access_token_expires_at', expiresAt);
     }
 
+    console.log('[auth.service] userData utilisé pour mapping:', userData);
     return {
       access_token: tokens.accessToken,
       refresh_token: tokens.refreshToken,
@@ -63,8 +64,10 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
         email: userData.email,
         isEmailVerified: userData.isEmailVerified ?? true,
         lastLoginAt: new Date(result.timestamp),
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        firstName: userData.firstName != null ? userData.firstName : "",
+        lastName: userData.lastName != null ? userData.lastName : "",
+        avatar: userData.avatar != null ? String(userData.avatar) : "",
+        phone: userData.phone != null ? String(userData.phone) : "",
         isActive: true,
         role: userData.role?.toLowerCase() || "user",
         createdAt: new Date(result.timestamp),

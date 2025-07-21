@@ -4,7 +4,7 @@ import { colors, spacing } from '../../theme';
 import Loader from '../../components/Loader';
 import Toast from 'react-native-toast-message';
 import { validateRegisterForm } from '../../utils/registerValidation';
-import { register } from '../../services/auth.service';
+import register from '../../services/auth.register';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
@@ -16,26 +16,28 @@ const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [avatar, setAvatar] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    const validation = validateRegisterForm({ firstName, lastName, email, password, confirmPassword });
+    const validation = validateRegisterForm({ firstName, lastName, email, password, confirmPassword, phone, avatar });
     if (!validation.valid) {
       Toast.show({ type: 'error', ...(validation.error || { text1: 'Erreur', text2: 'Erreur inconnue.' }) });
       return;
     }
     setLoading(true);
     try {
-      const response = await register({ firstName, lastName, email, password, confirmPassword, acceptTerms: true });
+      const response = await register({ firstName, lastName, email, password, confirmPassword, acceptTerms: true, phone, avatar });
+      console.log('[RegisterForm] Réponse backend register:', response);
       if (response && response.user) {
-        setUser({
-          ...response.user,
-          isActive: true,
-          role: response.user.role || 'USER',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+        Toast.show({
+          type: 'success',
+          text1: 'Inscription réussie',
+          text2: 'Veuillez vérifier votre email pour activer votre compte.',
         });
-        Toast.show({ type: 'success', text1: 'Inscription réussie', text2: 'Bienvenue !' });
+        // Redirige vers la page de connexion
+        navigation.navigate('Login');
       } else {
         Toast.show({ type: 'error', text1: 'Erreur', text2: 'Réponse d’inscription invalide.' });
       }
@@ -83,6 +85,20 @@ const RegisterForm: React.FC = () => {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+      />
+      <TextInput
+        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        placeholder="Téléphone (optionnel)"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        placeholder="URL de l'avatar (optionnel)"
+        value={avatar}
+        onChangeText={setAvatar}
+        autoCapitalize="none"
       />
       <TextInput
         style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}

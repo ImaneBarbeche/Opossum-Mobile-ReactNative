@@ -31,6 +31,11 @@ import DeleteAccountModal from "../components/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
   const { user, logout, loading, setUser } = useAuth();
+  // Log du user à chaque rendu pour debug
+  React.useEffect(() => {
+    console.log('[ProfileScreen] user context:', user);
+  }, [user]);
+
   const [editMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
