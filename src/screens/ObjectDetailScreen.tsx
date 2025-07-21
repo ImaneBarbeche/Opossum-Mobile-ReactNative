@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { componentStyles, colors, spacing, typography } from '../theme';
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
@@ -9,6 +10,7 @@ type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 
 const ObjectDetailScreen = () => {
   const route = useRoute<ObjectDetailScreenRouteProp>();
+  const { user } = useAuth();
   const navigation = useNavigation<any>();
   const { id } = route.params || { id: "1" };
   const [loading, setLoading] = useState(true);
@@ -61,18 +63,22 @@ const ObjectDetailScreen = () => {
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Image source={{ uri: data.user.avatar }} style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }} />
           <Text>{data.user.firstName} {data.user.lastName}</Text>
-          <TouchableOpacity
-            style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginLeft: 8 }}
-            onPress={() => data.user && navigation.navigate('Mes annonces', { screen: 'PublicProfile', params: { userId: data.user.id } })}
-          >
-            <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 14 }}>Voir profil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ backgroundColor: '#2e7d32', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginLeft: 8 }}
-            onPress={() => data.user && navigation.navigate('Messages', { annonceId: data.id, receiverId: data.user.id })}
-          >
-            <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 14 }}>Contacter</Text>
-          </TouchableOpacity>
+          {user?.id !== data.user.id && (
+            <>
+              <TouchableOpacity
+                style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginLeft: 8 }}
+                onPress={() => data.user && navigation.navigate('Mes annonces', { screen: 'PublicProfile', params: { userId: data.user.id } })}
+              >
+                <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 14 }}>Voir profil</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ backgroundColor: '#2e7d32', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginLeft: 8 }}
+                onPress={() => data.user && navigation.navigate('Messages', { annonceId: data.id, receiverId: data.user.id })}
+              >
+                <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 14 }}>Contacter</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
       <Text style={{ color: colors.darkGray, marginTop: 10 }}>Créée le : {new Date(data.createdAt).toLocaleString()}</Text>

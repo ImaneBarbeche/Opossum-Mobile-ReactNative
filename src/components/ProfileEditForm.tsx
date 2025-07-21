@@ -14,12 +14,73 @@ interface ProfileEditFormProps {
   saving: boolean;
   onSave: () => void;
   onCancel: () => void;
+  currentPassword: string;
+  setCurrentPassword: (v: string) => void;
+  newPassword: string;
+  setNewPassword: (v: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (v: string) => void;
 }
 
 const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
-  firstName, setFirstName, lastName, setLastName, phone, setPhone, avatar, setAvatar, saving, onSave, onCancel
+  firstName, setFirstName, lastName, setLastName, phone, setPhone, avatar, setAvatar, saving, onSave, onCancel,
+  currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword
 }) => (
-  <>
+  <View>
+    <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Mot de passe actuel</Text>
+    <TextInput
+      style={{
+        width: 260,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        fontSize: 16,
+        alignSelf: 'center',
+      }}
+      value={currentPassword}
+      onChangeText={setCurrentPassword}
+      placeholder="Mot de passe actuel"
+      secureTextEntry
+    />
+    <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Nouveau mot de passe</Text>
+    <TextInput
+      style={{
+        width: 260,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        fontSize: 16,
+        alignSelf: 'center',
+      }}
+      value={newPassword}
+      onChangeText={setNewPassword}
+      placeholder="Nouveau mot de passe"
+      secureTextEntry
+    />
+    <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Confirmer le nouveau mot de passe</Text>
+    <TextInput
+      style={{
+        width: 260,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        fontSize: 16,
+        alignSelf: 'center',
+      }}
+      value={confirmPassword}
+      onChangeText={setConfirmPassword}
+      placeholder="Confirmer le nouveau mot de passe"
+      secureTextEntry
+    />
     <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Nom</Text>
     <TextInput
       style={{
@@ -36,6 +97,23 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       value={lastName}
       onChangeText={setLastName}
       placeholder="Nom"
+    />
+    <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Prénom</Text>
+    <TextInput
+      style={{
+        width: 260,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        fontSize: 16,
+        alignSelf: 'center',
+      }}
+      value={firstName}
+      onChangeText={setFirstName}
+      placeholder="Prénom"
     />
     <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Téléphone</Text>
     <TextInput
@@ -90,7 +168,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
         <Text style={{ color: '#2e7d32', fontWeight: 'bold', fontSize: 16, textAlign: 'center' }}>Annuler</Text>
       </TouchableOpacity>
     </View>
-  </>
+  </View>
 );
 
 export default ProfileEditForm;

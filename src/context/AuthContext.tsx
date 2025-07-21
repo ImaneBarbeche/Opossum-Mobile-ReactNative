@@ -2,7 +2,8 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../models/User";
-import { login, logout, register } from "../services/auth.service";
+import { login, logout } from "../services/auth.service";
+import { register } from "../services/auth.register";
 import {
   AuthContextType,
   AuthResponse,

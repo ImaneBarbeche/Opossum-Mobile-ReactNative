@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 // (navigation supprimée, types inutiles retirés)
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import { forgotPassword } from '../../services/auth.service';
+import { forgotPassword } from '../../services/auth.password';
 import { colors, spacing, typography, componentStyles } from '../../theme';
 import ScreenBackground from '../../components/ScreenBackground';
 

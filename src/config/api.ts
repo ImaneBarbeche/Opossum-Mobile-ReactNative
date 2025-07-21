@@ -16,7 +16,7 @@ export const AUTH_ENDPOINTS = {
 
 // Endpoints utilisateur
 export const USER_ENDPOINTS = {
-  verifyEmail: `${API_BASE_URL}/users/verify-email`,
+  verifyEmail: (token: string) => `${API_BASE_URL}/auth/verify-email/${encodeURIComponent(token)}`,
   delete: `${API_BASE_URL}/users/delete-profile`,
   editPassword: `${API_BASE_URL}/users/update-password`,
   editProfile: `${API_BASE_URL}/users/update-profile`,

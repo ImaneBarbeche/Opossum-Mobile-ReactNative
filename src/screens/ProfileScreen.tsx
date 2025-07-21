@@ -30,7 +30,7 @@ import Toast from "react-native-toast-message";
 import DeleteAccountModal from "../components/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading, setUser } = useAuth();
   const [editMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
@@ -73,6 +73,17 @@ const ProfileScreen: React.FC = () => {
         avatar_url: avatar,
       };
       await updateUserProfile(data, token);
+      // Rafraîchir le profil utilisateur dans le contexte
+      try {
+        const { getUserProfile } = await import("../services/user.service");
+        const updatedProfile = await getUserProfile('me', token);
+        console.log('Profil utilisateur après update:', updatedProfile);
+        if (updatedProfile) {
+          setUser(updatedProfile);
+        }
+      } catch (e) {
+        // ignore erreur de refresh
+      }
       Toast.show({
         type: "success",
         text1: "Succès",

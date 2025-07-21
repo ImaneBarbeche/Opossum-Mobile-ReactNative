@@ -1,5 +1,5 @@
 // utils/networkErrorHandler.ts
-import { Alert } from 'react-native';
+// import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 
@@ -10,7 +10,11 @@ export function handleNetworkError(error: any) {
     error?.code === 'ECONNABORTED' ||
     error?.response?.status === 0
   ) {
-    Alert.alert('Erreur réseau', 'Impossible de se connecter. Vérifiez votre connexion internet.'); 
+    Toast.show({
+      type: 'error',
+      text1: 'Erreur réseau',
+      text2: 'Impossible de se connecter. Vérifiez votre connexion internet.',
+    });
   } else {
     Toast.show({
       type: 'error',
