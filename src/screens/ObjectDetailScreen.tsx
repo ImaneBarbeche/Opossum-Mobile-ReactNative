@@ -63,6 +63,12 @@ const ObjectDetailScreen = () => {
           >
             <Text style={styles.profileButtonText}>Voir profil</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.profileButton, { backgroundColor: '#2e7d32', marginLeft: 8 }]}
+            onPress={() => data.user && navigation.navigate('Messages', { annonceId: data.id, receiverId: data.user.id })}
+          >
+            <Text style={styles.profileButtonText}>Contacter</Text>
+          </TouchableOpacity>
         </View>
       </View>
          {/* Partie contact supprimée, tout passe par la messagerie interne */}
