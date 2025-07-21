@@ -1,14 +1,12 @@
 // Formulaire pour déclarer un objet trouvé
 import React, { useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Alert, ScrollView, TouchableOpacity, Image, Platform, StyleSheet } from "react-native";
-import { componentStyles, colors, spacing, typography } from '../theme';
+import { View, Text, Alert, ScrollView } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import { createListing } from "../services/annonce.service";
+import CreateListingForm from "../components/CreateListingForm";
 import { mockCreateListing } from "../services/mockApi";
-import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import { validateCreateListingForm } from '../utils/createListingValidation';
 
 const CreateListingScreen: React.FC = () => {
   const { token, user, logout } = useAuth();
@@ -51,28 +49,17 @@ const CreateListingScreen: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title || title.length < 5 || title.length > 200) {
-      setError("Le titre est requis (5-200 caractères).");
-      return;
-    }
-    if (!description || description.length < 10 || description.length > 2000) {
-      setError("La description est requise (10-2000 caractères).");
-      return;
-    }
-    if (!type) {
-      setError("Le type est requis.");
-      return;
-    }
-    if (!category) {
-      setError("La catégorie est requise.");
-      return;
-    }
-    if (!city) {
-      setError("La ville est requise.");
-      return;
-    }
-    if (!address && !useCurrentLocation) {
-      setError("L'adresse est requise si la localisation GPS n'est pas utilisée.");
+    const validation = validateCreateListingForm({
+      title,
+      description,
+      type,
+      category,
+      city,
+      address,
+      useCurrentLocation,
+    });
+    if (!validation.valid) {
+      setError(validation.error || "Erreur inconnue.");
       return;
     }
     setIsLoading(true);
@@ -82,7 +69,7 @@ const CreateListingScreen: React.FC = () => {
       const body = {
         title,
         description,
-        type,
+        type: type === "" ? undefined : type,
         category,
         location: {
           latitude: latitude ? Number(latitude) : undefined,
@@ -123,117 +110,41 @@ const CreateListingScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#eae6d6' }}>
-      <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
-        <FloatingLogoutButton onLogout={logout} />
-        <TouchableOpacity style={{ alignItems: 'center', marginBottom: 16 }} onPress={handleImagePick}>
-          {image ? (
-            <Image source={{ uri: image }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 8 }} />
-          ) : (
-            <Ionicons name="camera" size={64} color={colors.primary} />
-          )}
-          <Text style={{ fontSize: 13, color: colors.darkGray, marginTop: 4, marginBottom: 8 }}>Cliquez pour ajouter la photo de votre objet</Text>
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          <Text style={{ fontSize: 15, marginRight: 8 }}>Mon objet est :</Text>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 }} onPress={() => setType("LOST")}>  
-            <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 4 }}>{type === "LOST" && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary }} />}</View>
-            <Text style={{ fontSize: 15 }}>Perdu</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 }} onPress={() => setType("FOUND")}>  
-            <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 4 }}>{type === "FOUND" && <Ionicons name="checkmark" size={18} color={colors.primary} />}</View>
-            <Text style={{ fontSize: 15 }}>Trouvé</Text>
-          </TouchableOpacity>
-        </View>
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="De quel objet s'agit-il ? (5-200 caractères)"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Description (10-2000 caractères)"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Catégorie (ex: électronique, vêtement...)"
-          value={category}
-          onChangeText={setCategory}
-        />
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Ville"
-          value={city}
-          onChangeText={setCity}
-        />
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Latitude (optionnel)"
-          value={latitude}
-          onChangeText={setLatitude}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Longitude (optionnel)"
-          value={longitude}
-          onChangeText={setLongitude}
-          keyboardType="numeric"
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          <Text style={{ marginRight: 8 }}>Utiliser la localisation GPS</Text>
-          <TouchableOpacity
-            style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}
-            onPress={() => setUseCurrentLocation(!useCurrentLocation)}
-          >
-            {useCurrentLocation && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary }} />}
-          </TouchableOpacity>
-        </View>
-        <Text style={{ fontSize: 15, marginBottom: 4, alignSelf: 'flex-start' }}>Quand l'avez-vous perdu/trouvé ?</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, width: '100%' }}>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowDatePicker(true)}>
-            <Ionicons name="calendar" size={20} color={colors.primary} />
-            <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowTimePicker(true)}>
-            <Ionicons name="time" size={20} color={colors.primary} />
-            <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-          </TouchableOpacity>
-        </View>
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={handleDateChange}
-          />
-        )}
-        {showTimePicker && (
-          <DateTimePicker
-            value={date}
-            mode="time"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={handleTimeChange}
-          />
-        )}
-        <TextInput
-          style={[componentStyles.input, { marginBottom: spacing.sm }]}
-          placeholder="Adresse (requis si GPS non utilisé)"
-          value={address}
-          onChangeText={setAddress}
-        />
-        {error && <Text style={{ color: colors.error, marginBottom: 12 }}>{error}</Text>}
-        {isLoading ? (
-          <ActivityIndicator size="large" color={colors.primaryDark} style={{ marginVertical: 16 }} />
-        ) : (
-          <TouchableOpacity style={[componentStyles.buttonPrimary, { width: '100%', marginTop: 12 }]} onPress={handleSubmit}>
-            <Text style={componentStyles.buttonTextPrimary}>Publier</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <CreateListingForm
+        title={title}
+        setTitle={setTitle}
+        type={type}
+        setType={setType}
+        description={description}
+        setDescription={setDescription}
+        category={category}
+        setCategory={setCategory}
+        address={address}
+        setAddress={setAddress}
+        city={city}
+        setCity={setCity}
+        latitude={latitude}
+        setLatitude={setLatitude}
+        longitude={longitude}
+        setLongitude={setLongitude}
+        useCurrentLocation={useCurrentLocation}
+        setUseCurrentLocation={setUseCurrentLocation}
+        date={date}
+        setDate={setDate}
+        showDatePicker={showDatePicker}
+        setShowDatePicker={setShowDatePicker}
+        showTimePicker={showTimePicker}
+        setShowTimePicker={setShowTimePicker}
+        image={image}
+        setImage={setImage}
+        isLoading={isLoading}
+        error={error}
+        onImagePick={handleImagePick}
+        onDateChange={handleDateChange}
+        onTimeChange={handleTimeChange}
+        onSubmit={handleSubmit}
+        onLogout={logout}
+      />
     </ScrollView>
   );
 };

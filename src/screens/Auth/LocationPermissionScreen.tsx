@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { componentStyles, colors, spacing, typography } from '../../theme';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -31,18 +32,52 @@ const LocationPermissionScreen: React.FC<Props> = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Ionicons name="location-outline" size={64} color="#2e7d32" style={{ marginBottom: 16 }} />
-        <Text style={styles.text}>
+    <View style={[componentStyles.container, { justifyContent: 'center', alignItems: 'center' }]}> 
+      <View style={{
+        borderRadius: 16,
+        padding: 28,
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: colors.black,
+        width: '85%',
+        shadowColor: colors.black,
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+        backgroundColor: colors.white,
+      }}>
+        <Ionicons name="location-outline" size={64} color={colors.success} style={{ marginBottom: 16 }} />
+        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 24, color: colors.black, fontWeight: '500' }}>
           J’autorise Retrouv’It à accéder à la géolocalisation de mon téléphone
         </Text>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={[styles.button, styles.accept]} onPress={handleAccept}>
-            <Text style={styles.buttonText}>Je suis d’accord</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              paddingVertical: 14,
+              marginHorizontal: 6,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: colors.success,
+            }}
+            onPress={handleAccept}
+          >
+            <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 16 }}>Je suis d’accord</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.refuse]} onPress={handleRefuse}>
-            <Text style={[styles.buttonText, { color: '#2e7d32' }]}>Je refuse !</Text>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              paddingVertical: 14,
+              marginHorizontal: 6,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: colors.lightGray,
+              borderWidth: 2,
+              borderColor: colors.success,
+            }}
+            onPress={handleRefuse}
+          >
+            <Text style={{ color: colors.success, fontWeight: 'bold', fontSize: 16 }}>Je refuse !</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -50,59 +85,6 @@ const LocationPermissionScreen: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: '#eaf6ea', // On retire le fond pour laisser apparaître le background global
-  },
-  card: {
-    // backgroundColor: '#f8f8e8',
-    borderRadius: 16,
-    padding: 28,
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#222',
-    width: '85%',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  text: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 24,
-    color: '#222',
-    fontWeight: '500',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    marginHorizontal: 6,
-    borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#2e7d32',
-  },
-  accept: {
-    backgroundColor: '#2e7d32',
-  },
-  refuse: {
-    backgroundColor: '#eaf6ea',
-    borderWidth: 2,
-    borderColor: '#2e7d32',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-});
+
 
 export default LocationPermissionScreen;

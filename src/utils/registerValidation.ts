@@ -1,0 +1,37 @@
+// Validation logic for the registration form
+import { isValidEmail, isStrongPassword, isValidName } from '../utils/validators';
+
+export interface RegisterFormValues {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  error?: { text1: string; text2: string };
+}
+
+export function validateRegisterForm(values: RegisterFormValues): ValidationResult {
+  if (!values.firstName || !values.lastName || !values.email || !values.password || !values.confirmPassword) {
+    return { valid: false, error: { text1: 'Erreur', text2: 'Tous les champs sont obligatoires.' } };
+  }
+  if (!isValidName(values.firstName)) {
+    return { valid: false, error: { text1: 'Erreur', text2: 'Le prénom doit comporter entre 1 et 50 caractères.' } };
+  }
+  if (!isValidName(values.lastName)) {
+    return { valid: false, error: { text1: 'Erreur', text2: 'Le nom doit comporter entre 1 et 50 caractères.' } };
+  }
+  if (!isValidEmail(values.email)) {
+    return { valid: false, error: { text1: 'Erreur', text2: "L'adresse email n'est pas valide." } };
+  }
+  if (!isStrongPassword(values.password)) {
+    return { valid: false, error: { text1: 'Erreur', text2: 'Le mot de passe doit comporter au moins 8 caractères, une majuscule, une minuscule et un chiffre.' } };
+  }
+  if (values.password !== values.confirmPassword) {
+    return { valid: false, error: { text1: 'Erreur', text2: 'Les mots de passe ne correspondent pas.' } };
+  }
+  return { valid: true };
+}
