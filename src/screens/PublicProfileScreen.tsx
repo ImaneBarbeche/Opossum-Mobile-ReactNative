@@ -4,9 +4,9 @@ import { useRoute, RouteProp } from "@react-navigation/native";
 import { mockUsers } from "../services/mockApi";
 
 type PublicProfileRouteParams = { userId: string };
-const route = useRoute<RouteProp<{ params: PublicProfileRouteParams }, 'params'>>();
-const { userId } = route.params;
 const PublicProfileScreen = () => {
+  const route = useRoute<RouteProp<{ params: PublicProfileRouteParams }, 'params'>>();
+  const { userId } = route.params;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 

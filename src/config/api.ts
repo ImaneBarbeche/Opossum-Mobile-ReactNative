@@ -1,5 +1,5 @@
 // URL de base de l'API (backend)
-export const API_BASE_URL = 'http://192.168.1.7:8080/api/v1';
+export const API_BASE_URL = 'http://192.168.1.225:8080/api/v1';
 
 // Endpoints d'authentification
 export const AUTH_ENDPOINTS = {
@@ -14,9 +14,9 @@ export const AUTH_ENDPOINTS = {
 // Endpoints utilisateur
 export const USER_ENDPOINTS = {
   verifyEmail: `${API_BASE_URL}/users/verify-email`,
-  delete: `${API_BASE_URL}/users/deleteProfile`,
-  editPassword: `${API_BASE_URL}/users/edit-password`,
-  editProfile: `${API_BASE_URL}/users/edit`,
+  delete: `${API_BASE_URL}/users/delete-profile`,
+  editPassword: `${API_BASE_URL}/users/update-password`,
+  editProfile: `${API_BASE_URL}/users/update-profile`,
   me: `${API_BASE_URL}/users/me`,
 };
 

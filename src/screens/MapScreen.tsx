@@ -145,7 +145,7 @@ const MapScreen: React.FC = () => {
               <TouchableOpacity
                 style={[styles.listCard, item.type === "FOUND" ? styles.cardFound : styles.cardLost]}
                 activeOpacity={0.85}
-                onPress={() => navigation.navigate('ObjectDetail', { id: item.id })}
+                onPress={() => navigation.navigate('Mes annonces', { screen: 'ObjectDetail', params: { id: item.id } })}
               >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <View style={styles.listImageContainer}>

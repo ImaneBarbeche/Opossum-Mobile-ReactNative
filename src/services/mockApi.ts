@@ -195,7 +195,8 @@ export const getMockListingDetails = (id: string) => {
       timestamp: new Date().toISOString()
     };
   }
-  // Simule le format de réponse API
+  // Trouve le propriétaire via l'email de contact
+  const owner = mockUsers.find(u => u.email === found.contactInfo?.email);
   return {
     success: true,
     data: {
@@ -213,12 +214,12 @@ export const getMockListingDetails = (id: string) => {
       },
       photoUrl: found.photos?.[0] ?? "",
       contactInfo: found.contactInfo ?? { phone: "0600000000", email: "mock@example.com" },
-      user: {
-        id: "user-mock-id",
-        firstName: "Marie",
-        lastName: "Dupont",
-        avatar: "/files/avatar-marie.jpg"
-      },
+      user: owner ? {
+        id: owner.id,
+        firstName: owner.firstName,
+        lastName: owner.lastName,
+        avatar: owner.avatar || ""
+      } : undefined,
       createdAt: found.createdAt,
       updatedAt: found.createdAt,
     },
