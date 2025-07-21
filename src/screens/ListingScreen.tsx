@@ -27,7 +27,9 @@ const ListingScreen: React.FC = () => {
     if (localMockRef.current.length === 0) {
       localMockRef.current = getMockListings("any", true);
     }
-    setAnnonces([...localMockRef.current]);
+    // Trie par date décroissante
+    const sorted = [...localMockRef.current].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    setAnnonces(sorted);
     setIsLoading(false);
   }, []);
 
@@ -102,7 +104,10 @@ const ListingScreen: React.FC = () => {
           refreshing={isLoading}
           onRefresh={() => {
             if (token && user?.id) {
-              setAnnonces(getMockListings(user.id));
+              const refreshed = getMockListings(user.id);
+              // Trie par date décroissante
+              const sorted = [...refreshed].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              setAnnonces(sorted);
             }
           }}
           ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 32 }}>Aucune annonce trouvée.</Text>}
