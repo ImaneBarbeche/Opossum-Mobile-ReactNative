@@ -37,6 +37,9 @@ const ProfileScreen: React.FC = () => {
   const [phone, setPhone] = useState(user?.phone || "");
   const [avatar, setAvatar] = useState(user?.avatar || "");
   const [saving, setSaving] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleEdit = () => setEditMode(true);
   const handleCancel = () => {
@@ -75,8 +78,8 @@ const ProfileScreen: React.FC = () => {
       await updateUserProfile(data, token);
       // Rafraîchir le profil utilisateur dans le contexte
       try {
-        const { getUserProfile } = await import("../services/user.service");
-        const updatedProfile = await getUserProfile('me', token);
+        const { fetchCurrentUserProfile } = await import("../services/user.service");
+        const updatedProfile = await fetchCurrentUserProfile(token);
         console.log('Profil utilisateur après update:', updatedProfile);
         if (updatedProfile) {
           setUser(updatedProfile);
@@ -226,6 +229,12 @@ const ProfileScreen: React.FC = () => {
                 saving={saving}
                 onSave={handleSave}
                 onCancel={handleCancel}
+                currentPassword={currentPassword}
+                setCurrentPassword={setCurrentPassword}
+                newPassword={newPassword}
+                setNewPassword={setNewPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
               />
             </>
           ) : (

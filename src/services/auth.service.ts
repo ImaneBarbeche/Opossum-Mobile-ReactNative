@@ -119,3 +119,36 @@ export async function logout(): Promise<{ message: string }> {
     throw error;
   }
 }
+export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  try {
+    const response = await fetch(AUTH_ENDPOINTS.refresh, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      const errorMsg = result?.error?.message || result?.message || 'Erreur lors du rafraîchissement du token';
+      throw new Error(errorMsg);
+    }
+    // Stocke les nouveaux tokens si besoin
+    if (result.data?.accessToken) {
+      await AsyncStorage.setItem('access_token', result.data.accessToken);
+    }
+    if (result.data?.refreshToken) {
+      await AsyncStorage.setItem('refresh_token', result.data.refreshToken);
+    }
+    if (result.data?.expiresIn) {
+      const expiresAt = (Date.now() + result.data.expiresIn * 1000).toString();
+      await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+    }
+    return {
+      accessToken: result.data.accessToken,
+      refreshToken: result.data.refreshToken,
+      expiresIn: result.data.expiresIn,
+    };
+  } catch (error) {
+    handleNetworkError(error);
+    throw error;
+  }
+}

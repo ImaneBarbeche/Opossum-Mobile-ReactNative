@@ -55,6 +55,7 @@ export interface RegisterRequest {
   confirmPassword: string; // Pour confirmer le mot de passe
   acceptTerms: boolean; // Acceptation des CGU
   phone?: string; // Optionnel à l'inscription ?
+  avatar?: string; // Optionnel, URL de l'avatar
 }
 
 export interface ResetPasswordRequest {

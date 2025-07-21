@@ -5,10 +5,21 @@ import { RegisterRequest, RegisterResponse } from '../models/Auth';
 
 export async function register(data: RegisterRequest): Promise<RegisterResponse> {
   try {
+    // On s'assure d'envoyer tous les champs attendus par l'API
+    const body = {
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      avatar: data.avatar,
+      confirmPassword: data.confirmPassword,
+      acceptTerms: data.acceptTerms,
+    };
     const response = await fetch(AUTH_ENDPOINTS.register, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(body),
     });
     const result = await response.json();
     if (!response.ok) {

@@ -20,9 +20,8 @@ import { UserUpdateRequest } from '../models/User';
 // Vérification de l'email utilisateur
 export const verifyUserEmail = async (token: string) => {
   try {
-    const response = await axios.get(USER_ENDPOINTS.verifyEmail, {
-      params: { token },
-    });
+    const url = USER_ENDPOINTS.verifyEmail(token);
+    const response = await axios.get(url);
     return response.data;
   } catch (error: any) {
     handleNetworkError(error);
@@ -108,9 +107,6 @@ export const fetchCurrentUserProfile = async (token: string): Promise<User | nul
 
 export const updateUserProfile = async (data: UserUpdateRequest, token: string) => {
   try {
-    if (!data.email) {
-      throw new Error("L'email est obligatoire pour la modification du profil.");
-    }
     const response = await axios.put(USER_ENDPOINTS.editProfile, data, {
       headers: {
         Authorization: `Bearer ${token}`,
