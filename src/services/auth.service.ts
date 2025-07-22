@@ -1,3 +1,23 @@
+// Décodage simple du JWT (compatible React Native, sans Buffer)
+function decodeJWT(token: string): any {
+  try {
+    const payload = token.split('.')[1];
+    // Ajoute le padding manquant si besoin
+    let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+    const decoded = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+    return JSON.parse(decoded);
+  } catch (e) {
+    return null;
+  }
+}
 import { AUTH_ENDPOINTS } from '../config/api'; // pour auth.service.ts
 import { handleNetworkError } from '../utils/networkErrorHandler';
 // Service pour l'authentification
@@ -18,6 +38,7 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
     });
 
     const result = await response.json();
+    console.log('Réponse backend login:', result);
 
     if (!response.ok) {
       const errorMsg =
@@ -30,15 +51,25 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
     // Adaptation : si le backend ne retourne pas la structure attendue, adapte ici
     // Correction : si le backend retourne directement les infos user à la racine
     let userData = result.data?.user || result.user;
-    if (!userData && result.email) {
-      userData = {
-        id: result.id,
-        email: result.email,
-        isEmailVerified: result.isEmailVerified ?? true,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        role: result.role,
-      };
+    if (!userData) {
+      // Si pas d'objet user, on tente de décoder le JWT pour extraire les infos
+      const accessToken = result.data?.accessToken || result.accessToken;
+      if (accessToken) {
+        const decoded = decodeJWT(accessToken);
+        if (decoded) {
+          userData = {
+            id: decoded.sub,
+            email: decoded.email,
+            isEmailVerified: true,
+            firstName: decoded.firstName || '',
+            lastName: decoded.lastName || '',
+            role: decoded.role || 'user',
+          };
+        }
+      }
+    }
+    if (!userData) {
+      throw new Error("Aucune donnée utilisateur reçue depuis le backend. Impossible de se connecter.");
     }
     const tokens = result.data?.tokens || {
       accessToken: result.accessToken,
@@ -46,12 +77,18 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
       expiresIn: result.expiresIn,
     };
 
-    await AsyncStorage.setItem("access_token", tokens.accessToken);
-    await AsyncStorage.setItem("refresh_token", tokens.refreshToken);
+    if (tokens.accessToken !== null && tokens.accessToken !== undefined) {
+      await AsyncStorage.setItem("access_token", tokens.accessToken);
+    }
+    if (tokens.refreshToken !== null && tokens.refreshToken !== undefined) {
+      await AsyncStorage.setItem("refresh_token", tokens.refreshToken);
+    }
     // Stocke la date d'expiration réelle si fournie
     if (tokens.expiresIn) {
       const expiresAt = (Date.now() + tokens.expiresIn * 1000).toString();
-      await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      if (expiresAt !== null && expiresAt !== undefined) {
+        await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      }
     }
 
     return {
@@ -134,14 +171,20 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
     }
     // Stocke les nouveaux tokens si besoin
     if (result.data?.accessToken) {
-      await AsyncStorage.setItem('access_token', result.data.accessToken);
+      if (result.data.accessToken !== null && result.data.accessToken !== undefined) {
+        await AsyncStorage.setItem('access_token', result.data.accessToken);
+      }
     }
     if (result.data?.refreshToken) {
-      await AsyncStorage.setItem('refresh_token', result.data.refreshToken);
+      if (result.data.refreshToken !== null && result.data.refreshToken !== undefined) {
+        await AsyncStorage.setItem('refresh_token', result.data.refreshToken);
+      }
     }
     if (result.data?.expiresIn) {
       const expiresAt = (Date.now() + result.data.expiresIn * 1000).toString();
-      await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      if (expiresAt !== null && expiresAt !== undefined) {
+        await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      }
     }
     return {
       accessToken: result.data.accessToken,

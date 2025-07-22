@@ -26,11 +26,17 @@ export async function getValidAccessToken(): Promise<string | null> {
   // Sinon, on tente de refresh
   try {
     const result = await refreshToken(refreshTokenValue);
-    await AsyncStorage.setItem('access_token', result.accessToken);
-    await AsyncStorage.setItem('refresh_token', result.refreshToken);
+    if (result.accessToken !== null && result.accessToken !== undefined) {
+      await AsyncStorage.setItem('access_token', result.accessToken);
+    }
+    if (result.refreshToken !== null && result.refreshToken !== undefined) {
+      await AsyncStorage.setItem('refresh_token', result.refreshToken);
+    }
     // Stocke la nouvelle date d'expiration (en ms)
     const newExpiresAt = (now + result.expiresIn * 1000).toString();
-    await AsyncStorage.setItem('access_token_expires_at', newExpiresAt);
+    if (newExpiresAt !== null && newExpiresAt !== undefined) {
+      await AsyncStorage.setItem('access_token_expires_at', newExpiresAt);
+    }
     return result.accessToken;
   } catch (e) {
     // Si le refresh échoue, on considère l'utilisateur déconnecté

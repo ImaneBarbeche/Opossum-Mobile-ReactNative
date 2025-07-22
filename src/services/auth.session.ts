@@ -36,10 +36,14 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
       expiresIn: result.expiresIn,
     };
     await AsyncStorage.setItem('access_token', tokens.accessToken);
-    await AsyncStorage.setItem('refresh_token', tokens.refreshToken);
+    if (tokens.refreshToken !== null && tokens.refreshToken !== undefined) {
+      await AsyncStorage.setItem('refresh_token', tokens.refreshToken);
+    }
     if (tokens.expiresIn) {
       const expiresAt = (Date.now() + tokens.expiresIn * 1000).toString();
-      await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      if (expiresAt !== null && expiresAt !== undefined) {
+        await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      }
     }
     return {
       access_token: tokens.accessToken,

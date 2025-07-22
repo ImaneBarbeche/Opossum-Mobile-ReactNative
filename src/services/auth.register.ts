@@ -29,14 +29,20 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
       throw new Error(errorMsg);
     }
     if (result.accessToken) {
-      await AsyncStorage.setItem('access_token', result.accessToken);
+      if (result.accessToken !== null && result.accessToken !== undefined) {
+        await AsyncStorage.setItem('access_token', result.accessToken);
+      }
     }
     if (result.refreshToken) {
-      await AsyncStorage.setItem('refresh_token', result.refreshToken);
+      if (result.refreshToken !== null && result.refreshToken !== undefined) {
+        await AsyncStorage.setItem('refresh_token', result.refreshToken);
+      }
     }
     if (result.expiresIn) {
       const expiresAt = (Date.now() + result.expiresIn * 1000).toString();
-      await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      if (expiresAt !== null && expiresAt !== undefined) {
+        await AsyncStorage.setItem('access_token_expires_at', expiresAt);
+      }
     }
     return {
       user: {
