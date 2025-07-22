@@ -8,9 +8,12 @@ interface MapSearchBarProps {
   setSearch: (v: string) => void;
   onOpenFilters: () => void;
   onListView: () => void;
+  showListButton?: boolean;
+  showMapButton?: boolean;
+  onMapView?: () => void;
 }
 
-const MapSearchBar: React.FC<MapSearchBarProps> = ({ search, setSearch, onOpenFilters, onListView }) => (
+const MapSearchBar: React.FC<MapSearchBarProps> = ({ search, setSearch, onOpenFilters, onListView, showListButton, showMapButton, onMapView }) => (
   <View style={{
     position: 'absolute',
     top: 28,
@@ -74,25 +77,48 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ search, setSearch, onOpenFi
     >
       <Ionicons name="options-outline" size={22} color={colors.white} />
     </TouchableOpacity>
-    <TouchableOpacity
-      style={{
-        marginLeft: spacing.sm,
-        backgroundColor: colors.error,
-        borderRadius: 16,
-        padding: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 8,
-        elevation: 6,
-      }}
-      onPress={onListView}
-      accessibilityLabel="Vue liste"
-    >
-      <Ionicons name="list-outline" size={22} color={colors.white} />
-    </TouchableOpacity>
+    {showListButton && (
+      <TouchableOpacity
+        style={{
+          marginLeft: spacing.sm,
+          backgroundColor: colors.error,
+          borderRadius: 16,
+          padding: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.10,
+          shadowRadius: 8,
+          elevation: 6,
+        }}
+        onPress={onListView}
+        accessibilityLabel="Vue liste"
+      >
+        <Ionicons name="list-outline" size={22} color={colors.white} />
+      </TouchableOpacity>
+    )}
+    {showMapButton && (
+      <TouchableOpacity
+        style={{
+          marginLeft: spacing.sm,
+          backgroundColor: colors.primary,
+          borderRadius: 16,
+          padding: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.10,
+          shadowRadius: 8,
+          elevation: 6,
+        }}
+        onPress={onMapView}
+        accessibilityLabel="Vue carte"
+      >
+        <Ionicons name="map" size={22} color={colors.white} />
+      </TouchableOpacity>
+    )}
   </View>
 );
 

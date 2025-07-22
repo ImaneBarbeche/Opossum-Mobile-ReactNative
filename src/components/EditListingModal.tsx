@@ -66,7 +66,18 @@ const EditListingModal: React.FC<EditListingModalProps> = ({ visible, onClose, l
               <Text style={{ color: colors.error, marginTop: 2 }}>{categoryError}</Text>
             )}
           </View>
-          <TextInput style={[componentStyles.input, { marginBottom: spacing.md }]} value={status} onChangeText={setStatus} placeholder="Statut (ACTIVE, RESOLVED, EXPIRED)" />
+          <View style={{ marginBottom: spacing.md }}>
+            <Picker
+              selectedValue={status}
+              onValueChange={(itemValue) => setStatus(itemValue)}
+              style={{ backgroundColor: '#f5f5f5', borderRadius: 8 }}
+            >
+              <Picker.Item label="Choisir un statut..." value="" />
+              <Picker.Item label="Active" value="ACTIVE" />
+              <Picker.Item label="Résolue" value="RESOLVED" />
+              <Picker.Item label="Supprimée" value="DELETED" />
+            </Picker>
+          </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <TouchableOpacity style={[componentStyles.buttonSecondary, { minWidth: 100, marginHorizontal: 4 }]} onPress={onClose}>
               <Text style={componentStyles.buttonTextSecondary}>Annuler</Text>

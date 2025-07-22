@@ -59,7 +59,6 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
 
   return (
     <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
-      <FloatingLogoutButton onLogout={onLogout} />
       <TouchableOpacity style={{ alignItems: 'center', marginBottom: 16 }} onPress={onImagePick}>
         {image ? (
           <Image source={{ uri: image }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 8 }} />

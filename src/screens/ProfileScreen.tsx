@@ -76,8 +76,9 @@ const ProfileScreen: React.FC = () => {
       const data = {
         firstName,
         lastName,
-        phone_number: phone,
-        avatar_url: avatar,
+        phone: phone,
+        avatar: avatar,
+        email: user?.email,
       };
       await updateUserProfile(data, token);
       // Rafraîchir le profil utilisateur dans le contexte
@@ -169,7 +170,7 @@ const ProfileScreen: React.FC = () => {
     }
   };
   return (
-    <ScreenBackground>
+    <>
       {(saving || deleting) && <Loader visible={saving || deleting} />}
       <FloatingLogoutButton onLogout={logout} />
       <ScrollView contentContainerStyle={{ marginTop: 32, marginBottom: 32 }}>
@@ -263,7 +264,7 @@ const ProfileScreen: React.FC = () => {
           onConfirm={handleConfirmDelete}
         />
       </ScrollView>
-    </ScreenBackground>
+    </>
   );
 };
 

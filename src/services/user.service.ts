@@ -104,21 +104,22 @@ export const fetchCurrentUserProfile = async (token: string): Promise<User | nul
     },
   });
   if (!response.ok) return null;
-  const data = await response.json();
-  if (!data || typeof data !== 'object') return null;
-  // Adaptation stricte au modèle User, fallback sur "" si null/undefined
+  const raw = await response.json();
+  if (!raw || typeof raw !== 'object') return null;
+  const data = raw.data && typeof raw.data === 'object' ? raw.data : raw;
+  // Mapping robuste pour supporter toutes les variantes de champs
   return {
     id: data.id,
-    email: data.email,
-    isEmailVerified: data.emailVerified ?? true,
-    firstName: data.firstname != null ? data.firstname : "",
-    lastName: data.lastname != null ? data.lastname : "",
-    isActive: data.active ?? true,
-    role: data.role?.toLowerCase?.() || 'user',
+    email: data.email ?? "",
+    isEmailVerified: data.emailVerified ?? data.isEmailVerified ?? true,
+    firstName: data.firstName ?? data.firstname ?? "",
+    lastName: data.lastName ?? data.lastname ?? "",
+    isActive: data.active ?? data.isActive ?? true,
+    role: (data.role ?? 'user').toLowerCase(),
     createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
     updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
     phone: data.phone != null ? String(data.phone) : "",
-    avatar: data.avatarUrl != null ? String(data.avatarUrl) : "",
+    avatar: data.avatar ?? data.avatarUrl ?? "",
     lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
   };
 };

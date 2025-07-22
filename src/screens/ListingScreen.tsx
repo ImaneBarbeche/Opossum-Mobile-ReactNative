@@ -86,6 +86,28 @@ const ListingScreen: React.FC = () => {
           />
         <View style={{ flex: 1 }}>
           <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>{item.title}</Text>
+          {/* Affichage du statut de l'annonce */}
+          <Text
+            style={[
+              typography.caption,
+              {
+                fontWeight: 'bold',
+                color:
+                  item.status === 'ACTIVE'
+                    ? colors.success
+                    : item.status === 'RESOLVED'
+                    ? colors.info
+                    : item.status === 'ARCHIVED'
+                    ? colors.warning
+                    : item.status === 'DELETED'
+                    ? colors.error
+                    : colors.darkGray,
+                marginBottom: 2,
+              },
+            ]}
+          >
+            Statut : {item.status}
+          </Text>
           <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>{item.description}</Text>
         </View>
         {/* Boutons édition et corbeille supprimés */}
@@ -98,7 +120,7 @@ const ListingScreen: React.FC = () => {
   };
 
   return (
-    <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 40 }]}> 
+    <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 64 }]}> 
       <FloatingLogoutButton onLogout={logout} />
       <Text style={[typography.h1, { color: colors.primary, marginBottom: spacing.md, alignSelf: 'center' }]}>Mes annonces</Text>
       {isLoading ? (
@@ -128,37 +150,8 @@ const ListingScreen: React.FC = () => {
           ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 32 }}>Aucune annonce trouvée.</Text>}
         />
       )}
-      {/*
-      {selectedListing && (
-        <EditListingModal
-          visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
-          listing={selectedListing}
-          onSave={(fields) => {
-            // Appel du mock de mise à jour
-            // Edition mockée sans contrôle utilisateur
-            // Map status string to allowed enum values for Listing
-            const allowedStatus = ["ACTIVE", "RESOLVED", "ARCHIVED", "DELETED"] as const;
-            const mappedFields = {
-              ...fields,
-              status: allowedStatus.includes(fields.status as any)
-                ? (fields.status as "ACTIVE" | "RESOLVED" | "ARCHIVED" | "DELETED")
-                : "ACTIVE"
-            };
-            // Edition locale
-            localMockRef.current = localMockRef.current.map(item =>
-              item.id === selectedListing.id ? { ...item, ...mappedFields } : item
-            );
-            setAnnonces([...localMockRef.current]);
-            setEditModalVisible(false);
-          }}
-        />
-      )}
-      */}
     </View>
   );
 };
-
-
 
 export default ListingScreen;

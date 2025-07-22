@@ -6,9 +6,7 @@ import ScreenBackground from '../../components/ScreenBackground';
 //
 const RegisterScreen: React.FC = () => {
   return (
-  <ScreenBackground>
     <RegisterForm />
-  </ScreenBackground>
   );
 };
 

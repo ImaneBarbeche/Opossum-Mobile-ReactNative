@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { getListingDetails, updateListing } from "../services/annonce.service";
+import { Ionicons } from '@expo/vector-icons';
+import { getListingDetails, updateListing, deleteListing } from "../services/annonce.service";
 import { getValidAccessToken } from "../services/token.helper";
 import EditListingModal from "../components/EditListingModal";
 
@@ -58,191 +59,214 @@ const ObjectDetailScreen = () => {
   if (!data) return null;
 
   return (
-    <View
-      style={[
-        componentStyles.card,
-        {
-          margin: 16,
-          backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
-          padding: 16,
-        },
-      ]}
-    >
+    <View style={{ flex: 1, backgroundColor: colors.lightGray }}>
+      <View style={{ height: 32 }} />
       <View
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}
+        style={[
+          componentStyles.card,
+          {
+            flex: 1,
+            minHeight: 420,
+            margin: 16,
+            backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
+            padding: 24,
+            justifyContent: 'flex-start',
+          },
+        ]}
       >
-        <Image
-          source={{ uri: data.photoUrl || "https://via.placeholder.com/80" }}
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: 8,
-            marginRight: 12,
-            backgroundColor: colors.mediumGray,
-          }}
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={[typography.h2, { marginBottom: 2 }]}>{data.title}</Text>
-          <Text
-            style={{
-              fontSize: 15,
-              fontWeight: "bold",
-              color: data.type === "FOUND" ? colors.primary : colors.error,
-              marginBottom: 2,
-            }}
-          >
-            {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
-          </Text>
-          <Text style={{ fontSize: 15, marginBottom: 2 }}>
-            Catégorie : {data.category}
-          </Text>
-          <Text style={{ fontSize: 15, marginBottom: 2 }}>
-            Statut : {data.status}
-          </Text>
-        </View>
-      </View>
-      <Text style={{ fontSize: 16, marginBottom: 10, color: colors.darkGray }}>
-        {data.description}
-      </Text>
-      {isOwner && (
-        <TouchableOpacity
-          style={{
-            backgroundColor: colors.primary,
-            borderRadius: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            alignSelf: 'flex-end',
-            marginBottom: 10,
-          }}
-          onPress={() => setEditModalVisible(true)}
-        >
-          <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 15 }}>Modifier</Text>
-        </TouchableOpacity>
-      )}
-      <View style={{ marginBottom: 10 }}>
-        <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
-        {data.location ? (
-          <>
-            <Text>
-              {data.location.address || ''}{data.location.address && data.location.city ? ', ' : ''}{data.location.city || ''}
-            </Text>
-            <Text>
-              Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
-            </Text>
-          </>
-        ) : (
-          <Text>Non renseigné</Text>
-        )}
-      </View>
-      {!isOwner && data.user && (
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ fontWeight: "bold" }}>Propriétaire :</Text>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{ uri: data.user.avatar }}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                marginRight: 10,
-              }}
-            />
-            <Text>
-              {data.user.firstName} {data.user.lastName}
-            </Text>
+        {/* Boutons d'action en haut à droite */}
+        {isOwner && (
+          <View style={{ position: 'absolute', top: 18, right: 18, flexDirection: 'row', zIndex: 10 }}>
             <TouchableOpacity
               style={{
                 backgroundColor: colors.primary,
                 borderRadius: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                marginLeft: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                marginRight: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOpacity: 0.08,
+                shadowRadius: 4,
+                elevation: 2,
               }}
-              onPress={() =>
-                data.user &&
-                navigation.navigate("Mes annonces", {
-                  screen: "PublicProfile",
-                  params: { userId: data.user.id },
-                })
-              }
+              onPress={() => setEditModalVisible(true)}
             >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontWeight: "bold",
-                  fontSize: 14,
-                }}
-              >
-                Voir profil
-              </Text>
+              <Ionicons name="pencil" size={20} color={colors.white} />
             </TouchableOpacity>
             <TouchableOpacity
               style={{
-                backgroundColor: "#2e7d32",
+                backgroundColor: colors.error,
                 borderRadius: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                marginLeft: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOpacity: 0.08,
+                shadowRadius: 4,
+                elevation: 2,
               }}
-              onPress={() =>
-                data.user &&
-                navigation.navigate("Messages", {
-                  annonceId: data.id,
-                  receiverId: data.user.id,
-                })
-              }
+              onPress={async () => {
+                Alert.alert(
+                  'Supprimer l\'annonce',
+                  'Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.',
+                  [
+                    { text: 'Annuler', style: 'cancel' },
+                    {
+                      text: 'Supprimer',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          setLoading(true);
+                          const token = await getValidAccessToken();
+                          if (!token) throw new Error('Token manquant');
+                          await deleteListing(data.id, token);
+                          Alert.alert('Succès', 'Annonce supprimée avec succès');
+                          navigation.goBack();
+                        } catch (e: any) {
+                          let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la suppression';
+                          if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
+                          Alert.alert('Erreur', backendMsg);
+                        } finally {
+                          setLoading(false);
+                        }
+                      }
+                    }
+                  ]
+                );
+              }}
             >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontWeight: "bold",
-                  fontSize: 14,
-                }}
-              >
-                Contacter
-              </Text>
+              <Ionicons name="trash" size={20} color={colors.white} />
             </TouchableOpacity>
           </View>
+        )}
+        {/* PHOTO CENTRÉE */}
+        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+          <Image
+            source={{ uri: data.photoUrl || "https://via.placeholder.com/120" }}
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: 16,
+              backgroundColor: colors.mediumGray,
+              marginBottom: 12,
+            }}
+          />
+          {/* TITRE CENTRÉ */}
+          <Text style={[typography.h2, { textAlign: 'center', marginBottom: 6 }]}>{data.title}</Text>
         </View>
-      )}
-      <Text style={{ color: colors.darkGray, marginTop: 10 }}>
-        Créée le : {new Date(data.createdAt).toLocaleString()}
-      </Text>
-      <EditListingModal
-        visible={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        listing={{
-          id: data.id,
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          status: data.status,
-        }}
-        onSave={async (fields) => {
-          try {
-            setLoading(true);
-            // Récupère le token d'accès valide
-            const token = await getValidAccessToken();
-            if (!token) throw new Error('Token manquant');
-            // Cast du status pour correspondre au type attendu
-            const body = {
-              ...fields,
-              status: fields.status as "ACTIVE" | "RESOLVED"
-            };
-            const updated = await updateListing(data.id, token, body);
-            setData(updated);
-            setEditModalVisible(false);
-          } catch (e: any) {
-            let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la modification';
-            if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
-            Alert.alert('Erreur', backendMsg);
-          } finally {
-            setLoading(false);
-          }
-        }}
-      />
+        {/* TYPE ET CATÉGORIE CENTRÉS */}
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "bold",
+            color: data.type === "FOUND" ? colors.primary : colors.error,
+            textAlign: 'center',
+            marginBottom: 2,
+          }}
+        >
+          {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
+        </Text>
+        <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
+          Catégorie : {data.category}
+        </Text>
+        {/* DESCRIPTION */}
+        <Text style={{ fontSize: 16, marginBottom: 16, color: colors.darkGray, textAlign: 'center' }}>
+          {data.description}
+        </Text>
+        {/* LIEU */}
+        <View style={{ marginBottom: 12, alignItems: 'center' }}>
+          <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
+          {data.location ? (
+            <>
+              <Text style={{ textAlign: 'center' }}>
+                {data.location.address || ''}{data.location.address && data.location.city ? ', ' : ''}{data.location.city || ''}
+              </Text>
+              <Text style={{ textAlign: 'center' }}>
+                Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
+              </Text>
+            </>
+          ) : (
+            <Text style={{ textAlign: 'center' }}>Non renseigné</Text>
+          )}
+        </View>
+        {/* DATE */}
+        <Text style={{ color: colors.darkGray, marginBottom: 16, textAlign: 'center' }}>
+          Créée le : {new Date(data.createdAt).toLocaleString()}
+        </Text>
+        {/* PROPRIÉTAIRE */}
+        {!isOwner && data.user && (
+          <View style={{ marginBottom: 10, alignItems: 'center' }}>
+            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>Propriétaire :</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'center' }}>
+              <Image
+                source={{ uri: data.user.avatar }}
+                style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
+              />
+              <Text>
+                {data.user.firstName} {data.user.lastName}
+              </Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: colors.primary,
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  marginLeft: 8,
+                }}
+                onPress={() =>
+                  data.user &&
+                  navigation.navigate("Mes annonces", {
+                    screen: "PublicProfile",
+                    params: { userId: data.user.id },
+                  })
+                }
+              >
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontWeight: "bold",
+                    fontSize: 14,
+                  }}
+                >
+                  Voir profil
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#2e7d32",
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  marginLeft: 8,
+                }}
+                onPress={() =>
+                  data.user &&
+                  navigation.navigate("Messages", {
+                    annonceId: data.id,
+                    receiverId: data.user.id,
+                  })
+                }
+              >
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontWeight: "bold",
+                    fontSize: 14,
+                  }}
+                >
+                  Contacter
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
     </View>
   );
-};
+}
 
 export default ObjectDetailScreen;
+

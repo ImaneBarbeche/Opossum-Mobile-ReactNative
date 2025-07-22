@@ -82,34 +82,13 @@ const MapScreen: React.FC = () => {
         setSearch={setFilterQ}
         onOpenFilters={() => setFilterModalVisible(true)}
         onListView={goToListView}
+        showListButton={!showList}
+        showMapButton={showList}
+        onMapView={() => setShowList(false)}
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <>
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              top: 60,
-              left: 20,
-              zIndex: 10,
-              backgroundColor: colors.primary,
-              borderRadius: 24,
-              padding: 12,
-              shadowColor: colors.black,
-              shadowOpacity: 0.15,
-              shadowRadius: 4,
-              elevation: 2,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={() => setShowList(false)}
-            accessibilityLabel="Retour à la carte"
-          >
-            {/* Icône carte Ionicons */}
-            <Ionicons name="map" size={28} color={colors.white} />
-          </TouchableOpacity>
-          <MapListView listings={listings} />
-        </>
+        <MapListView listings={listings} />
       ) : (
         <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={listings} />
       )}
