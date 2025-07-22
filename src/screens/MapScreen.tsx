@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapListView from "../components/MapListView";
 import MapMapView from "../components/MapMapView";
 import MapSearchBar from "../components/MapSearchBar";
@@ -11,7 +12,9 @@ import { TextInput } from "react-native";
 import { Platform } from "react-native";
 import { searchListings } from "../services/annonce.service";
 import { useAuth } from "../context/AuthContext";
-import FloatingLogoutButton from "../components/FloatingLogoutButton";
+
+
+import { Ionicons } from '@expo/vector-icons';
 
 
 const MapScreen: React.FC = () => {
@@ -72,8 +75,7 @@ const MapScreen: React.FC = () => {
   }, [filterQ, filterType, filterCategory, filterCity, filterPage, filterSize, token]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <FloatingLogoutButton onLogout={logout} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.lightGray }} edges={["bottom"]}>
       {/* Barre de recherche simple extraite */}
       <MapSearchBar
         search={filterQ}
@@ -83,7 +85,31 @@ const MapScreen: React.FC = () => {
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <MapListView listings={listings} />
+        <>
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: 60,
+              left: 20,
+              zIndex: 10,
+              backgroundColor: colors.primary,
+              borderRadius: 24,
+              padding: 12,
+              shadowColor: colors.black,
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={() => setShowList(false)}
+            accessibilityLabel="Retour à la carte"
+          >
+            {/* Icône carte Ionicons */}
+            <Ionicons name="map" size={28} color={colors.white} />
+          </TouchableOpacity>
+          <MapListView listings={listings} />
+        </>
       ) : (
         <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={listings} />
       )}
@@ -113,7 +139,7 @@ const MapScreen: React.FC = () => {
           setFilterModalVisible(false);
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 export default MapScreen;

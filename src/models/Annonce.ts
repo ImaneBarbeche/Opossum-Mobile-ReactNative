@@ -71,7 +71,7 @@ export interface UpdateListingBody {
   title?: string;
   description?: string;
   category?: string;
-  status?: "ACTIVE" | "RESOLVED" | "EXPIRED";
+  status?: "ACTIVE" | "RESOLVED" | "ARCHIVED" | "DELETED";
 }
 
 export interface SearchListingsParams {

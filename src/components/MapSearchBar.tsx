@@ -1,5 +1,6 @@
 import React from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../theme';
 
 interface MapSearchBarProps {
@@ -11,33 +12,42 @@ interface MapSearchBarProps {
 
 const MapSearchBar: React.FC<MapSearchBarProps> = ({ search, setSearch, onOpenFilters, onListView }) => (
   <View style={{
+    position: 'absolute',
+    top: 28,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xs,
-    backgroundColor: colors.white,
-    zIndex: 2,
-    marginTop: 80,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 0,
+    backgroundColor: 'transparent',
+    zIndex: 10,
+    elevation: 10,
   }}>
     <View style={{
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.mediumGray,
-      borderRadius: 8,
-      paddingHorizontal: spacing.sm,
-      height: 40,
+      backgroundColor: colors.white,
+      borderRadius: 16,
+      paddingHorizontal: spacing.md,
+      height: 44,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.10,
+      shadowRadius: 8,
+      elevation: 6,
     }}>
+      <Ionicons name="search" size={20} color={colors.darkGray} style={{ marginRight: 6 }} />
       <TextInput
         style={{
           flex: 1,
           fontSize: 16,
           color: colors.black,
-          backgroundColor: colors.lightGray,
+          backgroundColor: 'transparent',
           borderRadius: 8,
-          paddingHorizontal: spacing.xs,
-          height: 40,
+          paddingHorizontal: 0,
+          height: 44,
         }}
         placeholder="Rechercher..."
         value={search}
@@ -45,23 +55,43 @@ const MapSearchBar: React.FC<MapSearchBarProps> = ({ search, setSearch, onOpenFi
         placeholderTextColor={colors.darkGray}
       />
     </View>
-    <TouchableOpacity style={{
-      marginLeft: spacing.xs,
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-    }} onPress={onOpenFilters}>
-      <Text style={{ color: colors.white, fontWeight: 'bold' }}>Filtres</Text>
+    <TouchableOpacity
+      style={{
+        marginLeft: spacing.sm,
+        backgroundColor: colors.primary,
+        borderRadius: 16,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
+      onPress={onOpenFilters}
+      accessibilityLabel="Filtres"
+    >
+      <Ionicons name="options-outline" size={22} color={colors.white} />
     </TouchableOpacity>
-    <TouchableOpacity style={{
-      marginLeft: spacing.xs,
-      backgroundColor: colors.error,
-      borderRadius: 8,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-    }} onPress={onListView}>
-      <Text style={{ color: colors.white, fontWeight: 'bold' }}>Vue liste</Text>
+    <TouchableOpacity
+      style={{
+        marginLeft: spacing.sm,
+        backgroundColor: colors.error,
+        borderRadius: 16,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
+      onPress={onListView}
+      accessibilityLabel="Vue liste"
+    >
+      <Ionicons name="list-outline" size={22} color={colors.white} />
     </TouchableOpacity>
   </View>
 );

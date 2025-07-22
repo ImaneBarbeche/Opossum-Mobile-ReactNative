@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity } from "react-native";
+import { Picker } from '@react-native-picker/picker';
 import { colors, spacing, typography } from '../theme';
 import { MapFilterModalProps } from "../models/Annonce";
 
@@ -81,20 +82,21 @@ const MapFilterModal: React.FC<MapFilterModalProps & { filterQ?: string; setFilt
         {/* Catégorie */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
           <Text style={{ fontSize: 15, color: colors.darkGray, marginRight: 8, minWidth: 90 }}>Catégorie :</Text>
-          <TextInput
-            style={{
-              flex: 1,
-              fontSize: 15,
-              color: colors.black,
-              backgroundColor: colors.lightGray,
-              borderRadius: 8,
-              paddingHorizontal: spacing.xs,
-              height: 38,
-            }}
-            placeholder="ex: keys, electronics, accessories..."
-            value={filterCategory || ""}
-            onChangeText={setFilterCategory}
-          />
+          <View style={{ flex: 1 }}>
+            <Picker
+              selectedValue={filterCategory || ''}
+              onValueChange={setFilterCategory}
+              style={{ backgroundColor: colors.lightGray, borderRadius: 8 }}
+            >
+              <Picker.Item label="Toutes les catégories" value="" />
+              <Picker.Item label="Électronique" value="electronics" />
+              <Picker.Item label="Vêtements" value="clothing" />
+              <Picker.Item label="Accessoires" value="accessories" />
+              <Picker.Item label="Documents" value="documents" />
+              <Picker.Item label="Clés" value="keys" />
+              <Picker.Item label="Autre" value="other" />
+            </Picker>
+          </View>
         </View>
         {/* Ville/adresse */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>

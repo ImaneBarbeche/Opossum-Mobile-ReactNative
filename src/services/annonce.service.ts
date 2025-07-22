@@ -30,9 +30,6 @@ export const getMyListings = async (
       },
       params,
     });
-    // Log la structure brute pour debug
-    console.log('[getMyListings] response.data =', JSON.stringify(response.data, null, 2));
-    console.log('[getMyListings] response.data.data =', JSON.stringify(response.data.data, null, 2));
     // Mapping pour compatibilité front : extrait les champs attendus à la racine
     const listings = (response.data.data?.content || []).map((item: any) => ({
       id: item.id,
@@ -116,7 +113,29 @@ export const updateListing = async (id: string, token: string, body: UpdateListi
         "Content-Type": "application/json",
       },
     });
-    return response.data;
+    // Mapping pour compatibilité front : extrait les champs attendus à la racine
+    const item = (response.data as { data: any }).data;
+    return {
+      id: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      type: item.type,
+      category: item.category,
+      status: item.status,
+      latitude: item.location?.latitude ?? null,
+      longitude: item.location?.longitude ?? null,
+      address: item.location?.address ?? '',
+      city: item.location?.city ?? '',
+      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      contactPhone: item.contactInfo?.phone ?? '',
+      contactEmail: item.contactInfo?.email ?? '',
+      userId: item.user?.id ?? item.userId ?? '',
+      owner: item.user ?? item.owner ?? null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      resolvedAt: item.resolvedAt,
+    };
   } catch (error) {
     throw error;
   }

@@ -60,7 +60,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const profile = await getUserProfile('me', accessToken);
           if (profile) userProfile = profile;
         } catch (err) {
-          console.log('[AuthContext] Erreur lors de getUserProfile:', err);
         }
       }
       if (userProfile) {

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, ActivityIndicator, TouchableOpacity, Image, Platform, ScrollView } from "react-native";
+import { Picker } from '@react-native-picker/picker';
 import { componentStyles, colors, spacing } from '../theme';
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { Ionicons } from '@expo/vector-icons';
@@ -41,6 +42,21 @@ interface CreateListingFormProps {
 const CreateListingForm: React.FC<CreateListingFormProps> = ({
   title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, image, setImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
 }) => {
+  const categories = [
+    { label: 'Électronique', value: 'electronics' },
+    { label: 'Vêtements', value: 'clothing' },
+    { label: 'Accessoires', value: 'accessories' },
+    { label: 'Documents', value: 'documents' },
+    { label: 'Clés', value: 'keys' },
+    { label: 'Autre', value: 'other' },
+  ];
+  const [categoryError, setCategoryError] = React.useState<string | null>(null);
+
+  const handleCategoryChange = (itemValue: string) => {
+    setCategory(itemValue);
+    if (itemValue && itemValue.trim() !== "") setCategoryError(null);
+  };
+
   return (
     <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
       <FloatingLogoutButton onLogout={onLogout} />
@@ -76,12 +92,21 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
         onChangeText={setDescription}
         multiline
       />
-      <TextInput
-        style={[componentStyles.input, { marginBottom: spacing.sm }]}
-        placeholder="Catégorie (ex: électronique, vêtement...)"
-        value={category}
-        onChangeText={setCategory}
-      />
+      <View style={{ marginBottom: spacing.sm, width: '100%' }}>
+        <Picker
+          selectedValue={category}
+          onValueChange={handleCategoryChange}
+          style={{ backgroundColor: '#f5f5f5', borderRadius: 8 }}
+        >
+          <Picker.Item label="Choisir une catégorie..." value="" />
+          {categories.map((cat) => (
+            <Picker.Item key={cat.value} label={cat.label} value={cat.value} />
+          ))}
+        </Picker>
+        {categoryError && (
+          <Text style={{ color: colors.error, marginTop: 2 }}>{categoryError}</Text>
+        )}
+      </View>
       <TextInput
         style={[componentStyles.input, { marginBottom: spacing.sm }]}
         placeholder="Ville"

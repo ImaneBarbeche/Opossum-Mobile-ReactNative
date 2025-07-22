@@ -11,7 +11,9 @@ import {
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { getListingDetails } from "../services/annonce.service";
+import { getListingDetails, updateListing } from "../services/annonce.service";
+import { getValidAccessToken } from "../services/token.helper";
+import EditListingModal from "../components/EditListingModal";
 
 type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 
@@ -23,7 +25,9 @@ const ObjectDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const isOwner = user?.id === data.user?.id || user?.id === data.userId;
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  // On ne calcule isOwner que si data est défini
+  const isOwner = data && (user?.id === data.user?.id || user?.id === data.userId);
   useEffect(() => {
     setLoading(true);
     getListingDetails(id)
@@ -100,14 +104,35 @@ const ObjectDetailScreen = () => {
       <Text style={{ fontSize: 16, marginBottom: 10, color: colors.darkGray }}>
         {data.description}
       </Text>
+      {isOwner && (
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.primary,
+            borderRadius: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            alignSelf: 'flex-end',
+            marginBottom: 10,
+          }}
+          onPress={() => setEditModalVisible(true)}
+        >
+          <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 15 }}>Modifier</Text>
+        </TouchableOpacity>
+      )}
       <View style={{ marginBottom: 10 }}>
         <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
-        <Text>
-          {data.location.address}, {data.location.city}
-        </Text>
-        <Text>
-          Lat: {data.location.latitude} / Long: {data.location.longitude}
-        </Text>
+        {data.location ? (
+          <>
+            <Text>
+              {data.location.address || ''}{data.location.address && data.location.city ? ', ' : ''}{data.location.city || ''}
+            </Text>
+            <Text>
+              Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
+            </Text>
+          </>
+        ) : (
+          <Text>Non renseigné</Text>
+        )}
       </View>
       {!isOwner && data.user && (
         <View style={{ marginBottom: 10 }}>
@@ -183,6 +208,39 @@ const ObjectDetailScreen = () => {
       <Text style={{ color: colors.darkGray, marginTop: 10 }}>
         Créée le : {new Date(data.createdAt).toLocaleString()}
       </Text>
+      <EditListingModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        listing={{
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          status: data.status,
+        }}
+        onSave={async (fields) => {
+          try {
+            setLoading(true);
+            // Récupère le token d'accès valide
+            const token = await getValidAccessToken();
+            if (!token) throw new Error('Token manquant');
+            // Cast du status pour correspondre au type attendu
+            const body = {
+              ...fields,
+              status: fields.status as "ACTIVE" | "RESOLVED"
+            };
+            const updated = await updateListing(data.id, token, body);
+            setData(updated);
+            setEditModalVisible(false);
+          } catch (e: any) {
+            let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la modification';
+            if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
+            Alert.alert('Erreur', backendMsg);
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
     </View>
   );
 };

@@ -88,17 +88,7 @@ const ListingScreen: React.FC = () => {
           <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>{item.title}</Text>
           <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>{item.description}</Text>
         </View>
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity onPress={() => {
-            setSelectedListing({ ...item });
-            setEditModalVisible(true);
-          }}>
-            <Ionicons name="create-outline" size={22} color={colors.primary} style={{ marginLeft: 12 }} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id)}>
-            <Ionicons name="trash-outline" size={22} color={colors.error} style={{ marginLeft: 12 }} />
-          </TouchableOpacity>
-        </View>
+        {/* Boutons édition et corbeille supprimés */}
       </View>
       <Text style={{ fontSize: 14, fontWeight: 'bold', color: item.type === 'LOST' ? colors.error : colors.primary }}>
         {item.type === 'LOST' ? 'Objet perdu' : 'Objet trouvé'}
