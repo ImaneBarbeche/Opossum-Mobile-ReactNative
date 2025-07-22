@@ -1,14 +1,3 @@
-// Fonction mock pour récupérer les détails d'une annonce
-import { getMockListingDetails } from "./mockApi";
-
-export const getListingDetailsMock = async (id: string) => {
-  // Simule un appel asynchrone
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(getMockListingDetails(id));
-    }, 300);
-  });
-};
 
 // Service pour la gestion des annonces
 
@@ -41,8 +30,32 @@ export const getMyListings = async (
       },
       params,
     });
-    // Retourne le tableau d'annonces (data.content)
-    return response.data.data.content;
+    // Log la structure brute pour debug
+    console.log('[getMyListings] response.data =', JSON.stringify(response.data, null, 2));
+    console.log('[getMyListings] response.data.data =', JSON.stringify(response.data.data, null, 2));
+    // Mapping pour compatibilité front : extrait les champs attendus à la racine
+    const listings = (response.data.data?.content || []).map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      type: item.type,
+      category: item.category,
+      status: item.status,
+      latitude: item.location?.latitude ?? null,
+      longitude: item.location?.longitude ?? null,
+      address: item.location?.address ?? '',
+      city: item.location?.city ?? '',
+      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      contactPhone: item.contactInfo?.phone ?? '',
+      contactEmail: item.contactInfo?.email ?? '',
+      userId: item.userId ?? '',
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      resolvedAt: item.resolvedAt,
+      owner: item.owner,
+    }));
+    return listings;
   } catch (error) {
     throw error;
   }
@@ -67,7 +80,29 @@ export const getListingDetails = async (id: string, token?: string) => {
     const response = await axios.get(ANNOUNCE_ENDPOINTS.listingDetailsById(id), {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
-    return (response.data as { data: Listing }).data;
+    const item = (response.data as { data: any }).data;
+    // Mapping pour compatibilité front : extrait les champs attendus à la racine
+    return {
+      id: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      type: item.type,
+      category: item.category,
+      status: item.status,
+      latitude: item.location?.latitude ?? null,
+      longitude: item.location?.longitude ?? null,
+      address: item.location?.address ?? '',
+      city: item.location?.city ?? '',
+      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      contactPhone: item.contactInfo?.phone ?? '',
+      contactEmail: item.contactInfo?.email ?? '',
+      userId: item.user?.id ?? item.userId ?? '',
+      owner: item.user ?? item.owner ?? null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      resolvedAt: item.resolvedAt,
+    };
   } catch (error) {
     throw error;
   }

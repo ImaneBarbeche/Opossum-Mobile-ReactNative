@@ -17,8 +17,7 @@ const CreateListingScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  const [latitude, setLatitude] = useState<string>("");
-  const [longitude, setLongitude] = useState<string>("");
+  // latitude/longitude supprimés du state, gérés côté back si GPS activé
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -63,38 +62,30 @@ const CreateListingScreen: React.FC = () => {
       setError(validation.error || "Erreur inconnue.");
       return;
     }
-    // Validation géoloc/adresse obligatoire
-    const hasLatLng = latitude && longitude;
-    const hasAddress = address && city;
-    if (!hasLatLng && !hasAddress) {
-      setError("Veuillez renseigner soit la latitude/longitude, soit une adresse et une ville.");
-      setIsLoading(false);
-      return;
-    }
     setIsLoading(true);
     setError(null);
     try {
       if (!token || !user) throw new Error("Utilisateur non authentifié.");
-      // Always send latitude/longitude, defaulting to 0 if missing, to satisfy backend NOT NULL constraints
-      const lat = latitude ? Number(latitude) : 0;
-      const lng = longitude ? Number(longitude) : 0;
+      // Construction du body selon la spec :
+      // - Si GPS activé, le back gérera la géoloc
+      // - Sinon, on envoie l'adresse et la ville
+      const location: any = { city };
+      if (useCurrentLocation) {
+        // Le back détectera la position GPS automatiquement
+      } else {
+        location.address = address;
+      }
       const body = {
         title,
         description,
         type: type as "LOST" | "FOUND",
         category,
-        location: {
-          latitude: lat,
-          longitude: lng,
-          address: address || undefined,
-          city: city,
-        },
+        location,
         contactInfo: {
           phone: user.phone || undefined,
           email: user.email || undefined,
         },
         photos: image ? [image] : [],
-        useCurrentLocation,
       };
       await createListing(token, body);
       Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce créée !' });
@@ -134,10 +125,6 @@ const CreateListingScreen: React.FC = () => {
         setAddress={setAddress}
         city={city}
         setCity={setCity}
-        latitude={latitude}
-        setLatitude={setLatitude}
-        longitude={longitude}
-        setLongitude={setLongitude}
         useCurrentLocation={useCurrentLocation}
         setUseCurrentLocation={setUseCurrentLocation}
         date={date}

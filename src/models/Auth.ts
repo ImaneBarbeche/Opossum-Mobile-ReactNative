@@ -5,9 +5,11 @@ import { User } from "./User";
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;
-  user: User;
+  user?: User; // Devient optionnel
   expiresIn?: number;
   timestamp?: string;
+  accessToken?: string;
+  data?: any;
 }
 
 export interface AuthContextType {

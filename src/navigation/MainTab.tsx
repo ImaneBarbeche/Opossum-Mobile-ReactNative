@@ -25,7 +25,12 @@ const MainTab = () => (
       tabBarStyle: {
         backgroundColor: '#d6ecd8', // vert très clair
         borderTopWidth: 0.5,
-        height: 65, // Hauteur de la barre d'onglets
+        height: 65, // Hauteur standard
+        paddingBottom: 0,
+      },
+      tabBarItemStyle: {
+        justifyContent: 'center',
+        alignItems: 'center',
       },
       tabBarLabelStyle: {
         fontSize: 12,
@@ -34,23 +39,18 @@ const MainTab = () => (
             // Définition de l'icône pour chaque onglet selon son nom
       tabBarIcon: ({ color, size, focused }) => {
         if (route.name === 'Mes annonces') {
-                    // Onglet "Mes annonces" : icône clipboard-list
           return <FontAwesome5 name="clipboard-list" size={24} color={color} />;
         }
         if (route.name === 'Carte') {
-                    // Onglet "Carte" : icône map-pin
           return <Feather name="map-pin" size={24} color={color} />;
         }
         if (route.name === 'Ajouter') {
-                    // Onglet central "Ajouter" : gros bouton +
-          return <Ionicons name="add-circle" size={36} color={focused ? '#2e7d32' : '#222'} style={{ marginTop: -8 }} />;
+          return <Ionicons name="add-circle" size={40} color={focused ? '#2e7d32' : '#222'} style={{ marginTop: -8 }} />;
         }
         if (route.name === 'Messages') {
-                    // Onglet "Messages" : icône send
           return <Feather name="send" size={24} color={color} />;
         }
         if (route.name === 'Profil') {
-                    // Onglet "Profil" : icône user
           return <Feather name="user" size={24} color={color} />;
         }
         return null;
@@ -63,10 +63,6 @@ const MainTab = () => (
     <Tab.Screen name="Ajouter" component={CreateListingScreen}
       options={{
         tabBarLabel: '', // Pas de label sous le bouton +
-        tabBarIcon: ({ color, size, focused }) => (
-                    // Icône + plus grande et centrée
-          <Ionicons name="add-circle" size={48} color={focused ? '#2e7d32' : '#222'} style={{ marginTop: -16 }} />
-        ),
       }}
     />
     <Tab.Screen name="Messages" component={ChatScreen} />

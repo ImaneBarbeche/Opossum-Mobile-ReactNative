@@ -49,41 +49,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const response: AuthResponse = await login(data);
-      // Les tokens sont déjà stockés dans le service login
-      // On synchronise le profil utilisateur depuis le backend
-      try {
-        // On récupère le token d'accès depuis AsyncStorage
-        const accessToken = await AsyncStorage.getItem("access_token");
-        setToken(accessToken);
-        let userData = response.user;
-        if (accessToken) {
+      // On récupère le token depuis la réponse du service login
+      const accessToken = response.access_token || response.accessToken;
+      setToken(accessToken ?? null);
+      let userProfile = null;
+      if (accessToken) {
+        try {
           // Import dynamique pour éviter les cycles
-          const { fetchCurrentUserProfile } = await import(
-            "../services/user.service"
-          );
-          const profile = await fetchCurrentUserProfile(accessToken);
-          if (profile) userData = profile;
+          const { getUserProfile } = await import("../services/user.service");
+          const profile = await getUserProfile('me', accessToken);
+          if (profile) userProfile = profile;
+        } catch (err) {
+          console.log('[AuthContext] Erreur lors de getUserProfile:', err);
         }
-        // Normalisation : toujours fournir les champs attendus
-        const userToSet = {
-          ...userData,
-          firstName: userData.firstName != null ? userData.firstName : "",
-          lastName: userData.lastName != null ? userData.lastName : "",
-          avatar: userData.avatar != null ? String(userData.avatar) : "",
-          phone: userData.phone != null ? String(userData.phone) : "",
-        };
-        setUser(userToSet);
-      } catch (e) {
-        const userData = response.user;
-        setUser({
-          ...userData,
-          firstName: userData.firstName ?? "",
-          lastName: userData.lastName ?? "",
-          avatar: userData.avatar ?? "",
-          phone: userData.phone ?? "",
-        });
-        setToken(null);
       }
+      if (userProfile) {
+        setUser(userProfile);
+      } else {
+        // fallback : on tente de setUser avec la réponse brute
+        setUser(response.user ?? null);
+      }
+    } catch (e) {
+      setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }

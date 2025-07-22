@@ -1,13 +1,37 @@
 // Récupère un profil utilisateur (privé ou public)
 export const getUserProfile = async (id: string, token?: string) => {
   // id = 'me' pour profil privé, sinon UUID pour public
-  const url = `${USER_ENDPOINTS.me.replace('/me', '')}/${id}`;
+  const url = id === 'me' ? USER_ENDPOINTS.me : `${USER_ENDPOINTS.me.replace('/me', '')}/${id}`;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const response = await fetch(url, { method: 'GET', headers });
   const result = await response.json();
+  console.log('Profil utilisateur récupéré:', result);
   if (!response.ok || !result.success) throw new Error(result?.error?.message || 'Erreur lors de la récupération du profil');
-  return result.data;
+  const data = result.data;
+  if (!data || typeof data !== 'object') {
+    console.log('[getUserProfile] Données reçues invalides:', data);
+    return null;
+  }
+  // Log détaillé de chaque champ reçu
+  console.log('[getUserProfile] Champs reçus:', Object.keys(data));
+  console.log('[getUserProfile] Valeurs reçues:', data);
+  const mappedUser = {
+    id: data.id,
+    email: data.email ?? '',
+    isEmailVerified: data.emailVerified ?? data.isEmailVerified ?? true,
+    firstName: data.firstName ?? data.firstname ?? '',
+    lastName: data.lastName ?? data.lastname ?? '',
+    isActive: data.active ?? data.isActive ?? true,
+    role: (data.role ?? 'user').toLowerCase(),
+    createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+    updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+    phone: data.phone != null ? String(data.phone) : '',
+    avatar: data.avatar ?? data.avatarUrl ?? '',
+    lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
+  };
+  console.log('[getUserProfile] Utilisateur mappé:', mappedUser);
+  return mappedUser;
 };
 // Service pour la gestion des utilisateurs
 // Récupère le profil utilisateur connecté

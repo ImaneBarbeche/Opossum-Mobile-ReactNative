@@ -1,3 +1,9 @@
+import { AUTH_ENDPOINTS } from '../config/api'; // pour auth.service.ts
+import { handleNetworkError } from '../utils/networkErrorHandler';
+import { AuthResponse, LoginRequest } from "../models/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getValidAccessToken } from './token.helper';
+
 // Décodage simple du JWT (compatible React Native, sans Buffer)
 function decodeJWT(token: string): any {
   try {
@@ -10,24 +16,16 @@ function decodeJWT(token: string): any {
         .split('')
         .map(function(c) {
           return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
+        })  
         .join('')
-    );
+    );    
     return JSON.parse(decoded);
   } catch (e) {
     return null;
-  }
-}
-import { AUTH_ENDPOINTS } from '../config/api'; // pour auth.service.ts
-import { handleNetworkError } from '../utils/networkErrorHandler';
-// Service pour l'authentification
-import { User } from "../models/User";
-import { AuthResponse, LoginRequest } from "../models/Auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getValidAccessToken } from './token.helper';
+  }  
+}  
 
-
-// Fonction login mockée ou réelle
+// Fonction login 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
   try {
     // Appel au backend réel
@@ -48,73 +46,36 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
       throw new Error(errorMsg);
     }
 
-    // Adaptation : si le backend ne retourne pas la structure attendue, adapte ici
-    // Correction : si le backend retourne directement les infos user à la racine
-    let userData = result.data?.user || result.user;
-    if (!userData) {
-      // Si pas d'objet user, on tente de décoder le JWT pour extraire les infos
-      const accessToken = result.data?.accessToken || result.accessToken;
-      if (accessToken) {
-        const decoded = decodeJWT(accessToken);
-        if (decoded) {
-          userData = {
-            id: decoded.sub,
-            email: decoded.email,
-            isEmailVerified: true,
-            firstName: decoded.firstName || '',
-            lastName: decoded.lastName || '',
-            role: decoded.role || 'user',
-          };
-        }
-      }
-    }
-    if (!userData) {
-      throw new Error("Aucune donnée utilisateur reçue depuis le backend. Impossible de se connecter.");
-    }
-    const tokens = result.data?.tokens || {
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-      expiresIn: result.expiresIn,
-    };
+    // Le backend ne retourne que les tokens, pas d'objet user
+    const tokens = result.data || result;
+    const accessToken = tokens.accessToken;
+    const refreshToken = tokens.refreshToken;
+    const expiresIn = tokens.expiresIn;
 
-    if (tokens.accessToken !== null && tokens.accessToken !== undefined) {
-      await AsyncStorage.setItem("access_token", tokens.accessToken);
+    if (accessToken !== null && accessToken !== undefined) {
+      await AsyncStorage.setItem("access_token", accessToken);
     }
-    if (tokens.refreshToken !== null && tokens.refreshToken !== undefined) {
-      await AsyncStorage.setItem("refresh_token", tokens.refreshToken);
+    if (refreshToken !== null && refreshToken !== undefined) {
+      await AsyncStorage.setItem("refresh_token", refreshToken);
     }
-    // Stocke la date d'expiration réelle si fournie
-    if (tokens.expiresIn) {
-      const expiresAt = (Date.now() + tokens.expiresIn * 1000).toString();
+    if (expiresIn) {
+      const expiresAt = (Date.now() + expiresIn * 1000).toString();
       if (expiresAt !== null && expiresAt !== undefined) {
         await AsyncStorage.setItem('access_token_expires_at', expiresAt);
       }
     }
 
     return {
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
-      user: {
-        id: userData.id,
-        email: userData.email,
-        isEmailVerified: userData.isEmailVerified ?? true,
-        lastLoginAt: new Date(result.timestamp),
-        firstName: userData.firstName != null ? userData.firstName : "",
-        lastName: userData.lastName != null ? userData.lastName : "",
-        avatar: userData.avatar != null ? String(userData.avatar) : "",
-        phone: userData.phone != null ? String(userData.phone) : "",
-        isActive: true,
-        role: userData.role?.toLowerCase() || "user",
-        createdAt: new Date(result.timestamp),
-        updatedAt: new Date(result.timestamp),
-      },
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expiresIn,
     };
   } catch (error) {
     handleNetworkError(error);
     throw error;
   }
 }
-// Fonction de déconnexion mockée ou réelle
+// Fonction de déconnexion
 export async function logout(): Promise<{ message: string }> {
   try {
     // En backend réel, on récupère le refreshToken et accessToken

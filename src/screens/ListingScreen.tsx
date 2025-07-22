@@ -2,6 +2,7 @@ import Toast from 'react-native-toast-message';
 // Accueil après connexion
 
 import React, { useEffect, useState, useRef } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, Image as RNImage } from "react-native";
 import { componentStyles, colors, spacing, typography } from '../theme';
 import { useAuth } from "../context/AuthContext";
@@ -22,23 +23,25 @@ const ListingScreen: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
-  useEffect(() => {
-    const fetchListings = async () => {
-      if (!token) return;
-      setIsLoading(true);
-      try {
-        const data = await getMyListings(token);
-        // Trie par date décroissante
-        const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setAnnonces(sorted);
-      } catch (e: any) {
-        setError(e.message || 'Erreur lors du chargement des annonces');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchListings();
-  }, [token]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchListings = async () => {
+        if (!token) return;
+        setIsLoading(true);
+        try {
+          const data = await getMyListings(token);
+          // Trie par date décroissante
+          const sorted = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setAnnonces(sorted);
+        } catch (e: any) {
+          setError(e.message || 'Erreur lors du chargement des annonces');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchListings();
+    }, [token])
+  );
 
   const handleDelete = (id: string) => {
     Alert.alert("Confirmation", "Supprimer cette annonce ?", [

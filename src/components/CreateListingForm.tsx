@@ -18,10 +18,7 @@ interface CreateListingFormProps {
   setAddress: (v: string) => void;
   city: string;
   setCity: (v: string) => void;
-  latitude: string;
-  setLatitude: (v: string) => void;
-  longitude: string;
-  setLongitude: (v: string) => void;
+  // latitude/longitude supprimés
   useCurrentLocation: boolean;
   setUseCurrentLocation: (v: boolean) => void;
   date: Date;
@@ -42,7 +39,7 @@ interface CreateListingFormProps {
 }
 
 const CreateListingForm: React.FC<CreateListingFormProps> = ({
-  title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, latitude, setLatitude, longitude, setLongitude, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, image, setImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
+  title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, image, setImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
 }) => {
   return (
     <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
@@ -91,20 +88,7 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
         value={city}
         onChangeText={setCity}
       />
-      <TextInput
-        style={[componentStyles.input, { marginBottom: spacing.sm }]}
-        placeholder="Latitude (optionnel)"
-        value={latitude}
-        onChangeText={setLatitude}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={[componentStyles.input, { marginBottom: spacing.sm }]}
-        placeholder="Longitude (optionnel)"
-        value={longitude}
-        onChangeText={setLongitude}
-        keyboardType="numeric"
-      />
+      {/* Champs latitude/longitude supprimés, gérés automatiquement si GPS activé */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
         <Text style={{ marginRight: 8 }}>Utiliser la localisation GPS</Text>
         <TouchableOpacity
