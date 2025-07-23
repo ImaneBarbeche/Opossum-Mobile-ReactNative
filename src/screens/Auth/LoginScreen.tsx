@@ -9,6 +9,7 @@ import Loader from '../../components/Loader';
 import ScreenBackground from '../../components/ScreenBackground';
 
 import { validateLoginForm } from '../../utils/loginValidation';
+// import LoginScanButton from '../../components/LoginScanButton';
 
 /**
  * Écran de connexion (LoginScreen)
@@ -41,9 +42,9 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   return (
-	  <>
-		{loading && <Loader visible={loading} />}
-		<View style={{
+	<>
+	  {loading && <Loader visible={loading} />}
+	  <View style={{
 		backgroundColor: 'rgba(255,255,255,0.85)',
 		borderRadius: 24,
 		padding: spacing.xl,
@@ -55,9 +56,9 @@ const LoginScreen = ({ navigation }: any) => {
 		width: '90%',
 		maxWidth: 400,
 		alignSelf: 'center',
-		  }}>
-			<Image source={require('../../../assets/icons/icone.png')} style={{ width: 80, height: 80, marginBottom: spacing.md }} resizeMode="contain" />
-			<Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.black, textAlign: 'center', marginBottom: spacing.lg, fontFamily: 'sans-serif' }}>Retrouv'It</Text>
+	  }}>
+		<Image source={require('../../../assets/icons/icone.png')} style={{ width: 80, height: 80, marginBottom: spacing.md }} resizeMode="contain" />
+		<Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.black, textAlign: 'center', marginBottom: spacing.lg, fontFamily: 'sans-serif' }}>Retrouv'It</Text>
 		<View style={{ width: '100%', alignSelf: 'center' }}>
 		  {/* Champ email */}
 		  <Text style={{ ...(typography.body || {}), marginBottom: spacing.sm }}>Email :</Text>
@@ -136,9 +137,10 @@ const LoginScreen = ({ navigation }: any) => {
 		  >
 			<Text style={{ color: colors.buttonTextPrimary, ...(typography.button || {}), fontWeight: 'bold' }}>S'inscrire</Text>
 		  </TouchableOpacity>
+		  {/* Bouton Scanner QR code supprimé */}
 		</View>
-		</View>
-	  </>
+	  </View>
+	</>
   );
 };
 

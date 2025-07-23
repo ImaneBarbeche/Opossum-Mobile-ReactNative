@@ -18,6 +18,8 @@
     "@react-navigation/stack": "^7.4.2",
     "axios": "^1.10.0",
     "expo": "~53.0.20",
+    "expo-barcode-scanner": "^12.9.3",
+    "expo-camera": "~16.1.11",
     "expo-image-picker": "~16.1.4",
     "expo-linking": "~7.1.7",
     "expo-location": "~18.1.6",
@@ -25,7 +27,9 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-maps": "1.20.1",
+    "react-native-qrcode-scanner": "^1.5.5",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-toast-message": "^2.3.3"
