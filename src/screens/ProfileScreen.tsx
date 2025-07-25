@@ -88,6 +88,7 @@ const ProfileScreen: React.FC = () => {
       try {
         const { fetchCurrentUserProfile } = await import("../services/user.service");
         const updatedProfile = await fetchCurrentUserProfile(token);
+        console.log('Avatar après update:', updatedProfile?.avatar);
         if (updatedProfile) {
           setUser(updatedProfile);
         }
@@ -196,8 +197,8 @@ const ProfileScreen: React.FC = () => {
                 const { uploadFile } = await import('../services/files.service');
                 const uploadRes = await uploadFile(pickerResult.assets[0].uri, token);
                 console.log('Avatar upload response:', uploadRes);
-                if (uploadRes.url) {
-                  setAvatar(uploadRes.url);
+                if (uploadRes.data && uploadRes.data.url) {
+                  setAvatar(uploadRes.data.url);
                   Toast.show({ type: 'success', text1: 'Avatar mis à jour', text2: 'Votre photo de profil a été changée.' });
                 } else {
                   throw new Error(uploadRes.message || 'Erreur upload');
@@ -221,7 +222,7 @@ const ProfileScreen: React.FC = () => {
             style={{ alignSelf: 'center' }}
             accessibilityLabel={editMode ? 'Changer l’avatar' : 'Avatar'}
           >
-            <ProfileAvatar avatarUrl={avatar} firstName={firstName} />
+            <ProfileAvatar avatarUrl={user?.avatar} firstName={user?.firstName} />
             {avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Chargement...</Text>}
             {editMode && !avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Changer l’avatar</Text>}
           </TouchableOpacity>
@@ -317,5 +318,5 @@ const ProfileScreen: React.FC = () => {
     </>
   );
 }
-  
+
 export default ProfileScreen;
