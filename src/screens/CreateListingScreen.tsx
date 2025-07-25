@@ -1,13 +1,13 @@
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 // Formulaire pour déclarer un objet trouvé
 import React, { useState } from "react";
 import { View, Text, Alert, ScrollView } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import CreateListingForm from "../components/CreateListingForm";
-import { createListing } from "../services/annonce.service";
-import * as ImagePicker from 'expo-image-picker';
-import { validateCreateListingForm } from '../utils/createListingValidation';
+import { createListing } from "../services/listing.service";
+import * as ImagePicker from "expo-image-picker";
+import { validateCreateListingForm } from "../utils/createListingValidation";
 
 const CreateListingScreen: React.FC = () => {
   const { token, user, logout } = useAuth();
@@ -88,7 +88,11 @@ const CreateListingScreen: React.FC = () => {
         photos: image ? [image] : [],
       };
       await createListing(token, body);
-      Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce créée !' });
+      Toast.show({
+        type: "success",
+        text1: "Succès",
+        text2: "Annonce créée !",
+      });
       setTitle("");
       setType("");
       setDescription("");
@@ -103,15 +107,31 @@ const CreateListingScreen: React.FC = () => {
 
   if (!token) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
-        <Text style={{ color: "red", fontSize: 18, marginBottom: 16 }}>Vous devez être connecté pour créer une annonce.</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 16,
+        }}
+      >
+        <Text style={{ color: "red", fontSize: 18, marginBottom: 16 }}>
+          Vous devez être connecté pour créer une annonce.
+        </Text>
         <FloatingLogoutButton onLogout={logout} />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#eae6d6' }}>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#eae6d6",
+      }}
+    >
       <CreateListingForm
         title={title}
         setTitle={setTitle}
@@ -146,7 +166,5 @@ const CreateListingScreen: React.FC = () => {
     </ScrollView>
   );
 };
-
-
 
 export default CreateListingScreen;

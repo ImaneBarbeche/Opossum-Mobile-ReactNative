@@ -20,6 +20,7 @@ const MainTab = () => {
 
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: "#2e7d32",

@@ -36,14 +36,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
 
   // Debug: log user and token changes
-  React.useEffect(() => {
-  }, [user]);
-  React.useEffect(() => {
-  }, [token]);
+  React.useEffect(() => {}, [user]);
+  React.useEffect(() => {}, [token]);
 
   /**
    * Fonction login
    * Appelle le service login, met à jour l'utilisateur et l'état loading
+   * Bloque l'accès si l'utilisateur n'est pas ACTIVE
    */
   const handleLogin = async (data: LoginRequest) => {
     setLoading(true);
@@ -57,20 +56,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Import dynamique pour éviter les cycles
           const { getUserProfile } = await import("../services/user.service");
-          const profile = await getUserProfile('me', accessToken);
+          const profile = await getUserProfile("me", accessToken);
           if (profile) userProfile = profile;
-        } catch (err) {
-        }
+        } catch (err) {}
       }
-      if (userProfile) {
-        setUser(userProfile);
+      // Vérifie le statut utilisateur (ACTIVE uniquement)
+      const effectiveUser = userProfile ?? response.user ?? null;
+      if (effectiveUser) {
+        if (effectiveUser.status && effectiveUser.status !== "ACTIVE") {
+          // Si BLOCKED ou DELETED : refuse la connexion
+          setUser(null);
+          setToken(null);
+          throw new Error(
+            effectiveUser.status === "BLOCKED"
+              ? "Votre compte est bloqué."
+              : "Ce compte a été supprimé."
+          );
+        } else {
+          setUser({
+            ...effectiveUser,
+            status: "ACTIVE",
+          });
+        }
       } else {
-        // fallback : on tente de setUser avec la réponse brute
-        setUser(response.user ?? null);
+        setUser(null);
       }
     } catch (e) {
       setUser(null);
       setToken(null);
+      // Optionnel: gérer le retour d'erreur pour affichage UI
+      // (ex: setError(e.message) dans un state additionnel)
     } finally {
       setLoading(false);
     }
@@ -79,20 +94,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /**
    * Fonction register
    * Appelle le service register, complète l'objet user pour matcher le type User
+   * (Par défaut, nouveau user est ACTIVE)
    */
   const handleRegister = async (data: RegisterRequest) => {
     setLoading(true);
     try {
       const response: RegisterResponse = await register(data);
       // Utilise strictement la réponse backend
-      const userToSet = {
+      const userToSet: User = {
         ...response.user,
+        status: "ACTIVE",
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        firstName: response.user.firstName != null ? response.user.firstName : "",
+        firstName:
+          response.user.firstName != null ? response.user.firstName : "",
         lastName: response.user.lastName != null ? response.user.lastName : "",
-        avatar: response.user.avatar != null ? String(response.user.avatar) : "",
+        avatar:
+          response.user.avatar != null ? String(response.user.avatar) : "",
         phone: response.user.phone != null ? String(response.user.phone) : "",
       };
       setUser(userToSet);
@@ -124,19 +143,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const setIsAuthenticated = (value: boolean) => {
     if (value) {
       // Simule un utilisateur connecté minimal (à adapter selon ton modèle User)
-      const userToSet = {
+      const userToSet: User = {
         id: "temp",
         email: "",
         firstName: "",
         lastName: "",
         isActive: true,
+        status: "ACTIVE",
         role: "USER",
         createdAt: new Date(),
         updatedAt: new Date(),
         isEmailVerified: false,
         lastLoginAt: new Date(),
         phone: "",
-        address: "",
         avatar: "",
       };
       setUser(userToSet);
@@ -146,7 +165,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, token, login: handleLogin, register: handleRegister, logout: handleLogout, setIsAuthenticated, setUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user && user.status === "ACTIVE",
+        loading,
+        token,
+        login: handleLogin,
+        register: handleRegister,
+        logout: handleLogout,
+        setIsAuthenticated,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

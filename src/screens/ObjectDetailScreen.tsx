@@ -11,8 +11,12 @@ import {
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { Ionicons } from '@expo/vector-icons';
-import { getListingDetails, updateListing, deleteListing } from "../services/annonce.service";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  getListingDetails,
+  updateListing,
+  deleteListing,
+} from "../services/listing.service";
 import { getValidAccessToken } from "../services/token.helper";
 import EditListingModal from "../components/EditListingModal";
 
@@ -28,7 +32,8 @@ const ObjectDetailScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   // On ne calcule isOwner que si data est défini
-  const isOwner = data && (user?.id === data.user?.id || user?.id === data.userId);
+  const isOwner =
+    data && (user?.id === data.user?.id || user?.id === data.userId);
   useEffect(() => {
     setLoading(true);
     getListingDetails(id)
@@ -70,13 +75,21 @@ const ObjectDetailScreen = () => {
             margin: 16,
             backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
             padding: 24,
-            justifyContent: 'flex-start',
+            justifyContent: "flex-start",
           },
         ]}
       >
         {/* Boutons d'action en haut à droite */}
         {isOwner && (
-          <View style={{ position: 'absolute', top: 18, right: 18, flexDirection: 'row', zIndex: 10 }}>
+          <View
+            style={{
+              position: "absolute",
+              top: 18,
+              right: 18,
+              flexDirection: "row",
+              zIndex: 10,
+            }}
+          >
             <TouchableOpacity
               style={{
                 backgroundColor: colors.primary,
@@ -84,9 +97,9 @@ const ObjectDetailScreen = () => {
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 marginRight: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#000",
                 shadowOpacity: 0.08,
                 shadowRadius: 4,
                 elevation: 2,
@@ -101,39 +114,47 @@ const ObjectDetailScreen = () => {
                 borderRadius: 8,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#000",
                 shadowOpacity: 0.08,
                 shadowRadius: 4,
                 elevation: 2,
               }}
               onPress={async () => {
                 Alert.alert(
-                  'Supprimer l\'annonce',
-                  'Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.',
+                  "Supprimer l'annonce",
+                  "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
                   [
-                    { text: 'Annuler', style: 'cancel' },
+                    { text: "Annuler", style: "cancel" },
                     {
-                      text: 'Supprimer',
-                      style: 'destructive',
+                      text: "Supprimer",
+                      style: "destructive",
                       onPress: async () => {
                         try {
                           setLoading(true);
                           const token = await getValidAccessToken();
-                          if (!token) throw new Error('Token manquant');
+                          if (!token) throw new Error("Token manquant");
                           await deleteListing(data.id, token);
-                          Alert.alert('Succès', 'Annonce supprimée avec succès');
+                          Alert.alert(
+                            "Succès",
+                            "Annonce supprimée avec succès"
+                          );
                           navigation.goBack();
                         } catch (e: any) {
-                          let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la suppression';
-                          if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
-                          Alert.alert('Erreur', backendMsg);
+                          let backendMsg =
+                            e?.response?.data?.message ||
+                            e?.response?.data?.error ||
+                            e.message ||
+                            "Erreur lors de la suppression";
+                          if (typeof backendMsg !== "string")
+                            backendMsg = JSON.stringify(backendMsg);
+                          Alert.alert("Erreur", backendMsg);
                         } finally {
                           setLoading(false);
                         }
-                      }
-                    }
+                      },
+                    },
                   ]
                 );
               }}
@@ -143,7 +164,7 @@ const ObjectDetailScreen = () => {
           </View>
         )}
         {/* PHOTO CENTRÉE */}
-        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+        <View style={{ alignItems: "center", marginBottom: 16 }}>
           <Image
             source={{ uri: data.photoUrl || "https://via.placeholder.com/120" }}
             style={{
@@ -155,7 +176,11 @@ const ObjectDetailScreen = () => {
             }}
           />
           {/* TITRE CENTRÉ */}
-          <Text style={[typography.h2, { textAlign: 'center', marginBottom: 6 }]}>{data.title}</Text>
+          <Text
+            style={[typography.h2, { textAlign: "center", marginBottom: 6 }]}
+          >
+            {data.title}
+          </Text>
         </View>
         {/* TYPE ET CATÉGORIE CENTRÉS */}
         <Text
@@ -163,47 +188,76 @@ const ObjectDetailScreen = () => {
             fontSize: 15,
             fontWeight: "bold",
             color: data.type === "FOUND" ? colors.primary : colors.error,
-            textAlign: 'center',
+            textAlign: "center",
             marginBottom: 2,
           }}
         >
           {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
         </Text>
-        <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
+        <Text style={{ fontSize: 15, textAlign: "center", marginBottom: 12 }}>
           Catégorie : {data.category}
         </Text>
         {/* DESCRIPTION */}
-        <Text style={{ fontSize: 16, marginBottom: 16, color: colors.darkGray, textAlign: 'center' }}>
+        <Text
+          style={{
+            fontSize: 16,
+            marginBottom: 16,
+            color: colors.darkGray,
+            textAlign: "center",
+          }}
+        >
           {data.description}
         </Text>
         {/* LIEU */}
-        <View style={{ marginBottom: 12, alignItems: 'center' }}>
+        <View style={{ marginBottom: 12, alignItems: "center" }}>
           <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
           {data.location ? (
             <>
-              <Text style={{ textAlign: 'center' }}>
-                {data.location.address || ''}{data.location.address && data.location.city ? ', ' : ''}{data.location.city || ''}
+              <Text style={{ textAlign: "center" }}>
+                {data.location.address || ""}
+                {data.location.address && data.location.city ? ", " : ""}
+                {data.location.city || ""}
               </Text>
-              <Text style={{ textAlign: 'center' }}>
-                Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
+              <Text style={{ textAlign: "center" }}>
+                Lat: {data.location.latitude ?? ""} / Long:{" "}
+                {data.location.longitude ?? ""}
               </Text>
             </>
           ) : (
-            <Text style={{ textAlign: 'center' }}>Non renseigné</Text>
+            <Text style={{ textAlign: "center" }}>Non renseigné</Text>
           )}
         </View>
         {/* DATE */}
-        <Text style={{ color: colors.darkGray, marginBottom: 16, textAlign: 'center' }}>
+        <Text
+          style={{
+            color: colors.darkGray,
+            marginBottom: 16,
+            textAlign: "center",
+          }}
+        >
           Créée le : {new Date(data.createdAt).toLocaleString()}
         </Text>
         {/* PROPRIÉTAIRE */}
         {!isOwner && data.user && (
-          <View style={{ marginBottom: 10, alignItems: 'center' }}>
-            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>Propriétaire :</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'center' }}>
+          <View style={{ marginBottom: 10, alignItems: "center" }}>
+            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
+              Propriétaire :
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Image
                 source={{ uri: data.user.avatar }}
-                style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  marginRight: 10,
+                }}
               />
               <Text>
                 {data.user.firstName} {data.user.lastName}
@@ -245,7 +299,7 @@ const ObjectDetailScreen = () => {
                 onPress={() =>
                   data.user &&
                   navigation.navigate("Messages", {
-                    annonceId: data.id,
+                    listingId: data.id,
                     receiverId: data.user.id,
                   })
                 }
@@ -266,7 +320,6 @@ const ObjectDetailScreen = () => {
       </View>
     </View>
   );
-}
+};
 
 export default ObjectDetailScreen;
-

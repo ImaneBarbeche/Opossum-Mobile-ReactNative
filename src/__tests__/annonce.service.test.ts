@@ -1,9 +1,9 @@
-import * as annonceService from '../services/annonce.service';
+import * as annonceService from '../services/listing.service';
 
 jest.mock('axios');
 const axios = require('axios');
 
-describe('annonce.service', () => {
+describe('listing.service', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });

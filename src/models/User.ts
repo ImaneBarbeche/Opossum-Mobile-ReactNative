@@ -1,4 +1,7 @@
 // Interface TypeScript pour User + les actions de gestion des utilisateurs
+
+export type UserStatus = "ACTIVE" | "BLOCKED" | "DELETED";
+
 export interface User {
   id: string;
   email: string;
@@ -6,6 +9,7 @@ export interface User {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  status: UserStatus; // Ajouté pour refléter l'enum backend
   role?: string; // Updated to match backend response
   createdAt: Date;
   updatedAt: Date;
@@ -21,8 +25,8 @@ export interface UserUpdateRequest {
   email?: string;
   avatar?: string;
 }
+
 export interface DeleteAccountRequest {
   reason?: string; // Raison de la suppression, optionnelle
   password?: string; // Pour sécuriser la suppression ?
-
 }

@@ -1,35 +1,36 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import MapListView from "../components/MapListView";
 import MapMapView from "../components/MapMapView";
 import MapSearchBar from "../components/MapSearchBar";
 import MapFilterModal from "../components/MapFilterModal";
-import { componentStyles, colors, spacing, typography } from '../theme';
+import { componentStyles, colors, spacing, typography } from "../theme";
 import { Modal } from "react-native";
 import { FlatList } from "react-native";
 import { TextInput } from "react-native";
 import { Platform } from "react-native";
-import { searchListings } from "../services/annonce.service";
+import { searchListings } from "../services/listing.service";
 import { useAuth } from "../context/AuthContext";
 
-
-import { Ionicons } from '@expo/vector-icons';
-
+import { Ionicons } from "@expo/vector-icons";
 
 const MapScreen: React.FC = () => {
   // Dynamically require MapView and Marker only on mobile
-  let MapView: any = null, Marker: any = null;
-  if (Platform.OS !== 'web') {
+  let MapView: any = null,
+    Marker: any = null;
+  if (Platform.OS !== "web") {
     // @ts-ignore
-    MapView = require('react-native-maps').default;
+    MapView = require("react-native-maps").default;
     // @ts-ignore
-    Marker = require('react-native-maps').Marker;
+    Marker = require("react-native-maps").Marker;
   }
   // Etats pour les filtres avancés
   const [filterQ, setFilterQ] = React.useState<string>("");
   const [filterType, setFilterType] = React.useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = React.useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = React.useState<string | null>(
+    null
+  );
   const [filterCity, setFilterCity] = React.useState<string>("");
   const [filterPage, setFilterPage] = React.useState<string>("0");
   const [filterSize, setFilterSize] = React.useState<string>("20");
@@ -72,10 +73,21 @@ const MapScreen: React.FC = () => {
       }
     };
     fetchListings();
-  }, [filterQ, filterType, filterCategory, filterCity, filterPage, filterSize, token]);
+  }, [
+    filterQ,
+    filterType,
+    filterCategory,
+    filterCity,
+    filterPage,
+    filterSize,
+    token,
+  ]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.lightGray }} edges={["bottom"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.lightGray }}
+      edges={["bottom"]}
+    >
       {/* Barre de recherche simple extraite */}
       <MapSearchBar
         search={filterQ}
@@ -90,7 +102,12 @@ const MapScreen: React.FC = () => {
       {showList ? (
         <MapListView listings={listings} />
       ) : (
-        <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={listings} />
+        <MapMapView
+          MapView={MapView}
+          Marker={Marker}
+          userLocation={userLocation}
+          listings={listings}
+        />
       )}
       {/* Modale de recherche avancée extraite */}
       <MapFilterModal

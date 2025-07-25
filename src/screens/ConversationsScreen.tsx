@@ -13,9 +13,9 @@ export default function ConversationsScreen({
   navigation,
 }: Props) {
   // Callback quand on sélectionne une conversation
-  const handleSelect = (annonceId: string, otherUserId: string) => {
+  const handleSelect = (listingId: string, otherUserId: string) => {
     navigation.navigate("ChatDetail", {
-      annonceId,
+      listingId,
       otherUserId,
       token,
       myUserId,

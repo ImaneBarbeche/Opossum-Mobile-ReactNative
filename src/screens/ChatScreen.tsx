@@ -25,7 +25,7 @@ import FileUploadButton from "../components/FileUploadButton";
 // Types pour les props et les messages
 type Props = {
   token: string;
-  annonceId: string;
+  listingId: string;
   otherUserId: string;
   myUserId: string;
 };
@@ -40,7 +40,7 @@ type Message = {
 
 const ChatScreen: React.FC<Props> = ({
   token,
-  annonceId,
+  listingId,
   otherUserId,
   myUserId,
 }) => {
@@ -52,25 +52,31 @@ const ChatScreen: React.FC<Props> = ({
   // Charger les messages et marquer comme lus à l'ouverture
   useEffect(() => {
     setLoading(true);
-    getConversationMessages(token, annonceId, otherUserId)
+    getConversationMessages(token, listingId, otherUserId)
       .then((res) => {
-        if (res.data.success) setMessages(res.data.data.messages);
+        const response = res as {
+          data: { success: boolean; data: { messages: Message[] } };
+        };
+        if (response.data.success) setMessages(response.data.data.messages);
         // Marquer tous les messages comme lus d’un coup
-        markConversationAsRead(token, annonceId, otherUserId).catch(() => {});
+        markConversationAsRead(token, listingId, otherUserId).catch(() => {});
       })
       .catch(() => {
         /* gestion d’erreur simplifiée */
       })
       .finally(() => setLoading(false));
-  }, [token, annonceId, otherUserId]);
+  }, [token, listingId, otherUserId]);
 
   // Envoyer un message texte
   const handleSend = () => {
     if (!input.trim()) return;
-    sendMessage(token, annonceId, otherUserId, input.trim())
+    sendMessage(token, listingId, otherUserId, input.trim())
       .then((res) => {
-        if (res.data.success) {
-          setMessages((m) => [...m, res.data.data.message]);
+        const response = res as {
+          data: { success: boolean; data: { message: Message } };
+        };
+        if (response.data.success) {
+          setMessages((m) => [...m, response.data.data.message]);
           setInput("");
           setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
         }
@@ -81,9 +87,13 @@ const ChatScreen: React.FC<Props> = ({
   // Envoi d’une image
   const handleImageUploaded = (fileData: any) => {
     const imageUrl = fileData.url || fileData.fileUrl;
-    sendMessage(token, annonceId, otherUserId, `[photo] ${imageUrl}`)
+    sendMessage(token, listingId, otherUserId, `[photo] ${imageUrl}`)
       .then((res) => {
-        if (res.data.success) setMessages((m) => [...m, res.data.data.message]);
+        const response = res as {
+          data: { success: boolean; data: { message: Message } };
+        };
+        if (response.data.success)
+          setMessages((m) => [...m, response.data.data.message]);
       })
       .catch(() => Alert.alert("Erreur", "Impossible d’envoyer la photo"));
   };
@@ -98,7 +108,8 @@ const ChatScreen: React.FC<Props> = ({
         onPress: () => {
           deleteMessage(token, msgId)
             .then((res) => {
-              if (res.data.success)
+              const response = res as { data: { success: boolean } };
+              if (response.data.success)
                 setMessages((m) => m.filter((msg) => msg.id !== msgId));
             })
             .catch(() => Alert.alert("Erreur", "Impossible de supprimer"));

@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import ConversationsScreen from "../screens/ConversationsScreen";
-import ChatScreen from "../screens/ChatScreen"; // Met à jour le chemin si ChatScreen est bien rangé dans screens
+import MyMessageListingsScreen from "../screens/Messaging/MyMessageListingsScreen";
+import ListingConversationScreen from "../screens/Messaging/ListingConversationScreen";
 
 const Stack = createStackNavigator();
 
@@ -16,14 +16,32 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
   const { token, myUserId } = screenProps;
 
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Conversations" options={{ title: "Conversations" }}>
+    <Stack.Navigator id={undefined}>
+      {/* Liste des annonces où l'utilisateur a écrit un message */}
+      <Stack.Screen
+        name="MyMessageListings"
+        options={{ title: "Mes Messages" }}
+      >
         {(props) => (
-          <ConversationsScreen {...props} token={token} myUserId={myUserId} />
+          <MyMessageListingsScreen
+            {...props}
+            token={token}
+            myUserId={myUserId}
+          />
         )}
       </Stack.Screen>
-      <Stack.Screen name="ChatDetail" options={{ title: "Conversation" }}>
-        {(props) => <ChatScreen {...props} token={token} myUserId={myUserId} />}
+      {/* Conversation entre l'utilisateur et le propriétaire pour une annonce */}
+      <Stack.Screen
+        name="AnnonceConversation"
+        options={{ title: "Conversation" }}
+      >
+        {(props) => (
+          <ListingConversationScreen
+            {...props}
+            token={token}
+            myUserId={myUserId}
+          />
+        )}
       </Stack.Screen>
     </Stack.Navigator>
   );

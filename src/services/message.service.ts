@@ -13,26 +13,26 @@ export async function getUserMessages(token: string, myUserId: string, page = 0,
 }
 
 // Récupère tous les messages d'une conversation annonce+user
-export async function getConversationMessages(token: string, annonceId: string, otherUserId: string, page = 0, size = 50, sort = 'sentAt,asc') {
-  return axios.get(`${BASE_URL}/conversation/${annonceId}/${otherUserId}?page=${page}&size=${size}&sort=${sort}`, {
+export async function getConversationMessages(token: string, listingId: string, otherUserId: string, page = 0, size = 50, sort = 'sentAt,asc') {
+  return axios.get(`${BASE_URL}/conversation/${listingId}/${otherUserId}?page=${page}&size=${size}&sort=${sort}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
 
 // Envoie un premier message (contact annonce)
-export async function contactListingOwner(token: string, annonceId: string, content: string, includeContactInfo = false) {
+export async function contactListingOwner(token: string, listingId: string, content: string, includeContactInfo = false) {
   return axios.post(
-    `${BASE_URL}/contact/${annonceId}`,
+    `${BASE_URL}/contact/${listingId}`,
     { content, includeContactInfo },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 }
 
 // Envoie un message dans une conversation (suite)
-export async function sendMessage(token: string, annonceId: string, receiverId: string, content: string) {
+export async function sendMessage(token: string, listingId: string, receiverId: string, content: string) {
   return axios.post(
     `${BASE_URL}`,
-    { annonceId, receiverId, content },
+    { listingId, receiverId, content },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 }
@@ -52,8 +52,8 @@ export async function markMessageAsRead(token: string, messageId: string) {
 }
 
 // Marque toute la conversation comme lue
-export async function markConversationAsRead(token: string, annonceId: string, otherUserId: string) {
-  return axios.put(`${BASE_URL}/conversation/${annonceId}/${otherUserId}/read`, {}, {
+export async function markConversationAsRead(token: string, listingId: string, otherUserId: string) {
+  return axios.put(`${BASE_URL}/conversation/${listingId}/${otherUserId}/read`, {}, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }

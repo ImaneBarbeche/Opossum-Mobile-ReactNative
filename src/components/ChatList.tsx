@@ -9,16 +9,16 @@ import {
   ActivityIndicator,
 } from "react-native";
 // Service pour récupérer tous les messages de l'utilisateur
-import { getUserMessages } from "../services/messagesService";
+import { getUserMessages } from "./../services/message.service";
 
 type Props = {
   token: string; // JWT de l'utilisateur connecté
   myUserId: string; // ID de l'utilisateur connecté
-  onSelectConversation: (annonceId: string, otherUserId: string) => void;
+  onSelectConversation: (listingId: string, otherUserId: string) => void;
 };
 
 type Thread = {
-  annonceId: string;
+  listingId: string;
   annonceTitle: string;
   otherUser: {
     id: string;
@@ -31,6 +31,15 @@ type Thread = {
     sentAt: string;
   };
   unreadCount: number;
+};
+
+// Ajout du type pour la réponse API
+type GetUserMessagesResponse = {
+  success: boolean;
+  data: {
+    messages: any[];
+    // Ajoute d'autres propriétés si besoin
+  };
 };
 
 export default function ChatList({
@@ -46,18 +55,19 @@ export default function ChatList({
     setLoading(true);
     getUserMessages(token, myUserId)
       .then((res) => {
-        if (mounted && res.data.success) {
-          const messages = res.data.data.messages; // Liste plate de messages
+        const response = res.data as GetUserMessagesResponse;
+        if (mounted && response.success) {
+          const messages = response.data.messages; // Liste plate de messages
           // Regroupe les messages par annonce et autre user
           const threadMap = new Map<string, Thread>();
           messages.forEach((msg) => {
             const otherId =
               msg.senderId === myUserId ? msg.receiverId : msg.senderId;
-            const key = `${msg.annonceId}-${otherId}`;
+            const key = `${msg.listingId}-${otherId}`;
             const isUnread = !msg.isRead && msg.senderId !== myUserId;
             if (!threadMap.has(key)) {
               threadMap.set(key, {
-                annonceId: msg.annonceId,
+                listingId: msg.listingId,
                 annonceTitle: msg.annonceTitle ?? "Annonce",
                 otherUser: {
                   id: otherId,
@@ -109,19 +119,19 @@ export default function ChatList({
   return (
     <FlatList
       data={threads}
-      keyExtractor={(item) => `${item.annonceId}_${item.otherUser.id}`}
+      keyExtractor={(item) => `${item.listingId}_${item.otherUser.id}`}
       renderItem={({ item }) => (
         <TouchableOpacity
           style={styles.row}
           onPress={() =>
-            onSelectConversation(item.annonceId, item.otherUser.id)
+            onSelectConversation(item.listingId, item.otherUser.id)
           }
         >
           <Image
             source={
               item.otherUser.avatarUrl
                 ? { uri: item.otherUser.avatarUrl }
-                : require("../assets/avatar-placeholder.png")
+                : require("../../assets/images/avatar-placeholder.png")
             }
             style={styles.avatar}
           />

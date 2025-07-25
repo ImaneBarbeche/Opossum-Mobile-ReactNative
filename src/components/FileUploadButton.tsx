@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Alert } from "react-native";
-import * as ImagePicker from "expo-image-picker"; // Ou autre lib selon ton projet
+import * as ImagePicker from "expo-image-picker";
 import { uploadFile } from "../services/filesService";
 
 type Props = {
@@ -17,10 +17,14 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
       base64: false,
     });
 
-    if (result.cancelled) return;
+    if (result.canceled) return;
 
-    // Valide le format et la taille
-    const { uri, type } = result;
+    // Ici, on est sûr que result est de type ImagePickerSuccessResult
+    const { assets } = result as ImagePicker.ImagePickerSuccessResult;
+    if (!assets || assets.length === 0) return;
+
+    const asset = assets[0];
+    const { uri, type } = asset;
     const filename = uri.split("/").pop();
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(type)) {
@@ -33,8 +37,9 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
     // Upload
     try {
       const response = await uploadFile({ uri, name: filename, type }, token);
-      if (response.data.success) {
-        onUploaded(response.data.data);
+      const data = response.data as { success: boolean; data: any };
+      if (data.success) {
+        onUploaded(data.data);
       } else {
         Alert.alert("Erreur", "Upload échoué");
       }

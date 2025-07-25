@@ -28,6 +28,7 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
         firstName: result.firstName,
         lastName: result.lastName,
         role: result.role,
+        status: result.status ?? "ACTIVE", // Ajout du status si manquant
       };
     }
     const tokens = result.data?.tokens || {
@@ -56,6 +57,7 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
         firstName: userData.firstName,
         lastName: userData.lastName,
         isActive: true,
+        status: userData.status ?? "ACTIVE", // <-- Ajouté ici
         role: userData.role?.toLowerCase() || 'user',
         createdAt: new Date(result.timestamp),
         updatedAt: new Date(result.timestamp),

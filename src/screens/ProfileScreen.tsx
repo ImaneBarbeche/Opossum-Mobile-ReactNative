@@ -1,4 +1,4 @@
-import { componentStyles, colors, spacing, typography } from '../theme';
+import { componentStyles, colors, spacing, typography } from "../theme";
 // Profil utilisateur
 import React, { useState } from "react";
 import {
@@ -22,18 +22,76 @@ import ProfileAvatar from "../components/ProfileAvatar";
 import ProfileHeader from "../components/ProfileHeader";
 import ProfileInfoBlock from "../components/ProfileInfoBlock";
 import DeleteAccountButton from "../components/DeleteAccountButton";
-// styles supprimés, utiliser theme et inline
 import { validateProfileForm } from "../utils/profileValidation";
-import ScreenBackground from '../components/ScreenBackground';
-import FloatingLogoutButton from '../components/FloatingLogoutButton';
+import ScreenBackground from "../components/ScreenBackground";
+import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import Toast from "react-native-toast-message";
 import DeleteAccountModal from "../components/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
   const { user, logout, loading, setUser } = useAuth();
+
+  // Gérer le statut utilisateur (ACTIVE, BLOCKED, DELETED)
+  if (user?.status === "BLOCKED") {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 32,
+        }}
+      >
+        <MaterialIcons name="block" size={56} color="#d32f2f" />
+        <Text
+          style={{
+            fontWeight: "bold",
+            fontSize: 22,
+            color: "#d32f2f",
+            marginTop: 16,
+          }}
+        >
+          Compte bloqué
+        </Text>
+        <Text style={{ color: "#333", marginTop: 10, textAlign: "center" }}>
+          Votre compte a été bloqué par l'administration. Veuillez contacter le
+          support si besoin.
+        </Text>
+        <FloatingLogoutButton onLogout={logout} />
+      </View>
+    );
+  }
+  if (user?.status === "DELETED") {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 32,
+        }}
+      >
+        <MaterialIcons name="delete-forever" size={56} color="#d32f2f" />
+        <Text
+          style={{
+            fontWeight: "bold",
+            fontSize: 22,
+            color: "#d32f2f",
+            marginTop: 16,
+          }}
+        >
+          Compte supprimé
+        </Text>
+        <Text style={{ color: "#333", marginTop: 10, textAlign: "center" }}>
+          Ce compte a été supprimé. Vous ne pouvez plus accéder à vos données.
+        </Text>
+        <FloatingLogoutButton onLogout={logout} />
+      </View>
+    );
+  }
+
   // Log du user à chaque rendu pour debug
-  React.useEffect(() => {
-  }, [user]);
+  React.useEffect(() => {}, [user]);
 
   const [editMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || "");
@@ -55,9 +113,17 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleSave = async () => {
-    const validation = validateProfileForm({ firstName, lastName, phone, avatar });
+    const validation = validateProfileForm({
+      firstName,
+      lastName,
+      phone,
+      avatar,
+    });
     if (!validation.valid) {
-      Toast.show({ type: 'error', ...(validation.error || { text1: 'Erreur', text2: 'Erreur inconnue.' }) });
+      Toast.show({
+        type: "error",
+        ...(validation.error || { text1: "Erreur", text2: "Erreur inconnue." }),
+      });
       return;
     }
     setSaving(true);
@@ -83,7 +149,9 @@ const ProfileScreen: React.FC = () => {
       await updateUserProfile(data, token);
       // Rafraîchir le profil utilisateur dans le contexte
       try {
-        const { fetchCurrentUserProfile } = await import("../services/user.service");
+        const { fetchCurrentUserProfile } = await import(
+          "../services/user.service"
+        );
         const updatedProfile = await fetchCurrentUserProfile(token);
         if (updatedProfile) {
           setUser(updatedProfile);
@@ -174,26 +242,34 @@ const ProfileScreen: React.FC = () => {
       {(saving || deleting) && <Loader visible={saving || deleting} />}
       <FloatingLogoutButton onLogout={logout} />
       <ScrollView contentContainerStyle={{ marginTop: 32, marginBottom: 32 }}>
-        <ProfileHeader avatarUrl={user?.avatar} firstName={user?.firstName} email={user?.email} />
+        <ProfileHeader
+          avatarUrl={user?.avatar}
+          firstName={user?.firstName}
+          email={user?.email}
+        />
 
-        <View style={{
-          backgroundColor: colors.white,
-          borderRadius: 24,
-          padding: 24,
-          maxWidth: 420,
-          width: '90%',
-          alignItems: 'center',
-          alignSelf: 'center',
-          marginTop: 32,
-          marginBottom: 32,
-          shadowColor: colors.black,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
-          elevation: 4,
-        }}>
+        <View
+          style={{
+            backgroundColor: colors.white,
+            borderRadius: 24,
+            padding: 24,
+            maxWidth: 420,
+            width: "90%",
+            alignItems: "center",
+            alignSelf: "center",
+            marginTop: 32,
+            marginBottom: 32,
+            shadowColor: colors.black,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
           {!editMode && (
-            <View style={{ width: "100%", alignItems: "flex-end", marginBottom: 2 }}>
+            <View
+              style={{ width: "100%", alignItems: "flex-end", marginBottom: 2 }}
+            >
               <TouchableOpacity
                 onPress={handleEdit}
                 style={{ marginLeft: 2, padding: 2 }}
@@ -208,14 +284,14 @@ const ProfileScreen: React.FC = () => {
               <TextInput
                 style={{
                   width: 260,
-                  backgroundColor: '#f8f8f8',
+                  backgroundColor: "#f8f8f8",
                   borderRadius: 8,
                   padding: 10,
                   marginBottom: 8,
                   borderWidth: 1,
-                  borderColor: '#ccc',
+                  borderColor: "#ccc",
                   fontSize: 16,
-                  alignSelf: 'center',
+                  alignSelf: "center",
                 }}
                 value={firstName}
                 onChangeText={setFirstName}

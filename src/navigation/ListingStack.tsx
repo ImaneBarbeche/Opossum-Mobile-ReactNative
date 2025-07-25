@@ -9,7 +9,7 @@ const EditListingScreen = () => null;
 const Stack = createStackNavigator();
 
 const ListingStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Listing" component={ListingScreen} />
     <Stack.Screen name="ObjectDetail" component={ObjectDetailScreen} />
     <Stack.Screen name="EditListing" component={EditListingScreen} />
