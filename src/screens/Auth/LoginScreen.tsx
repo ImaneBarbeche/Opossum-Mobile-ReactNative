@@ -137,7 +137,6 @@ const LoginScreen = ({ navigation }: any) => {
 		  >
 			<Text style={{ color: colors.buttonTextPrimary, ...(typography.button || {}), fontWeight: 'bold' }}>S'inscrire</Text>
 		  </TouchableOpacity>
-		  {/* Bouton Scanner QR code supprimé */}
 		</View>
 	  </View>
 	</>
