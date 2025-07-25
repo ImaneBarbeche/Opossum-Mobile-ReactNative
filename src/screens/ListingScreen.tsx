@@ -63,11 +63,16 @@ const ListingScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Listing }) => {
-    const safeUri = item.thumbnailUrl && item.thumbnailUrl.trim() !== ''
-      ? item.thumbnailUrl.startsWith('http')
-        ? item.thumbnailUrl
-        : `${process.env.EXPO_PUBLIC_API_BASE_URL || ''}${item.thumbnailUrl}`
-      : 'https://via.placeholder.com/80';
+    console.log('Annonce item:', item);
+    const safeUri = item.photoUrl && item.photoUrl.trim() !== ''
+      ? item.photoUrl.startsWith('http')
+        ? item.photoUrl
+        : `${process.env.EXPO_PUBLIC_API_BASE_URL || ''}${item.photoUrl}`
+      : item.thumbnailUrl && item.thumbnailUrl.trim() !== ''
+        ? item.thumbnailUrl.startsWith('http')
+          ? item.thumbnailUrl
+          : `${process.env.EXPO_PUBLIC_API_BASE_URL || ''}${item.thumbnailUrl}`
+        : 'https://via.placeholder.com/80';
     return (
       <TouchableOpacity
         style={[
@@ -82,7 +87,7 @@ const ListingScreen: React.FC = () => {
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <RNImage
             source={{ uri: safeUri }}
-            style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12, backgroundColor: colors.mediumGray }}
+            style={{ width: 120, height: 120, borderRadius: 16, marginRight: 12, backgroundColor: colors.mediumGray }}
           />
         <View style={{ flex: 1 }}>
           <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>{item.title}</Text>

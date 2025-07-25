@@ -145,7 +145,14 @@ const ObjectDetailScreen = () => {
         {/* PHOTO CENTRÉE */}
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
           <Image
-            source={{ uri: data.photoUrl || "https://via.placeholder.com/120" }}
+            source={{
+              uri:
+                data.photoUrl && data.photoUrl.trim() !== ''
+                  ? data.photoUrl
+                  : data.thumbnailUrl && data.thumbnailUrl.trim() !== ''
+                    ? data.thumbnailUrl
+                    : "https://via.placeholder.com/120"
+            }}
             style={{
               width: 120,
               height: 120,
