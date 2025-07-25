@@ -19,7 +19,6 @@ interface CreateListingFormProps {
   setAddress: (v: string) => void;
   city: string;
   setCity: (v: string) => void;
-  // latitude/longitude supprimés
   useCurrentLocation: boolean;
   setUseCurrentLocation: (v: boolean) => void;
   date: Date;
@@ -28,8 +27,9 @@ interface CreateListingFormProps {
   setShowDatePicker: (v: boolean) => void;
   showTimePicker: boolean;
   setShowTimePicker: (v: boolean) => void;
-  image: string | null;
-  setImage: (v: string | null) => void;
+  images: { id: string, url: string, thumbnail: string }[];
+  setImages: (v: { id: string, url: string, thumbnail: string }[]) => void;
+  onRemoveImage: (idx: number) => void;
   isLoading: boolean;
   error: string | null;
   onImagePick: () => void;
@@ -40,7 +40,7 @@ interface CreateListingFormProps {
 }
 
 const CreateListingForm: React.FC<CreateListingFormProps> = ({
-  title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, image, setImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
+  title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, images, setImages, onRemoveImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
 }) => {
   const categories = [
     { label: 'Électronique', value: 'electronics' },
@@ -60,12 +60,23 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
   return (
     <View style={[componentStyles.card, { backgroundColor: colors.lightGray, borderRadius: 16, padding: 20, width: '95%', marginVertical: 24, alignItems: 'center' }]}> 
       <TouchableOpacity style={{ alignItems: 'center', marginBottom: 16 }} onPress={onImagePick}>
-        {image ? (
-          <Image source={{ uri: image }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 8 }} />
-        ) : (
-          <Ionicons name="camera" size={64} color={colors.primary} />
-        )}
-        <Text style={{ fontSize: 13, color: colors.darkGray, marginTop: 4, marginBottom: 8 }}>Cliquez pour ajouter la photo de votre objet</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {images.length === 0 && (
+            <Ionicons name="camera" size={64} color={colors.primary} />
+          )}
+          {images.map((img, idx) => (
+            <View key={idx} style={{ margin: 4, position: 'relative' }}>
+              <Image source={{ uri: img.thumbnail || img.url }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+              <TouchableOpacity
+                style={{ position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 2 }}
+                onPress={() => onRemoveImage(idx)}
+              >
+                <Ionicons name="close" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+        <Text style={{ fontSize: 13, color: colors.darkGray, marginTop: 4, marginBottom: 8 }}>Cliquez pour ajouter une ou plusieurs photos (max 5)</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
         <Text style={{ fontSize: 15, marginRight: 8 }}>Mon objet est :</Text>

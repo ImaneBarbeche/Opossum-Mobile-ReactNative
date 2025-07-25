@@ -17,18 +17,17 @@ const RegisterForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [avatar, setAvatar] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    const validation = validateRegisterForm({ firstName, lastName, email, password, confirmPassword, phone, avatar });
+    const validation = validateRegisterForm({ firstName, lastName, email, password, confirmPassword, phone });
     if (!validation.valid) {
       Toast.show({ type: 'error', ...(validation.error || { text1: 'Erreur', text2: 'Erreur inconnue.' }) });
       return;
     }
     setLoading(true);
     try {
-      const response = await register({ firstName, lastName, email, password, confirmPassword, acceptTerms: true, phone, avatar });
+      const response = await register({ firstName, lastName, email, password, confirmPassword, acceptTerms: true, phone });
       if (response && response.user) {
         Toast.show({
           type: 'success',
@@ -91,13 +90,6 @@ const RegisterForm: React.FC = () => {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
-      />
-      <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
-        placeholder="URL de l'avatar (optionnel)"
-        value={avatar}
-        onChangeText={setAvatar}
-        autoCapitalize="none"
       />
       <TextInput
         style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}

@@ -9,8 +9,6 @@ interface ProfileEditFormProps {
   setLastName: (v: string) => void;
   phone: string;
   setPhone: (v: string) => void;
-  avatar: string;
-  setAvatar: (v: string) => void;
   saving: boolean;
   onSave: () => void;
   onCancel: () => void;
@@ -23,7 +21,7 @@ interface ProfileEditFormProps {
 }
 
 const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
-  firstName, setFirstName, lastName, setLastName, phone, setPhone, avatar, setAvatar, saving, onSave, onCancel,
+  firstName, setFirstName, lastName, setLastName, phone, setPhone, saving, onSave, onCancel,
   currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword
 }) => (
   <View>
@@ -132,23 +130,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       onChangeText={setPhone}
       placeholder="Téléphone"
       keyboardType="phone-pad"
-    />
-    <Text style={{ fontWeight: 'bold', alignSelf: 'center', marginTop: 12, marginBottom: 2, color: '#2e7d32' }}>Avatar (URL)</Text>
-    <TextInput
-      style={{
-        width: 260,
-        backgroundColor: '#f8f8f8',
-        borderRadius: 8,
-        padding: 10,
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        fontSize: 16,
-        alignSelf: 'center',
-      }}
-      value={avatar}
-      onChangeText={setAvatar}
-      placeholder="URL de l'avatar"
     />
     <View style={{ flexDirection: 'row', marginTop: 12, justifyContent: 'center', alignItems: 'center' }}>
       <TouchableOpacity

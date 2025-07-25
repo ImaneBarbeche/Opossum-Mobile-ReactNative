@@ -12,6 +12,7 @@ import {
   Modal,
   Platform,
 } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
 import { getValidAccessToken } from "../services/token.helper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
@@ -30,6 +31,8 @@ import Toast from "react-native-toast-message";
 import DeleteAccountModal from "../components/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
+  // Avatar upload state
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const { user, logout, loading, setUser } = useAuth();
   // Log du user à chaque rendu pour debug
   React.useEffect(() => {
@@ -106,7 +109,7 @@ const ProfileScreen: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  };
+  }; // <-- Add this closing bracket for handleSave
 
   // Suppression du compte avec double confirmation et saisie du mot de passe
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
@@ -174,7 +177,56 @@ const ProfileScreen: React.FC = () => {
       {(saving || deleting) && <Loader visible={saving || deleting} />}
       <FloatingLogoutButton onLogout={logout} />
       <ScrollView contentContainerStyle={{ marginTop: 32, marginBottom: 32 }}>
-        <ProfileHeader avatarUrl={user?.avatar} firstName={user?.firstName} email={user?.email} />
+        <View style={{ alignItems: 'center', marginBottom: 12 }}>
+          <TouchableOpacity
+            onPress={async () => {
+              if (!editMode) return;
+              // Demande la permission
+              const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!permissionResult.granted) {
+                Toast.show({ type: 'error', text1: 'Permission refusée', text2: 'Autorisez l’accès aux photos pour changer l’avatar.' });
+                return;
+              }
+              const pickerResult = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+              if (pickerResult.canceled || !pickerResult.assets?.length) return;
+              setAvatarUploading(true);
+              try {
+                const token = await getValidAccessToken();
+                if (!token) throw new Error('Token manquant');
+                const { uploadFile } = await import('../services/files.service');
+                const uploadRes = await uploadFile(pickerResult.assets[0].uri, token);
+                console.log('Avatar upload response:', uploadRes);
+                if (uploadRes.url) {
+                  setAvatar(uploadRes.url);
+                  Toast.show({ type: 'success', text1: 'Avatar mis à jour', text2: 'Votre photo de profil a été changée.' });
+                } else {
+                  throw new Error(uploadRes.message || 'Erreur upload');
+                }
+              } catch (e: any) {
+                console.log('Avatar upload error:', e);
+                let details = '';
+                if (e.response) {
+                  details = `Code: ${e.response.status} - ${e.response.data?.message || JSON.stringify(e.response.data)}`;
+                } else if (e.message) {
+                  details = e.message;
+                } else {
+                  details = JSON.stringify(e);
+                }
+                Toast.show({ type: 'error', text1: 'Erreur avatar', text2: `Erreur lors de l’upload. ${details}` });
+              } finally {
+                setAvatarUploading(false);
+              }
+            }}
+            activeOpacity={editMode ? 0.7 : 1}
+            style={{ alignSelf: 'center' }}
+            accessibilityLabel={editMode ? 'Changer l’avatar' : 'Avatar'}
+          >
+            <ProfileAvatar avatarUrl={avatar} firstName={firstName} />
+            {avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Chargement...</Text>}
+            {editMode && !avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Changer l’avatar</Text>}
+          </TouchableOpacity>
+          <Text style={{ color: '#1976d2', fontSize: 15, marginBottom: 2, fontWeight: '600', textAlign: 'center', marginTop: 10 }}>{user?.email}</Text>
+        </View>
 
         <View style={{
           backgroundColor: colors.white,
@@ -228,8 +280,6 @@ const ProfileScreen: React.FC = () => {
                 setLastName={setLastName}
                 phone={phone}
                 setPhone={setPhone}
-                avatar={avatar}
-                setAvatar={setAvatar}
                 saving={saving}
                 onSave={handleSave}
                 onCancel={handleCancel}
@@ -266,6 +316,6 @@ const ProfileScreen: React.FC = () => {
       </ScrollView>
     </>
   );
-};
-
+}
+  
 export default ProfileScreen;
