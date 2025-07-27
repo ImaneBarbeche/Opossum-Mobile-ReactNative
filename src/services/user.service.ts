@@ -1,3 +1,9 @@
+// Récupère le profil public d'un utilisateur par son id
+import { API_BASE_URL } from "../config/api";
+export const getPublicProfile = async (userId: string) => {
+  const response = await axios.get(`${API_BASE_URL}/users/${userId}`);
+  return response.data;
+};
 // Récupère un profil utilisateur (privé ou public)
 export const getUserProfile = async (id: string, token?: string) => {
   // id = 'me' pour profil privé, sinon UUID pour public

@@ -102,6 +102,17 @@ export const getListingDetails = async (id: string, token?: string) => {
       contactEmail: item.contactInfo?.email ?? '',
       userId: item.user?.id ?? item.userId ?? '',
       owner: item.user ?? item.owner ?? null,
+      user: item.user
+        ? {
+            id: item.user.id,
+            firstName: item.user.firstName,
+            lastName: item.user.lastName,
+            avatar:
+              item.user.avatar && item.user.avatar.trim() !== ''
+                ? item.user.avatar
+                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent((item.user.firstName || '') + ' ' + (item.user.lastName || '')),
+          }
+        : undefined,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       resolvedAt: item.resolvedAt,

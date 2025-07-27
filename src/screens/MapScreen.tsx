@@ -104,6 +104,7 @@ const MapScreen: React.FC = () => {
           radius: 10,
           type: filterType,
           category: filterCategory,
+          q: filterQ, // Ajout du filtre de recherche
           page: filterPage ? Number(filterPage) : 0,
           size: filterSize ? Number(filterSize) : 20,
           token: token,
@@ -116,7 +117,7 @@ const MapScreen: React.FC = () => {
       }
     };
     fetchMarkers();
-  }, [filterType, filterCategory, filterPage, filterSize, token, userLocation.latitude, userLocation.longitude]);
+  }, [filterType, filterCategory, filterPage, filterSize, token, userLocation.latitude, userLocation.longitude, filterQ]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.lightGray }} edges={["bottom"]}>
