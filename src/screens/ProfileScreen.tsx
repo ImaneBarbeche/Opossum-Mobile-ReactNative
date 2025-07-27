@@ -6,7 +6,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   Image,
   ScrollView,
   Modal,
@@ -117,18 +116,14 @@ const ProfileScreen: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Suppression du compte",
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => setShowPasswordPrompt(true),
-        },
-      ]
-    );
+    Toast.show({
+      type: 'info',
+      text1: 'Suppression du compte',
+      text2: 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+      position: 'bottom',
+      autoHide: false,
+      onPress: () => setShowPasswordPrompt(true),
+    });
   };
 
   const handleConfirmDelete = async () => {
@@ -163,10 +158,11 @@ const ProfileScreen: React.FC = () => {
       });
       logout();
     } catch (error: any) {
+      const errorMsg = (error?.error?.message || "Erreur lors de la suppression.");
       Toast.show({
         type: "error",
         text1: "Erreur",
-        text2: error?.error?.message || "Erreur lors de la suppression.",
+        text2: errorMsg.length > 80 ? errorMsg.slice(0, 77) + '...' : errorMsg,
       });
     } finally {
       setDeleting(false);
