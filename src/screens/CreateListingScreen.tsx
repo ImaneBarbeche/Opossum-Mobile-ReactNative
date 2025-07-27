@@ -1,16 +1,30 @@
 import Toast from 'react-native-toast-message';
-// Formulaire pour déclarer un objet trouvé
 import React, { useState } from "react";
 import { View, Text, Alert, ScrollView } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import CreateListingForm from "../components/CreateListingForm";
-import { createListing } from "../services/annonce.service";
+import { createListing, validateLocation } from "../services/annonce.service";
+import { geocodeAddress } from '../utils/geocode';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadFile } from '../services/files.service';
 import { validateCreateListingForm } from '../utils/createListingValidation';
+import * as Location from 'expo-location';
 
 const CreateListingScreen: React.FC = () => {
+  // Position GPS de l'utilisateur (pour création avec GPS)
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  React.useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      if (loc?.coords) {
+        setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+      }
+    })();
+  }, []);
   const { token, user, logout } = useAuth();
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"" | "LOST" | "FOUND">("");
@@ -101,11 +115,41 @@ const CreateListingScreen: React.FC = () => {
       // Construction du body selon la spec :
       // - Si GPS activé, le back gérera la géoloc
       // - Sinon, on envoie l'adresse et la ville
-      const location: any = { city };
+      let location: any = {};
       if (useCurrentLocation) {
-        // Le back détectera la position GPS automatiquement
+        if (!userLocation) {
+          setError("Impossible de récupérer la position GPS. Merci d'autoriser la localisation.");
+          setIsLoading(false);
+          return;
+        }
+        location.latitude = userLocation.latitude;
+        location.longitude = userLocation.longitude;
       } else {
+        location.city = city;
         location.address = address;
+        // Géocodage de l'adresse pour obtenir latitude/longitude
+        const coords = await geocodeAddress(address, city);
+        if (!coords) {
+          setError("Adresse introuvable. Merci de vérifier l’orthographe ou d’entrer une adresse plus précise.");
+          setIsLoading(false);
+          return;
+        }
+        // Validation de la localisation côté backend
+        const validationRes = await validateLocation({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          checkServiceArea: true,
+        });
+        if (!validationRes.success) {
+          setError(
+            validationRes.error?.message ||
+            "Coordonnées invalides ou hors zone de service. Essayez une autre adresse ou contactez le support."
+          );
+          setIsLoading(false);
+          return;
+        }
+        location.latitude = coords.latitude;
+        location.longitude = coords.longitude;
       }
       const body = {
         title,
@@ -113,12 +157,9 @@ const CreateListingScreen: React.FC = () => {
         type: type as "LOST" | "FOUND",
         category,
         location,
-        contactInfo: {
-          phone: user.phone || undefined,
-          email: user.email || undefined,
-        },
         fileIds: images.map(img => img.id),
       };
+
       await createListing(token, body);
       Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce créée !' });
       setTitle("");

@@ -28,7 +28,7 @@ export function validateCreateListingForm(values: CreateListingFormValues): Vali
   if (!values.category) {
     return { valid: false, error: "La catégorie est requise." };
   }
-  if (!values.city) {
+  if (!values.useCurrentLocation && !values.city) {
     return { valid: false, error: "La ville est requise." };
   }
   if (!values.address && !values.useCurrentLocation) {

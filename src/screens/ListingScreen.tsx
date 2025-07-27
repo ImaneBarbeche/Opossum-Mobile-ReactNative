@@ -63,7 +63,6 @@ const ListingScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Listing }) => {
-    console.log('Annonce item:', item);
     const safeUri = item.photoUrl && item.photoUrl.trim() !== ''
       ? item.photoUrl.startsWith('http')
         ? item.photoUrl

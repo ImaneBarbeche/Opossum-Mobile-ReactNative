@@ -12,8 +12,6 @@ const ResetPasswordScreen = () => {
   // Récupère le token passé en paramètre (query param ou path)
   const token = (route.params as any)?.token;
   React.useEffect(() => {
-    console.log('route.params:', route.params);
-    console.log('token:', token);
   }, [route.params, token]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

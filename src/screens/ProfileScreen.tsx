@@ -88,7 +88,6 @@ const ProfileScreen: React.FC = () => {
       try {
         const { fetchCurrentUserProfile } = await import("../services/user.service");
         const updatedProfile = await fetchCurrentUserProfile(token);
-        console.log('Avatar après update:', updatedProfile?.avatar);
         if (updatedProfile) {
           setUser(updatedProfile);
         }
@@ -196,7 +195,6 @@ const ProfileScreen: React.FC = () => {
                 if (!token) throw new Error('Token manquant');
                 const { uploadFile } = await import('../services/files.service');
                 const uploadRes = await uploadFile(pickerResult.assets[0].uri, token);
-                console.log('Avatar upload response:', uploadRes);
                 if (uploadRes.data && uploadRes.data.url) {
                   setAvatar(uploadRes.data.url);
                   Toast.show({ type: 'success', text1: 'Avatar mis à jour', text2: 'Votre photo de profil a été changée.' });
@@ -204,7 +202,6 @@ const ProfileScreen: React.FC = () => {
                   throw new Error(uploadRes.message || 'Erreur upload');
                 }
               } catch (e: any) {
-                console.log('Avatar upload error:', e);
                 let details = '';
                 if (e.response) {
                   details = `Code: ${e.response.status} - ${e.response.data?.message || JSON.stringify(e.response.data)}`;

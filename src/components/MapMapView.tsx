@@ -27,7 +27,7 @@ const MapMapView: React.FC<MapMapViewProps> = ({ MapView, Marker, userLocation, 
     }}>
       <MapView
         style={{ flex: 1 }}
-        initialRegion={{
+        region={{
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
           latitudeDelta: 0.01,

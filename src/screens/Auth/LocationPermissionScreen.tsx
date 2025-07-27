@@ -22,7 +22,13 @@ const LocationPermissionScreen: React.FC<Props> = () => {
   const { setIsAuthenticated } = useAuth();
   // Fonction appelée si l'utilisateur accepte
   const handleAccept = async () => {
-    await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission refusée');
+      return;
+    }
+    const loc = await Location.getCurrentPositionAsync({});
+    alert(`Lat: ${loc.coords.latitude}, Lon: ${loc.coords.longitude}`);
     setIsAuthenticated(true);
   };
 

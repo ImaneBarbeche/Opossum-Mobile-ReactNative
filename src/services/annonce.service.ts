@@ -1,8 +1,6 @@
-
 // Service pour la gestion des annonces
-
 import { ANNOUNCE_ENDPOINTS } from "../config/api";
-import { CreateListingBody, FilterParams, Listing, ListingsResponse, SearchListingsParams, UpdateListingBody } from "../models/Annonce";
+import { CreateListingBody, FilterParams, ListingsResponse, UpdateListingBody } from "../models/Annonce";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 
@@ -90,6 +88,14 @@ export const getListingDetails = async (id: string, token?: string) => {
       longitude: item.location?.longitude ?? null,
       address: item.location?.address ?? '',
       city: item.location?.city ?? '',
+      location: item.location
+        ? {
+            latitude: item.location.latitude ?? null,
+            longitude: item.location.longitude ?? null,
+            address: item.location.address ?? '',
+            city: item.location.city ?? ''
+          }
+        : undefined,
       photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
       thumbnailUrl: item.thumbnailUrl ?? '',
       contactPhone: item.contactInfo?.phone ?? '',
@@ -154,17 +160,82 @@ export const deleteListing = async (id: string, token: string) => {
   }
 };
 
-export const searchListings = async (params?: SearchListingsParams, token?: string) => {
-  try {
-    // Nettoie les paramètres pour ne pas envoyer de valeurs undefined
-    const cleanParams = Object.fromEntries(Object.entries(params || {}).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
-    const response = await axios.get<ListingsResponse>(ANNOUNCE_ENDPOINTS.search, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      params: cleanParams,
-    });
-    // Retourne le tableau d'annonces (data.content)
-    return response.data.data.content;
-  } catch (error) {
-    throw error;
+// Récupère les annonces formatées pour la carte (et la liste proche)
+export const fetchMapListings = async (
+  params: {
+    latitude?: number;
+    longitude?: number;
+    radius?: number;
+    type?: string;
+    category?: string;
+    page?: number;
+    size?: number;
+    token?: string;
   }
+) => {
+  const { token, ...query } = params;
+  const response = await axios.get(
+    `${API_BASE_URL}/announcements/map`,
+    {
+      params: query,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }
+  );
+  return response.data;
+};
+
+export const fetchNearbyListings = async (
+  params: {
+    latitude: number;
+    longitude: number;
+    radius?: number;
+    type?: string;
+    category?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    limit?: number;
+    page?: number;
+    token?: string;
+  }
+) => {
+  const { token, ...query } = params;
+  const response = await axios.get(
+    `${API_BASE_URL}/announcements/nearby`,
+    {
+      params: query,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }
+  );
+  return response.data;
+};
+
+export const fetchDistance = async (params: {
+  fromLat: number;
+  fromLon: number;
+  toLat: number;
+  toLon: number;
+  unit?: "km" | "miles";
+}) => {
+  const response = await axios.get(
+    `${API_BASE_URL}/location/distance`,
+    { params }
+  );
+  return response.data;
+};
+
+// Valide des coordonnées GPS et la zone de service côté backend
+export const validateLocation = async (params: {
+  latitude: number;
+  longitude: number;
+  checkServiceArea?: boolean;
+}) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/location/validate`,
+    {
+      latitude: params.latitude,
+      longitude: params.longitude,
+      checkServiceArea: params.checkServiceArea !== false // true par défaut
+    }
+  );
+  return response.data;
 };

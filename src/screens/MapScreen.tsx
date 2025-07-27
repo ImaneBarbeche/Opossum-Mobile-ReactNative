@@ -10,7 +10,8 @@ import { Modal } from "react-native";
 import { FlatList } from "react-native";
 import { TextInput } from "react-native";
 import { Platform } from "react-native";
-import { searchListings } from "../services/annonce.service";
+import * as Location from 'expo-location';
+import { fetchMapListings, fetchNearbyListings } from "../services/annonce.service";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -45,34 +46,77 @@ const MapScreen: React.FC = () => {
     setShowList(true);
   };
 
-  // Position mockée de l'utilisateur (à remplacer par la vraie localisation)
-  const userLocation = {
+  // Position réelle de l'utilisateur (par défaut Lille, remplacée après autorisation)
+  const [userLocation, setUserLocation] = React.useState({
     latitude: 50.6938,
     longitude: 3.1746,
-  };
+  });
+
+  React.useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        // Permission refusée, on garde la position par défaut
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      if (location?.coords) {
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      }
+    })();
+  }, []);
   // Etat pour les annonces récupérées via l'API
-  const [listings, setListings] = React.useState<any[]>([]);
+  const [markers, setMarkers] = React.useState<any[]>([]);
+  // Log détaillé pour debug : afficher les markers récupérés depuis l’API
+  React.useEffect(() => {
+    if (markers && markers.length > 0) {
+      const mapped = markers.map(m => ({
+        id: m.id,
+        titre: m.title,
+        latitude: m.lat,
+        longitude: m.lng
+      }));
+    } else {
+    }
+  }, [markers]);
+
+  // Mapping pour affichage correct sur la carte
+  const mappedMarkers = markers.map(m => ({
+    ...m,
+    latitude: m.lat,
+    longitude: m.lng,
+    titre: m.title
+  }));
+  // const [nearbyListings, setNearbyListings] = React.useState<any[]>([]);
   const { token } = useAuth();
 
   React.useEffect(() => {
-    const fetchListings = async () => {
+    // Récupère les markers pour la carte ET la liste (une seule source)
+    const fetchMarkers = async () => {
       try {
-        const params = {
-          q: filterQ || undefined,
-          type: filterType || undefined,
-          category: filterCategory || undefined,
-          city: filterCity || undefined,
+        // Construction dynamique des params sans les clés undefined
+        const paramsRaw = {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          radius: 10,
+          type: filterType,
+          category: filterCategory,
           page: filterPage ? Number(filterPage) : 0,
           size: filterSize ? Number(filterSize) : 20,
+          token: token,
         };
-        const data = await searchListings(params, token || undefined);
-        setListings(data);
+        const params = Object.fromEntries(Object.entries(paramsRaw).filter(([_, v]) => v !== undefined && v !== null));
+        const res = await fetchMapListings(params);
+        setMarkers(res.data || []);
       } catch (e) {
-        setListings([]);
+        setMarkers([]);
       }
     };
-    fetchListings();
-  }, [filterQ, filterType, filterCategory, filterCity, filterPage, filterSize, token]);
+    fetchMarkers();
+  }, [filterType, filterCategory, filterPage, filterSize, token, userLocation.latitude, userLocation.longitude]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.lightGray }} edges={["bottom"]}>
@@ -88,9 +132,9 @@ const MapScreen: React.FC = () => {
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <MapListView listings={listings} />
+        <MapListView listings={mappedMarkers} />
       ) : (
-        <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={listings} />
+        <MapMapView MapView={MapView} Marker={Marker} userLocation={userLocation} listings={mappedMarkers} />
       )}
       {/* Modale de recherche avancée extraite */}
       <MapFilterModal

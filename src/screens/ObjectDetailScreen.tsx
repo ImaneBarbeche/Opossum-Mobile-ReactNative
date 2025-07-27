@@ -12,7 +12,8 @@ import {
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
-import { getListingDetails, updateListing, deleteListing } from "../services/annonce.service";
+import { getListingDetails, updateListing, deleteListing, fetchDistance } from "../services/annonce.service";
+import * as Location from 'expo-location';
 import { getValidAccessToken } from "../services/token.helper";
 import EditListingModal from "../components/EditListingModal";
 
@@ -27,8 +28,46 @@ const ObjectDetailScreen = () => {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  // Distance à l'annonce (doit être après data)
+  const [distanceText, setDistanceText] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   // On ne calcule isOwner que si data est défini
   const isOwner = data && (user?.id === data.user?.id || user?.id === data.userId);
+
+  // Récupère la position réelle de l'utilisateur au montage
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+        let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        if (location?.coords) {
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (data && data.latitude && data.longitude && userLocation && userLocation.latitude && userLocation.longitude) {
+      fetchDistance({
+        fromLat: userLocation.latitude,
+        fromLon: userLocation.longitude,
+        toLat: data.latitude,
+        toLon: data.longitude,
+        unit: 'km',
+      })
+        .then(res => {
+          setDistanceText(res.data.distance.text);
+        })
+        .catch(() => setDistanceText(null));
+    }
+  }, [data, userLocation]);
   useEffect(() => {
     setLoading(true);
     getListingDetails(id)
@@ -183,7 +222,7 @@ const ObjectDetailScreen = () => {
         <Text style={{ fontSize: 16, marginBottom: 16, color: colors.darkGray, textAlign: 'center' }}>
           {data.description}
         </Text>
-        {/* LIEU */}
+        {/* LIEU + DISTANCE */}
         <View style={{ marginBottom: 12, alignItems: 'center' }}>
           <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
           {data.location ? (
@@ -194,6 +233,11 @@ const ObjectDetailScreen = () => {
               <Text style={{ textAlign: 'center' }}>
                 Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
               </Text>
+              {distanceText && (
+                <Text style={{ color: colors.info, marginTop: 4, fontWeight: 'bold' }}>
+                  À {distanceText} de votre position
+                </Text>
+              )}
             </>
           ) : (
             <Text style={{ textAlign: 'center' }}>Non renseigné</Text>
