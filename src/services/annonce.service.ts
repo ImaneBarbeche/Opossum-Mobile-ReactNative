@@ -76,6 +76,7 @@ export const getListingDetails = async (id: string, token?: string) => {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     const item = (response.data as { data: any }).data;
+    console.log('Réponse backend annonce:', item);
     // Mapping pour compatibilité front : extrait les champs attendus à la racine
     return {
       id: item.id,
@@ -98,6 +99,12 @@ export const getListingDetails = async (id: string, token?: string) => {
         : undefined,
       photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
       thumbnailUrl: item.thumbnailUrl ?? '',
+      photos: Array.isArray(item.imageUrls)
+        ? item.imageUrls.filter((url: string) => !!url)
+        : Array.isArray(item.photos)
+          ? item.photos.map((p: any) => typeof p === 'string' ? p : (p?.url || p?.path || ''))
+              .filter((url: string) => !!url)
+          : (item.photoUrl ? [item.photoUrl] : []),
       contactPhone: item.contactInfo?.phone ?? '',
       contactEmail: item.contactInfo?.email ?? '',
       userId: item.user?.id ?? item.userId ?? '',

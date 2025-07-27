@@ -6,13 +6,14 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from "react-native";
+import Toast from 'react-native-toast-message';
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import { getListingDetails, updateListing, deleteListing, fetchDistance } from "../services/annonce.service";
+import { getCategoryLabel } from "../components/CreateListingForm";
 import * as Location from 'expo-location';
 import { getValidAccessToken } from "../services/token.helper";
 import EditListingModal from "../components/EditListingModal";
@@ -148,58 +149,63 @@ const ObjectDetailScreen = () => {
                 elevation: 2,
               }}
               onPress={async () => {
-                Alert.alert(
-                  'Supprimer l\'annonce',
-                  'Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.',
-                  [
-                    { text: 'Annuler', style: 'cancel' },
-                    {
-                      text: 'Supprimer',
-                      style: 'destructive',
-                      onPress: async () => {
-                        try {
-                          setLoading(true);
-                          const token = await getValidAccessToken();
-                          if (!token) throw new Error('Token manquant');
-                          await deleteListing(data.id, token);
-                          Alert.alert('Succès', 'Annonce supprimée avec succès');
-                          navigation.goBack();
-                        } catch (e: any) {
-                          let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la suppression';
-                          if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
-                          Alert.alert('Erreur', backendMsg);
-                        } finally {
-                          setLoading(false);
-                        }
-                      }
+                // Toast de confirmation à la place de l'alerte de suppression
+                Toast.show({
+                  type: 'info',
+                  text1: 'Suppression',
+                  text2: 'Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.',
+                  position: 'bottom',
+                  autoHide: false,
+                  onPress: async () => {
+                    try {
+                      setLoading(true);
+                      const token = await getValidAccessToken();
+                      if (!token) throw new Error('Token manquant');
+                      await deleteListing(data.id, token);
+                      Toast.show({ type: 'success', text1: 'Succès', text2: 'Annonce supprimée avec succès', position: 'bottom' });
+                      navigation.goBack();
+                    } catch (e: any) {
+                      let backendMsg = e?.response?.data?.message || e?.response?.data?.error || e.message || 'Erreur lors de la suppression';
+                      if (typeof backendMsg !== 'string') backendMsg = JSON.stringify(backendMsg);
+                      Toast.show({ type: 'error', text1: 'Erreur', text2: backendMsg, position: 'bottom' });
+                    } finally {
+                      setLoading(false);
                     }
-                  ]
-                );
+                  }
+                });
               }}
             >
               <Ionicons name="trash" size={20} color={colors.white} />
             </TouchableOpacity>
           </View>
         )}
-        {/* PHOTO CENTRÉE */}
+        {/* PHOTOS : carrousel horizontal si plusieurs images, sinon image unique */}
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
-          <Image
-            source={{
-              uri:
-                data.photoUrl && data.photoUrl.trim() !== ''
-                  ? data.photoUrl
-                  : data.thumbnailUrl && data.thumbnailUrl.trim() !== ''
-                    ? data.thumbnailUrl
-                    : "https://via.placeholder.com/120"
-            }}
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 16,
-              backgroundColor: colors.mediumGray,
-              marginBottom: 12,
-            }}
-          />
+          {Array.isArray(data.photos) && data.photos.length > 1 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+              {data.photos.map((url: string, idx: number) => (
+                <Image
+                  key={idx}
+                  source={{ uri: url || "https://via.placeholder.com/120" }}
+                  style={{ width: 120, height: 120, borderRadius: 16, backgroundColor: colors.mediumGray, marginRight: 10 }}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Image
+              source={{
+                uri:
+                  (Array.isArray(data.photos) && data.photos[0])
+                    ? data.photos[0]
+                    : data.photoUrl && data.photoUrl.trim() !== ''
+                      ? data.photoUrl
+                      : data.thumbnailUrl && data.thumbnailUrl.trim() !== ''
+                        ? data.thumbnailUrl
+                        : "https://via.placeholder.com/120"
+              }}
+              style={{ width: 120, height: 120, borderRadius: 16, backgroundColor: colors.mediumGray, marginBottom: 12 }}
+            />
+          )}
           {/* TITRE CENTRÉ */}
           <Text style={[typography.h2, { textAlign: 'center', marginBottom: 6 }]}>{data.title}</Text>
         </View>
@@ -216,7 +222,7 @@ const ObjectDetailScreen = () => {
           {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
         </Text>
         <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
-          Catégorie : {data.category}
+          Catégorie : {getCategoryLabel(data.category)}
         </Text>
         {/* DESCRIPTION */}
         <Text style={{ fontSize: 16, marginBottom: 16, color: colors.darkGray, textAlign: 'center' }}>
@@ -315,8 +321,50 @@ const ObjectDetailScreen = () => {
           </View>
         )}
       </View>
-    </View>
-  );
+
+    {/* Modal d'édition de l'annonce (propriétaire uniquement) */}
+    {isOwner && data && (
+      <EditListingModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        listing={{
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          status: data.status,
+        }}
+        onSave={async (fields) => {
+          if (!data.id) {
+            Toast.show({ type: 'error', text1: 'Erreur', text2: "L'identifiant de l'annonce est manquant", position: 'bottom' });
+            return;
+          }
+          try {
+            setLoading(true);
+            const token = await getValidAccessToken();
+            if (!token) {
+              Toast.show({ type: 'error', text1: 'Erreur', text2: 'Votre session a expiré. Veuillez vous reconnecter.', position: 'bottom' });
+              setLoading(false);
+              return;
+            }
+            await updateListing(data.id, token, {
+              ...fields,
+              status: fields.status as "ACTIVE" | "RESOLVED" | "ARCHIVED" | "DELETED"
+            });
+            setEditModalVisible(false);
+            // Recharge les données après édition
+            const updated = await getListingDetails(data.id, token);
+            setData(updated);
+          } catch (e: any) {
+            Toast.show({ type: 'error', text1: 'Erreur', text2: e.message || 'Erreur lors de la modification', position: 'bottom' });
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
+    )}
+  </View>
+ );
 }
 
 export default ObjectDetailScreen;

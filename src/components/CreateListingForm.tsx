@@ -39,17 +39,23 @@ interface CreateListingFormProps {
   onLogout: () => void;
 }
 
+export const categories = [
+  { label: 'Électronique', value: 'electronics' },
+  { label: 'Vêtements', value: 'clothing' },
+  { label: 'Accessoires', value: 'accessories' },
+  { label: 'Documents', value: 'documents' },
+  { label: 'Clés', value: 'keys' },
+  { label: 'Autre', value: 'other' },
+];
+
+export const getCategoryLabel = (value: string) => {
+  const found = categories.find(cat => cat.value === value);
+  return found ? found.label : value;
+};
+
 const CreateListingForm: React.FC<CreateListingFormProps> = ({
   title, setTitle, type, setType, description, setDescription, category, setCategory, address, setAddress, city, setCity, useCurrentLocation, setUseCurrentLocation, date, setDate, showDatePicker, setShowDatePicker, showTimePicker, setShowTimePicker, images, setImages, onRemoveImage, isLoading, error, onImagePick, onDateChange, onTimeChange, onSubmit, onLogout
 }) => {
-  const categories = [
-    { label: 'Électronique', value: 'electronics' },
-    { label: 'Vêtements', value: 'clothing' },
-    { label: 'Accessoires', value: 'accessories' },
-    { label: 'Documents', value: 'documents' },
-    { label: 'Clés', value: 'keys' },
-    { label: 'Autre', value: 'other' },
-  ];
   const [categoryError, setCategoryError] = React.useState<string | null>(null);
 
   const handleCategoryChange = (itemValue: string) => {
@@ -79,7 +85,7 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
         <Text style={{ fontSize: 13, color: colors.darkGray, marginTop: 4, marginBottom: 8 }}>Cliquez pour ajouter une ou plusieurs photos (max 5)</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-        <Text style={{ fontSize: 15, marginRight: 8 }}>Mon objet est :</Text>
+        <Text style={{ fontSize: 15, marginRight: 8 }}>Mon objet est&nbsp;:</Text>
         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 }} onPress={() => setType("LOST")}>  
           <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 4 }}>{type === "LOST" && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary }} />}</View>
           <Text style={{ fontSize: 15 }}>Perdu</Text>
@@ -133,15 +139,15 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
           {useCurrentLocation && <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary }} />}
         </TouchableOpacity>
       </View>
-      <Text style={{ fontSize: 15, marginBottom: 4, alignSelf: 'flex-start' }}>Quand l'avez-vous perdu/trouvé ?</Text>
+      <Text style={{ fontSize: 15, marginBottom: 4, alignSelf: 'flex-start' }}>Quand l'avez-vous perdu/trouvé&nbsp;?</Text>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, width: '100%' }}>
         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowDatePicker(true)}>
           <Ionicons name="calendar" size={20} color={colors.primary} />
-          <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleDateString()}</Text>
+          <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleDateString('fr-FR')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: colors.mediumGray, marginRight: 8, minWidth: 120 }} onPress={() => setShowTimePicker(true)}>
           <Ionicons name="time" size={20} color={colors.primary} />
-          <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+          <Text style={{ marginLeft: 6, fontSize: 15 }}>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</Text>
         </TouchableOpacity>
       </View>
       {showDatePicker && (
