@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, Platform } from "react-native";
-import Loader from "./Loader";
-import { colors } from '../theme';
+import Loader from "../Loader";
+import { colors } from '../../theme';
 
 interface DeleteAccountModalProps {
   visible: boolean;

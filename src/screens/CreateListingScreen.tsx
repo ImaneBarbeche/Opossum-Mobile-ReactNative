@@ -1,30 +1,15 @@
 import Toast from 'react-native-toast-message';
 import React, { useState } from "react";
-import { View, Text, Alert, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import CreateListingForm from "../components/CreateListingForm";
-import { createListing, validateLocation } from "../services/annonce.service";
-import { geocodeAddress } from '../utils/geocode';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadFile } from '../services/files.service';
+import CreateListingForm from "../components/listings/CreateListingForm";
+import { createListing } from "../services/annonce.service";
 import { validateCreateListingForm } from '../utils/createListingValidation';
-import * as Location from 'expo-location';
+import { useListingLocation } from '../hooks/useListingLocation';
+import { useListingImages } from '../hooks/useListingImages';
 
 const CreateListingScreen: React.FC = () => {
-  // Position GPS de l'utilisateur (pour création avec GPS)
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-
-  React.useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
-      let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      if (loc?.coords) {
-        setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-      }
-    })();
-  }, []);
   const { token, user, logout } = useAuth();
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"" | "LOST" | "FOUND">("");
@@ -32,57 +17,22 @@ const CreateListingScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  // latitude/longitude supprimés du state, gérés côté back si GPS activé
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [images, setImages] = useState<{ id: string, url: string, thumbnail: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    images,
+    setImages,
+    isLoading,
+    error,
+    handleImagePick,
+    handleRemoveImage,
+    setError,
+    setIsLoading,
+  } = useListingImages(token);
+  const { userLocation, location, locationError, resolveLocation } = useListingLocation(useCurrentLocation, city, address);
 
-  const handleImagePick = async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-        selectionLimit: 5 // permet jusqu'à 5 images
-      });
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const uploads = await Promise.all(result.assets.map(async asset => {
-          if (!token) throw new Error('Authentification requise');
-          const uploadRes = await uploadFile(asset.uri, token);
-          if (!uploadRes.success) {
-            throw new Error(uploadRes.error?.message || 'Erreur upload');
-          }
-          return {
-            id: uploadRes.data?.id || '',
-            url: uploadRes.data?.url || '',
-            thumbnail: uploadRes.data?.thumbnailUrl || '',
-          };
-        }));
-        setImages(prev => [...prev, ...uploads]);
-      }
-    } catch (e: any) {
-      if (e?.response?.status === 413 || e?.message?.includes('FILE_TOO_LARGE')) {
-        setError('Le fichier dépasse la taille maximum autorisée (10MB).');
-      } else if (e?.message?.includes('format')) {
-        setError('Format de fichier non supporté.');
-      } else {
-        setError(e.message || 'Erreur lors de l’upload de la photo.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRemoveImage = (idx: number) => {
-    setImages(prev => prev.filter((_, i) => i !== idx));
-  };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
@@ -115,48 +65,22 @@ const CreateListingScreen: React.FC = () => {
       // Construction du body selon la spec :
       // - Si GPS activé, le back gérera la géoloc
       // - Sinon, on envoie l'adresse et la ville
-      let location: any = {};
-      if (useCurrentLocation) {
-        if (!userLocation) {
-          setError("Impossible de récupérer la position GPS. Merci d'autoriser la localisation.");
-          setIsLoading(false);
-          return;
-        }
-        location.latitude = userLocation.latitude;
-        location.longitude = userLocation.longitude;
-      } else {
-        location.city = city;
-        location.address = address;
-        // Géocodage de l'adresse pour obtenir latitude/longitude
-        const coords = await geocodeAddress(address, city);
-        if (!coords) {
-          setError("Adresse introuvable. Merci de vérifier l’orthographe ou d’entrer une adresse plus précise.");
-          setIsLoading(false);
-          return;
-        }
-        // Validation de la localisation côté backend
-        const validationRes = await validateLocation({
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          checkServiceArea: true,
-        });
-        if (!validationRes.success) {
-          setError(
-            validationRes.error?.message ||
-            "Coordonnées invalides ou hors zone de service. Essayez une autre adresse ou contactez le support."
-          );
-          setIsLoading(false);
-          return;
-        }
-        location.latitude = coords.latitude;
-        location.longitude = coords.longitude;
+      const resolvedLocation = await resolveLocation();
+      if (!resolvedLocation) {
+        setError(locationError || "Erreur de localisation.");
+        setIsLoading(false);
+        return;
       }
+      // Toujours inclure city dans location pour le backend
       const body = {
         title,
         description,
         type: type as "LOST" | "FOUND",
         category,
-        location,
+        location: {
+          ...resolvedLocation,
+          city: city || resolvedLocation.city || "",
+        },
         fileIds: images.map(img => img.id),
       };
 

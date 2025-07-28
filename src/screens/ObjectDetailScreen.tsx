@@ -9,14 +9,16 @@ import {
   ScrollView,
 } from "react-native";
 import Toast from 'react-native-toast-message';
-import { componentStyles, colors, spacing, typography } from "../theme";
+import { componentStyles, colors, typography } from "../theme";
+import { objectDetailScreenStyles } from "../theme/objectDetailScreenStyles";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import { getListingDetails, updateListing, deleteListing, fetchDistance } from "../services/annonce.service";
-import { getCategoryLabel } from "../components/CreateListingForm";
+import { getCategoryLabel } from "../utils/categories";
 import * as Location from 'expo-location';
 import { getValidAccessToken } from "../services/token.helper";
-import EditListingModal from "../components/EditListingModal";
+import EditListingModal from "../components/listings/EditListingModal";
+
 
 type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 
@@ -99,55 +101,22 @@ const ObjectDetailScreen = () => {
   if (!data) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.lightGray }}>
+    <View style={objectDetailScreenStyles.root}>
       <View style={{ height: 32 }} />
       <View
-        style={[
-          componentStyles.card,
-          {
-            flex: 1,
-            minHeight: 420,
-            margin: 16,
-            backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
-            padding: 24,
-            justifyContent: 'flex-start',
-          },
-        ]}
+        style={[objectDetailScreenStyles.card, { backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3" }]}
       >
         {/* Boutons d'action en haut à droite */}
         {isOwner && (
-          <View style={{ position: 'absolute', top: 18, right: 18, flexDirection: 'row', zIndex: 10 }}>
+          <View style={objectDetailScreenStyles.actionRow}>
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.primary,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                marginRight: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOpacity: 0.08,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
+              style={[objectDetailScreenStyles.actionBtn, { backgroundColor: colors.primary, marginRight: 8 }]}
               onPress={() => setEditModalVisible(true)}
             >
               <Ionicons name="pencil" size={20} color={colors.white} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.error,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOpacity: 0.08,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
+              style={[objectDetailScreenStyles.actionBtn, { backgroundColor: colors.error }]}
               onPress={async () => {
                 // Toast de confirmation à la place de l'alerte de suppression
                 Toast.show({
@@ -182,12 +151,12 @@ const ObjectDetailScreen = () => {
         {/* PHOTOS : carrousel horizontal si plusieurs images, sinon image unique */}
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
           {Array.isArray(data.photos) && data.photos.length > 1 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={objectDetailScreenStyles.photoScroll}>
               {data.photos.map((url: string, idx: number) => (
                 <Image
                   key={idx}
                   source={{ uri: url || "https://via.placeholder.com/120" }}
-                  style={{ width: 120, height: 120, borderRadius: 16, backgroundColor: colors.mediumGray, marginRight: 10 }}
+                  style={objectDetailScreenStyles.photoItem}
                 />
               ))}
             </ScrollView>
@@ -203,76 +172,64 @@ const ObjectDetailScreen = () => {
                         ? data.thumbnailUrl
                         : "https://via.placeholder.com/120"
               }}
-              style={{ width: 120, height: 120, borderRadius: 16, backgroundColor: colors.mediumGray, marginBottom: 12 }}
+              style={objectDetailScreenStyles.photo}
             />
           )}
           {/* TITRE CENTRÉ */}
-          <Text style={[typography.h2, { textAlign: 'center', marginBottom: 6 }]}>{data.title}</Text>
+          <Text style={objectDetailScreenStyles.title}>{data.title}</Text>
         </View>
         {/* TYPE ET CATÉGORIE CENTRÉS */}
         <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "bold",
-            color: data.type === "FOUND" ? colors.primary : colors.error,
-            textAlign: 'center',
-            marginBottom: 2,
-          }}
+          style={[objectDetailScreenStyles.type, { color: data.type === "FOUND" ? colors.primary : colors.error }]}
         >
           {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
         </Text>
-        <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
+        <Text style={objectDetailScreenStyles.category}>
           Catégorie : {getCategoryLabel(data.category)}
         </Text>
         {/* DESCRIPTION */}
-        <Text style={{ fontSize: 16, marginBottom: 16, color: colors.darkGray, textAlign: 'center' }}>
+        <Text style={objectDetailScreenStyles.description}>
           {data.description}
         </Text>
         {/* LIEU + DISTANCE */}
-        <View style={{ marginBottom: 12, alignItems: 'center' }}>
-          <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
+        <View style={objectDetailScreenStyles.locationBlock}>
+          <Text style={objectDetailScreenStyles.locationLabel}>Lieu :</Text>
           {data.location ? (
             <>
-              <Text style={{ textAlign: 'center' }}>
+              <Text style={objectDetailScreenStyles.locationText}>
                 {data.location.address || ''}{data.location.address && data.location.city ? ', ' : ''}{data.location.city || ''}
               </Text>
-              <Text style={{ textAlign: 'center' }}>
+              <Text style={objectDetailScreenStyles.locationText}>
                 Lat: {data.location.latitude ?? ''} / Long: {data.location.longitude ?? ''}
               </Text>
               {distanceText && (
-                <Text style={{ color: colors.info, marginTop: 4, fontWeight: 'bold' }}>
+                <Text style={objectDetailScreenStyles.distance}>
                   À {distanceText} de votre position
                 </Text>
               )}
             </>
           ) : (
-            <Text style={{ textAlign: 'center' }}>Non renseigné</Text>
+            <Text style={objectDetailScreenStyles.locationText}>Non renseigné</Text>
           )}
         </View>
         {/* DATE */}
-        <Text style={{ color: colors.darkGray, marginBottom: 16, textAlign: 'center' }}>
+        <Text style={objectDetailScreenStyles.date}>
           Créée le : {new Date(data.createdAt).toLocaleString()}
         </Text>
         {/* PROPRIÉTAIRE */}
         {!isOwner && data.user && (
-          <View style={{ marginBottom: 10, alignItems: 'center' }}>
-            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>Propriétaire :</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'center' }}>
+          <View style={objectDetailScreenStyles.ownerBlock}>
+            <Text style={[objectDetailScreenStyles.locationLabel, { marginBottom: 4 }]}>Propriétaire :</Text>
+            <View style={objectDetailScreenStyles.ownerRow}>
               <Image
                 source={{ uri: data.user.avatar }}
-                style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
+                style={objectDetailScreenStyles.ownerAvatar}
               />
               <Text>
                 {data.user.firstName} {data.user.lastName}
               </Text>
               <TouchableOpacity
-                style={{
-                  backgroundColor: colors.primary,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  marginLeft: 8,
-                }}
+                style={objectDetailScreenStyles.ownerBtn}
                 onPress={() =>
                   data.user &&
                   navigation.navigate("Mes annonces", {
@@ -281,24 +238,12 @@ const ObjectDetailScreen = () => {
                   })
                 }
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontWeight: "bold",
-                    fontSize: 14,
-                  }}
-                >
+                <Text style={objectDetailScreenStyles.ownerBtnText}>
                   Voir profil
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{
-                  backgroundColor: "#2e7d32",
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  marginLeft: 8,
-                }}
+                style={objectDetailScreenStyles.contactBtn}
                 onPress={() =>
                   data.user &&
                   navigation.navigate("Messages", {
@@ -307,13 +252,7 @@ const ObjectDetailScreen = () => {
                   })
                 }
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontWeight: "bold",
-                    fontSize: 14,
-                  }}
-                >
+                <Text style={objectDetailScreenStyles.contactBtnText}>
                   Contacter
                 </Text>
               </TouchableOpacity>

@@ -1,15 +1,11 @@
-import { componentStyles, colors, spacing, typography } from '../theme';
-// Profil utilisateur
+import { colors } from '../theme';
 import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
-  Modal,
-  Platform,
 } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { getValidAccessToken } from "../services/token.helper";
@@ -17,17 +13,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { updateUserProfile, deleteUserAccount } from "../services/user.service";
 import Loader from "../components/Loader";
-import ProfileEditForm from "../components/ProfileEditForm";
-import ProfileAvatar from "../components/ProfileAvatar";
-import ProfileHeader from "../components/ProfileHeader";
-import ProfileInfoBlock from "../components/ProfileInfoBlock";
-import DeleteAccountButton from "../components/DeleteAccountButton";
-// styles supprimés, utiliser theme et inline
+import ProfileEditForm from "../components/user/ProfileEditForm";
+import ProfileAvatar from "../components/user/ProfileAvatar";
+import ProfileInfoBlock from "../components/user/ProfileInfoBlock";
+import DeleteAccountButton from "../components/user/DeleteAccountButton";
 import { validateProfileForm } from "../utils/profileValidation";
-import ScreenBackground from '../components/ScreenBackground';
 import FloatingLogoutButton from '../components/FloatingLogoutButton';
 import Toast from "react-native-toast-message";
-import DeleteAccountModal from "../components/DeleteAccountModal";
+import DeleteAccountModal from "../components/user/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
   // Avatar upload state

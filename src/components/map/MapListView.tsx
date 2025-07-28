@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { componentStyles, colors } from '../theme';
+import { colors } from '../../theme';
 
 interface MapListViewProps {
   listings: any[];

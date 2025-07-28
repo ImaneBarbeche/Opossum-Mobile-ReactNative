@@ -1,22 +1,14 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapListView from "../components/MapListView";
-import MapMapView from "../components/MapMapView";
-import MapSearchBar from "../components/MapSearchBar";
-import MapFilterModal from "../components/MapFilterModal";
-import { componentStyles, colors, spacing, typography } from '../theme';
-import { Modal } from "react-native";
-import { FlatList } from "react-native";
-import { TextInput } from "react-native";
+import MapListView from "../components/map/MapListView";
+import MapMapView from "../components/map/MapMapView";
+import MapSearchBar from "../components/map/MapSearchBar";
+import MapFilterModal from "../components/map/MapFilterModal";
+import { colors } from '../theme';
 import { Platform } from "react-native";
 import * as Location from 'expo-location';
-import { fetchMapListings, fetchNearbyListings } from "../services/annonce.service";
+import { fetchMapListings } from "../services/annonce.service";
 import { useAuth } from "../context/AuthContext";
-
-
-import { Ionicons } from '@expo/vector-icons';
-
 
 const MapScreen: React.FC = () => {
   // Dynamically require MapView and Marker only on mobile

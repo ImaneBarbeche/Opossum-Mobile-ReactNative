@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Picker } from '@react-native-picker/picker';
-import { componentStyles, colors, spacing, typography } from '../theme';
+import { componentStyles, colors, spacing, typography } from '../../theme';
 
 interface EditListingModalProps {
   visible: boolean;
@@ -15,7 +15,6 @@ interface EditListingModalProps {
   };
   onSave: (fields: { title: string; description: string; category: string; status: string }) => void;
 }
-
 
 const EditListingModal: React.FC<EditListingModalProps> = ({ visible, onClose, listing, onSave }) => {
   const [title, setTitle] = useState(listing.title);

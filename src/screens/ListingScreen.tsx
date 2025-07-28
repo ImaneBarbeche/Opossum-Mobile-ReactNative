@@ -1,22 +1,17 @@
 import Toast from 'react-native-toast-message';
-// Accueil après connexion
-
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert, Image as RNImage } from "react-native";
 import { componentStyles, colors, spacing, typography } from '../theme';
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import { getMyListings, deleteListing } from "../services/annonce.service";
-import EditListingModal from "../components/EditListingModal";
 import { Listing } from "../models/Annonce";
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const ListingScreen: React.FC = () => {
   const { user, token, logout } = useAuth();
   const [annonces, setAnnonces] = useState<Listing[]>([]);
-  // Plus de stockage local, tout passe par l'API
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation() as any;

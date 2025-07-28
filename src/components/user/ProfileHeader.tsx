@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
 import ProfileAvatar from "./ProfileAvatar";
-import { colors } from "../theme";
 
 interface ProfileHeaderProps {
   avatarUrl?: string;
