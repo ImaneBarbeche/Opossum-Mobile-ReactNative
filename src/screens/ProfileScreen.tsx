@@ -1,4 +1,5 @@
 import { colors } from '../theme';
+import { profileScreenStyles } from '../theme/profileScreenStyles';
 import React, { useState } from "react";
 import {
   View,
@@ -165,77 +166,30 @@ const ProfileScreen: React.FC = () => {
     <>
       {(saving || deleting) && <Loader visible={saving || deleting} />}
       <FloatingLogoutButton onLogout={logout} />
-      <ScrollView contentContainerStyle={{ marginTop: 32, marginBottom: 32 }}>
-        <View style={{ alignItems: 'center', marginBottom: 12 }}>
+      <ScrollView contentContainerStyle={profileScreenStyles.scrollContent}>
+        <View style={profileScreenStyles.avatarBlock}>
           <TouchableOpacity
             onPress={async () => {
               if (!editMode) return;
-              // Demande la permission
-              const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-              if (!permissionResult.granted) {
-                Toast.show({ type: 'error', text1: 'Permission refusée', text2: 'Autorisez l’accès aux photos pour changer l’avatar.' });
-                return;
-              }
-              const pickerResult = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.7 });
-              if (pickerResult.canceled || !pickerResult.assets?.length) return;
-              setAvatarUploading(true);
-              try {
-                const token = await getValidAccessToken();
-                if (!token) throw new Error('Token manquant');
-                const { uploadFile } = await import('../services/files.service');
-                const uploadRes = await uploadFile(pickerResult.assets[0].uri, token);
-                if (uploadRes.data && uploadRes.data.url) {
-                  setAvatar(uploadRes.data.url);
-                  Toast.show({ type: 'success', text1: 'Avatar mis à jour', text2: 'Votre photo de profil a été changée.' });
-                } else {
-                  throw new Error(uploadRes.message || 'Erreur upload');
-                }
-              } catch (e: any) {
-                let details = '';
-                if (e.response) {
-                  details = `Code: ${e.response.status} - ${e.response.data?.message || JSON.stringify(e.response.data)}`;
-                } else if (e.message) {
-                  details = e.message;
-                } else {
-                  details = JSON.stringify(e);
-                }
-                Toast.show({ type: 'error', text1: 'Erreur avatar', text2: `Erreur lors de l’upload. ${details}` });
-              } finally {
-                setAvatarUploading(false);
-              }
+              // ...existing code...
             }}
             activeOpacity={editMode ? 0.7 : 1}
-            style={{ alignSelf: 'center' }}
+            style={profileScreenStyles.avatarTouchable}
             accessibilityLabel={editMode ? 'Changer l’avatar' : 'Avatar'}
           >
             <ProfileAvatar avatarUrl={user?.avatar} firstName={user?.firstName} />
-            {avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Chargement...</Text>}
-            {editMode && !avatarUploading && <Text style={{ color: '#1976d2', fontSize: 12, marginTop: 4 }}>Changer l’avatar</Text>}
+            {avatarUploading && <Text style={profileScreenStyles.avatarLoadingText}>Chargement...</Text>}
+            {editMode && !avatarUploading && <Text style={profileScreenStyles.avatarChangeText}>Changer l’avatar</Text>}
           </TouchableOpacity>
-          <Text style={{ color: '#1976d2', fontSize: 15, marginBottom: 2, fontWeight: '600', textAlign: 'center', marginTop: 10 }}>{user?.email}</Text>
+          <Text style={profileScreenStyles.emailText}>{user?.email}</Text>
         </View>
 
-        <View style={{
-          backgroundColor: colors.white,
-          borderRadius: 24,
-          padding: 24,
-          maxWidth: 420,
-          width: '90%',
-          alignItems: 'center',
-          alignSelf: 'center',
-          marginTop: 32,
-          marginBottom: 32,
-          shadowColor: colors.black,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
-          elevation: 4,
-        }}>
+        <View style={profileScreenStyles.card}>
           {!editMode && (
-            <View style={{ width: "100%", alignItems: "flex-end", marginBottom: 2 }}>
+            <View style={profileScreenStyles.editBtnRow}>
               <TouchableOpacity
                 onPress={handleEdit}
-                style={{ marginLeft: 2, padding: 2 }}
+                style={profileScreenStyles.editBtn}
                 accessibilityLabel="Modifier le profil"
               >
                 <MaterialIcons name="edit" size={22} color="#1976d2" />
@@ -245,17 +199,7 @@ const ProfileScreen: React.FC = () => {
           {editMode ? (
             <>
               <TextInput
-                style={{
-                  width: 260,
-                  backgroundColor: '#f8f8f8',
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 8,
-                  borderWidth: 1,
-                  borderColor: '#ccc',
-                  fontSize: 16,
-                  alignSelf: 'center',
-                }}
+                style={profileScreenStyles.textInput}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Prénom"
