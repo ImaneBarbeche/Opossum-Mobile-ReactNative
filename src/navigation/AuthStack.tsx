@@ -1,4 +1,3 @@
-
 // Routes d'authentification
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -8,6 +7,7 @@ import ForgotPasswordScreen from "../screens/Auth/ForgotPasswordScreen";
 import LocationPermissionScreen from "../screens/Auth/LocationPermissionScreen";
 import VerifyEmailScreen from "../screens/Auth/VerifyEmailScreen";
 import ResetPasswordScreen from "../screens/Auth/ResetPasswordScreen";
+
 
 const Stack = createStackNavigator();
 

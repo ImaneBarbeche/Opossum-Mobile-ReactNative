@@ -11,7 +11,7 @@ const AppNavigator = () => {
 
   // Deep linking config
   const linking = {
-    prefixes: ["http://192.168.1.225:8081", "https://opossum.app", "opossum://"],
+    prefixes: ["exp://192.168.1.225:8081", "https://opossum.app", "opossum://"],
     config: {
       screens: {
         // AuthStack screens
