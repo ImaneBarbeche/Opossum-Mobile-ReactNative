@@ -25,7 +25,9 @@
     },
     "web": {
       "favicon": "./assets/icons/favicon.png"
-    }
+    },
+
+    "scheme": "opossum"
     
   }
 }

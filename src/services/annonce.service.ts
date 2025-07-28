@@ -76,7 +76,6 @@ export const getListingDetails = async (id: string, token?: string) => {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     const item = (response.data as { data: any }).data;
-    console.log('Réponse backend annonce:', item);
     // Mapping pour compatibilité front : extrait les champs attendus à la racine
     return {
       id: item.id,
