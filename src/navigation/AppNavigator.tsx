@@ -25,6 +25,15 @@ const AppNavigator = () => {
             token: (token: string) => token,
           },
         },
+        // MainTab screens (déclarés à la racine)
+        Listing: 'listing',
+        ObjectDetail: 'object/:id',
+        EditListing: 'edit/:id',
+        PublicProfile: 'public-profile/:userId',
+        Carte: 'map',
+        Ajouter: 'add',
+        Messages: 'messages',
+        Profil: 'profile',
       },
     },
   };

@@ -11,7 +11,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 type RootStackParamList = {
   Accueil: undefined;
   MainTab: undefined;
-  // Ajoute d'autres routes ici si besoin
 };
 type Props = {
   navigation: StackNavigationProp<RootStackParamList>;

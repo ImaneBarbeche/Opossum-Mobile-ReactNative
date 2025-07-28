@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { colors, spacing } from '../../theme';
+import registerFormStyles from '../../theme/registerFormStyles';
 import Loader from '../../components/Loader';
 import Toast from 'react-native-toast-message';
 import { validateRegisterForm } from '../../utils/registerValidation';
 import register from '../../services/auth.register';
-import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
 const RegisterForm: React.FC = () => {
   const navigation = useNavigation<any>();
-  const { setUser } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -47,37 +45,23 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <View style={{
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 24,
-      backgroundColor: 'rgba(255,255,255,0.85)',
-      borderRadius: 16,
-      maxWidth: 420,
-      width: '90%',
-      shadowColor: colors.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 4,
-      alignSelf: 'center',
-    }}>
+    <View style={registerFormStyles.container}>
       {loading && <Loader visible={loading} />}
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 24 }}>Créer un compte</Text>
+      <Text style={registerFormStyles.title}>Créer un compte</Text>
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Prénom"
         value={firstName}
         onChangeText={setFirstName}
       />
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Nom"
         value={lastName}
         onChangeText={setLastName}
       />
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
@@ -85,39 +69,39 @@ const RegisterForm: React.FC = () => {
         keyboardType="email-address"
       />
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Téléphone (optionnel)"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
       />
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Mot de passe"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TextInput
-        style={{ width: '100%', borderRadius: 8, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#ccc', fontSize: 16, backgroundColor: 'rgba(255,255,255,0.6)' }}
+        style={registerFormStyles.input}
         placeholder="Confirmer le mot de passe"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
       <TouchableOpacity
-        style={{ backgroundColor: '#2e7d32', borderRadius: 8, paddingVertical: 12, paddingHorizontal: 32, marginTop: 12 }}
+        style={registerFormStyles.button}
         onPress={handleRegister}
         disabled={loading}
       >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Confirmer l'inscription</Text>
+        <Text style={registerFormStyles.buttonText}>Confirmer l'inscription</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={{ marginTop: 8, paddingVertical: 10, paddingHorizontal: 32, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.4)' }}
+        style={registerFormStyles.cancelButton}
         onPress={() => navigation.goBack()}
         disabled={loading}
       >
-        <Text style={{ color: '#2e7d32', fontWeight: 'bold', fontSize: 16 }}>Annuler l'inscription</Text>
+        <Text style={registerFormStyles.cancelButtonText}>Annuler l'inscription</Text>
       </TouchableOpacity>
     </View>
   );

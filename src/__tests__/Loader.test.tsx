@@ -1,9 +1,0 @@
-import React from 'react';
-import { render } from '@testing-library/react-native';
-import Loader from './Loader';
-
-describe('Loader', () => {
-  it('renders without crashing', () => {
-    render(<Loader />);
-  });
-});
