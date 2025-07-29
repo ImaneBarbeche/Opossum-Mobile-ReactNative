@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { geocodeAddress } from '../utils/geocode';
-import { validateLocation } from '../services/annonce.service';
+import { validateLocation } from '../services/listing.service';
 
 export function useListingLocation(useCurrentLocation: boolean, city: string, address: string) {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);

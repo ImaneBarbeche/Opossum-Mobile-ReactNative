@@ -13,8 +13,8 @@ import {
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import { getMyListings, deleteListing } from "../services/annonce.service";
-import { Listing } from "../models/Annonce";
+import { deleteListing, getUserListings } from "../services/listing.service";
+import { Listing } from "../models/Listing";
 import { useNavigation } from "@react-navigation/native";
 
 const ListingScreen: React.FC = () => {
@@ -38,7 +38,7 @@ const ListingScreen: React.FC = () => {
             (a, b) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
-          setlistings(sorted);
+          setAnnonces(sorted);
         } catch (e: any) {
           setError(e.message || "Erreur lors du chargement des listings");
         } finally {
@@ -58,7 +58,7 @@ const ListingScreen: React.FC = () => {
         onPress: async () => {
           try {
             await deleteListing(token!, id);
-            setlistings((prev) => prev.filter((item) => item.id !== id));
+            setAnnonces((prev) => prev.filter((item) => item.id !== id));
             Toast.show({ type: "success", text1: "listing supprimée" });
           } catch (e: any) {
             Toast.show({
@@ -190,7 +190,7 @@ const ListingScreen: React.FC = () => {
         <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       ) : (
         <FlatList
-          data={listings}
+          data={annonces}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
@@ -205,7 +205,7 @@ const ListingScreen: React.FC = () => {
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               );
-              setlistings(sorted);
+              setAnnonces(sorted);
             } catch (e: any) {
               setError(e.message || "Erreur lors du rafraîchissement");
             } finally {

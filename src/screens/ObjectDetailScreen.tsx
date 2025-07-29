@@ -18,7 +18,7 @@ import {
   updateListing,
   deleteListing,
   fetchDistance,
-} from "../services/annonce.service";
+} from "../services/listing.service";
 import { getCategoryLabel } from "../utils/categories";
 import * as Location from "expo-location";
 import { getValidAccessToken } from "../services/token.helper";

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import Toast from 'react-native-toast-message';
 import { validateCreateListingForm } from '../utils/createListingValidation';
-import { createListing } from '../services/annonce.service';
+import { createListing } from '../services/listing.service';
 
 type ImageType = { id: string; url: string; thumbnail: string };
 

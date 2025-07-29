@@ -7,7 +7,7 @@ import MapFilterModal from "../components/map/MapFilterModal";
 import { colors } from "../theme";
 import { Platform } from "react-native";
 import * as Location from "expo-location";
-import { fetchMapListings } from "../services/annonce.service";
+import { fetchMapListings } from "../services/listing.service";
 import { useAuth } from "../context/AuthContext";
 
 const MapScreen: React.FC = () => {
@@ -112,7 +112,9 @@ const MapScreen: React.FC = () => {
           )
         );
         const res = await fetchMapListings(params);
-        setMarkers(res.data || []);
+        // If you know the expected type, e.g. { data: any[] }
+        const data = (res as { data?: any[] }).data || [];
+        setMarkers(data);
       } catch (e) {
         setMarkers([]);
       }
