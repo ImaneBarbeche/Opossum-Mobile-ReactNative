@@ -15,15 +15,15 @@ import {
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import { getMyListings, deleteListing } from "../services/listing.service";
+import { getUserListings, deleteListing } from "../services/listing.service";
 import EditListingModal from "../components/EditListingModal";
-import { Listing } from "../models/Annonce";
+import { Listing } from "../models/Listing";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 const ListingScreen: React.FC = () => {
   const { user, token, logout } = useAuth();
-  const [annonces, setAnnonces] = useState<Listing[]>([]);
+  const [listings, setlistings] = useState<Listing[]>([]);
   // Plus de stockage local, tout passe par l'API
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,15 +37,15 @@ const ListingScreen: React.FC = () => {
         if (!token) return;
         setIsLoading(true);
         try {
-          const data = await getMyListings(token);
+          const data = await getUserListings(token);
           // Trie par date décroissante
           const sorted = [...data].sort(
             (a, b) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
-          setAnnonces(sorted);
+          setlistings(sorted);
         } catch (e: any) {
-          setError(e.message || "Erreur lors du chargement des annonces");
+          setError(e.message || "Erreur lors du chargement des listings");
         } finally {
           setIsLoading(false);
         }
@@ -55,7 +55,7 @@ const ListingScreen: React.FC = () => {
   );
 
   const handleDelete = (id: string) => {
-    Alert.alert("Confirmation", "Supprimer cette annonce ?", [
+    Alert.alert("Confirmation", "Supprimer cette listing ?", [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",
@@ -63,8 +63,8 @@ const ListingScreen: React.FC = () => {
         onPress: async () => {
           try {
             await deleteListing(token!, id);
-            setAnnonces((prev) => prev.filter((item) => item.id !== id));
-            Toast.show({ type: "success", text1: "Annonce supprimée" });
+            setlistings((prev) => prev.filter((item) => item.id !== id));
+            Toast.show({ type: "success", text1: "listing supprimée" });
           } catch (e: any) {
             Toast.show({
               type: "error",
@@ -115,7 +115,7 @@ const ListingScreen: React.FC = () => {
             <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>
               {item.title}
             </Text>
-            {/* Affichage du statut de l'annonce */}
+            {/* Affichage du statut de l'listing */}
             <Text
               style={[
                 typography.caption,
@@ -179,7 +179,7 @@ const ListingScreen: React.FC = () => {
           },
         ]}
       >
-        Mes annonces
+        Mes listings
       </Text>
       {isLoading ? (
         <ActivityIndicator
@@ -191,7 +191,7 @@ const ListingScreen: React.FC = () => {
         <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       ) : (
         <FlatList
-          data={annonces}
+          data={listings}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
@@ -200,13 +200,13 @@ const ListingScreen: React.FC = () => {
             if (!token) return;
             setIsLoading(true);
             try {
-              const data = await getMyListings(token);
+              const data = await getUserListings(token);
               const sorted = [...data].sort(
                 (a, b) =>
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               );
-              setAnnonces(sorted);
+              setlistings(sorted);
             } catch (e: any) {
               setError(e.message || "Erreur lors du rafraîchissement");
             } finally {
@@ -215,7 +215,7 @@ const ListingScreen: React.FC = () => {
           }}
           ListEmptyComponent={
             <Text style={{ textAlign: "center", marginTop: 32 }}>
-              Aucune annonce trouvée.
+              Aucune listing trouvée.
             </Text>
           }
         />

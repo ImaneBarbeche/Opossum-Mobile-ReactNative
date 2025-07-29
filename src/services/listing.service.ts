@@ -1,170 +1,167 @@
-
-// Service pour la gestion des annonces
-
-import { ANNOUNCE_ENDPOINTS } from "../config/api";
-import { CreateListingBody, FilterParams, Listing, ListingsResponse, SearchListingsParams, UpdateListingBody } from "../models/Annonce";
-import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import type { Listing } from "../models/Listing";
 
-
-export const getFilteredListings = async (params?: FilterParams, token?: string) => {
-  try {
-    const response = await axios.get(ANNOUNCE_ENDPOINTS.filter, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      params,
-    });
-    return (response.data as ListingsResponse).data.content;
-  } catch (error) {
-    throw error;
+/**
+ * Récupère toutes les annonces
+ */
+export async function getAllListings(token: string): Promise<Listing[]> {
+  const response = await fetch(`${API_BASE_URL}/listings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  const data = await response.json();
+  return data.listings || data || [];
+}
 
-export const getMyListings = async (
-  token: string,
-  params?: { userId?: string; type?: string; status?: string; page?: number; size?: number }
-): Promise<any[]> => {
-  try {
-    const response = await axios.get<ListingsResponse>(`${API_BASE_URL}/listings/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params,
-    });
-    // Mapping pour compatibilité front : extrait les champs attendus à la racine
-    const listings = (response.data.data?.content || []).map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description ?? '',
-      type: item.type,
-      category: item.category,
-      status: item.status,
-      latitude: item.location?.latitude ?? null,
-      longitude: item.location?.longitude ?? null,
-      address: item.location?.address ?? '',
-      city: item.location?.city ?? '',
-      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
-      thumbnailUrl: item.thumbnailUrl ?? '',
-      contactPhone: item.contactInfo?.phone ?? '',
-      contactEmail: item.contactInfo?.email ?? '',
-      userId: item.userId ?? '',
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      resolvedAt: item.resolvedAt,
-      owner: item.owner,
-    }));
-    return listings;
-  } catch (error) {
-    throw error;
+/**
+ * Récupère les annonces de l'utilisateur connecté
+ */
+export async function getUserListings(token: string): Promise<Listing[]> {
+  const response = await fetch(`${API_BASE_URL}/listings/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  const data = await response.json();
+  return data.listings || data || [];
+}
 
-export const createListing = async (token: string, body: CreateListingBody) => {
-  try {
-    const response = await axios.post(ANNOUNCE_ENDPOINTS.create, body, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
+/**
+ * Récupère une annonce par son ID
+ */
+export async function getListingById(token: string, id: string): Promise<Listing> {
+  const response = await fetch(`${API_BASE_URL}/listings/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  return await response.json();
+}
 
-export const getListingDetails = async (id: string, token?: string) => {
-  try {
-    const response = await axios.get(ANNOUNCE_ENDPOINTS.listingDetailsById(id), {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
-    const item = (response.data as { data: any }).data;
-    // Mapping pour compatibilité front : extrait les champs attendus à la racine
-    return {
-      id: item.id,
-      title: item.title,
-      description: item.description ?? '',
-      type: item.type,
-      category: item.category,
-      status: item.status,
-      latitude: item.location?.latitude ?? null,
-      longitude: item.location?.longitude ?? null,
-      address: item.location?.address ?? '',
-      city: item.location?.city ?? '',
-      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
-      thumbnailUrl: item.thumbnailUrl ?? '',
-      contactPhone: item.contactInfo?.phone ?? '',
-      contactEmail: item.contactInfo?.email ?? '',
-      userId: item.user?.id ?? item.userId ?? '',
-      owner: item.user ?? item.owner ?? null,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      resolvedAt: item.resolvedAt,
-    };
-  } catch (error) {
-    throw error;
+/**
+ * Crée une nouvelle annonce
+ */
+export async function createListing(token: string, listingData: Partial<Listing>): Promise<Listing> {
+  const response = await fetch(`${API_BASE_URL}/listings/create`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(listingData),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  return await response.json();
+}
 
-export const updateListing = async (id: string, token: string, body: UpdateListingBody) => {
-  try {
-    const response = await axios.put(ANNOUNCE_ENDPOINTS.update(id), body, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    // Mapping pour compatibilité front : extrait les champs attendus à la racine
-    const item = (response.data as { data: any }).data;
-    return {
-      id: item.id,
-      title: item.title,
-      description: item.description ?? '',
-      type: item.type,
-      category: item.category,
-      status: item.status,
-      latitude: item.location?.latitude ?? null,
-      longitude: item.location?.longitude ?? null,
-      address: item.location?.address ?? '',
-      city: item.location?.city ?? '',
-      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
-      thumbnailUrl: item.thumbnailUrl ?? '',
-      contactPhone: item.contactInfo?.phone ?? '',
-      contactEmail: item.contactInfo?.email ?? '',
-      userId: item.user?.id ?? item.userId ?? '',
-      owner: item.user ?? item.owner ?? null,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      resolvedAt: item.resolvedAt,
-    };
-  } catch (error) {
-    throw error;
+/**
+ * Met à jour une annonce
+ */
+export async function updateListing(token: string, id: string, listingData: Partial<Listing>): Promise<Listing> {
+  const response = await fetch(`${API_BASE_URL}/listings/${id}/update`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(listingData),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  return await response.json();
+}
 
-export const deleteListing = async (id: string, token: string) => {
-  try {
-    const response = await axios.delete(ANNOUNCE_ENDPOINTS.delete(id), {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
+/**
+ * Supprime une annonce
+ */
+export async function deleteListing(token: string, id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/listings/${id}/delete`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+}
 
-export const searchListings = async (params?: SearchListingsParams, token?: string) => {
-  try {
-    // Nettoie les paramètres pour ne pas envoyer de valeurs undefined
-    const cleanParams = Object.fromEntries(Object.entries(params || {}).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
-    const response = await axios.get<ListingsResponse>(ANNOUNCE_ENDPOINTS.search, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      params: cleanParams,
-    });
-    // Retourne le tableau d'annonces (data.content)
-    return response.data.data.content;
-  } catch (error) {
-    throw error;
+/**
+ * Recherche d'annonces
+ */
+export async function searchListings(token: string, searchParams: any): Promise<Listing[]> {
+  const queryString = new URLSearchParams(searchParams).toString();
+  const response = await fetch(`${API_BASE_URL}/listings/search?${queryString}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   }
-};
+  
+  const data = await response.json();
+  return data.listings || data || [];
+}
+
+/**
+ * Filtre les annonces
+ */
+export async function filterListings(token: string, filters: any): Promise<Listing[]> {
+  const response = await fetch(`${API_BASE_URL}/listings/filter`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(filters),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data.listings || data || [];
+}

@@ -1,4 +1,3 @@
-// Messagerie privée
 import React, { useEffect, useState, useRef } from "react";
 import {
   View,
@@ -21,21 +20,13 @@ import {
 } from "../services/message.service";
 import MessageBubble from "../components/MessageBubble";
 import FileUploadButton from "../components/FileUploadButton";
+import type { Message } from "../models/Message";
 
-// Types pour les props et les messages
 type Props = {
   token: string;
   listingId: string;
   otherUserId: string;
   myUserId: string;
-};
-
-type Message = {
-  id: string;
-  senderId: string;
-  content: string;
-  sentAt: string;
-  isRead: boolean;
 };
 
 const ChatScreen: React.FC<Props> = ({
@@ -49,17 +40,19 @@ const ChatScreen: React.FC<Props> = ({
   const [input, setInput] = useState("");
   const flatListRef = useRef<FlatList>(null);
 
-  // Charger les messages et marquer comme lus à l'ouverture
   useEffect(() => {
     setLoading(true);
-    getConversationMessages(token, listingId, otherUserId)
+    getConversationMessages(token, listingId)
       .then((res) => {
-        const response = res as {
+        const response = res as unknown as {
           data: { success: boolean; data: { messages: Message[] } };
         };
-        if (response.data.success) setMessages(response.data.data.messages);
-        // Marquer tous les messages comme lus d’un coup
-        markConversationAsRead(token, listingId, otherUserId).catch(() => {});
+        if (response.data.success) {
+          setMessages(
+            response.data.data.messages.filter((msg) => msg.status === "ACTIVE")
+          );
+        }
+        markConversationAsRead(token, listingId).catch(() => {});
       })
       .catch(() => {
         /* gestion d’erreur simplifiée */
@@ -67,12 +60,11 @@ const ChatScreen: React.FC<Props> = ({
       .finally(() => setLoading(false));
   }, [token, listingId, otherUserId]);
 
-  // Envoyer un message texte
   const handleSend = () => {
     if (!input.trim()) return;
-    sendMessage(token, listingId, otherUserId, input.trim())
+    sendMessage(token, listingId, input.trim())
       .then((res) => {
-        const response = res as {
+        const response = res as unknown as {
           data: { success: boolean; data: { message: Message } };
         };
         if (response.data.success) {
@@ -84,12 +76,11 @@ const ChatScreen: React.FC<Props> = ({
       .catch(() => Alert.alert("Erreur", "Impossible d'envoyer le message"));
   };
 
-  // Envoi d’une image
   const handleImageUploaded = (fileData: any) => {
     const imageUrl = fileData.url || fileData.fileUrl;
-    sendMessage(token, listingId, otherUserId, `[photo] ${imageUrl}`)
+    sendMessage(token, listingId, `[photo] ${imageUrl}`)
       .then((res) => {
-        const response = res as {
+        const response = res as unknown as {
           data: { success: boolean; data: { message: Message } };
         };
         if (response.data.success)
@@ -98,7 +89,6 @@ const ChatScreen: React.FC<Props> = ({
       .catch(() => Alert.alert("Erreur", "Impossible d’envoyer la photo"));
   };
 
-  // Suppression d’un message
   const handleDeleteMessage = (msgId: string) => {
     Alert.alert("Supprimer", "Confirmer la suppression de ce message ?", [
       { text: "Annuler", style: "cancel" },
@@ -108,9 +98,10 @@ const ChatScreen: React.FC<Props> = ({
         onPress: () => {
           deleteMessage(token, msgId)
             .then((res) => {
-              const response = res as { data: { success: boolean } };
-              if (response.data.success)
-                setMessages((m) => m.filter((msg) => msg.id !== msgId));
+              const response = res as unknown as { data: { success: boolean } };
+              if (response.data.success) {
+                setMessages((m) => m.filter((msg) => msg.messageId !== msgId));
+              }
             })
             .catch(() => Alert.alert("Erreur", "Impossible de supprimer"));
         },
@@ -130,20 +121,23 @@ const ChatScreen: React.FC<Props> = ({
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.messageId}
         renderItem={({ item }) => (
           <MessageBubble
-            content={item.content}
+            content={
+              item.status === "DELETED" ? "[Message supprimé]" : item.content
+            }
             isFromMe={item.senderId === myUserId}
             sentAt={item.sentAt}
             isRead={item.isRead}
             onDelete={
-              item.senderId === myUserId
-                ? () => handleDeleteMessage(item.id)
+              item.senderId === myUserId && item.status === "ACTIVE"
+                ? () => handleDeleteMessage(item.messageId)
                 : undefined
             }
             isDeletable={
               item.senderId === myUserId &&
+              item.status === "ACTIVE" &&
               Date.now() - new Date(item.sentAt).getTime() < 24 * 60 * 60 * 1000
             }
             imageUrl={
@@ -151,6 +145,8 @@ const ChatScreen: React.FC<Props> = ({
                 ? item.content.slice(8)
                 : undefined
             }
+            deletedAt={item.deletedAt}
+            edited={item.edited}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>Aucun message</Text>}

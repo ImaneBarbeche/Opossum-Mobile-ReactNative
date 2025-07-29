@@ -1,16 +1,14 @@
-// Navigation principale après login
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5, Feather } from "@expo/vector-icons";
 
-// Import des écrans à afficher dans les onglets
 import ListingStack from "./ListingStack";
 import MapScreen from "../screens/MapScreen";
-import MessagingStack from "./MessagingStack"; // <-- Utilisation de la stack messagerie !
+import MessagingStack from "./MessagingStack";
 import ProfileScreen from "../screens/ProfileScreen";
 import CreateListingScreen from "../screens/CreateListingScreen";
-import { useAuth } from "../context/AuthContext"; // Pour passer le token et l'id à la messagerie
+import { useAuth } from "../context/AuthContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -68,28 +66,23 @@ const MainTab = () => {
         },
       })}
     >
-      {/* Onglet Mes annonces */}
       <Tab.Screen name="Mes annonces" component={ListingStack} />
-      {/* Onglet Carte */}
       <Tab.Screen name="Carte" component={MapScreen} />
-      {/* Onglet Ajouter */}
       <Tab.Screen
         name="Ajouter"
         component={CreateListingScreen}
         options={{
-          tabBarLabel: "", // Pas de label sous le bouton +
+          tabBarLabel: "",
         }}
       />
-      {/* Onglet Messages : utilise bien MessagingStack, pas ChatScreen directement */}
       <Tab.Screen name="Messages">
         {(props) => (
           <MessagingStack
             {...props}
-            screenProps={{ token, myUserId: user?.id }}
+            screenProps={{ token, myUserId: user?.id || "" }}
           />
         )}
       </Tab.Screen>
-      {/* Onglet Profil */}
       <Tab.Screen name="Profil" component={ProfileScreen} />
     </Tab.Navigator>
   );

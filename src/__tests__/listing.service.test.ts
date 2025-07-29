@@ -50,3 +50,12 @@ describe('listing.service', () => {
     expect(res[0].id).toBe('7');
   });
 });
+/**
+ * Fetches filtered listings from the API.
+ * Returns an array of listing objects.
+ */
+export async function getFilteredListings(): Promise<any[]> {
+  const response = await axios.get('/api/listings/filtered');
+  // Assuming the response structure is { data: { data: { content: [...] } } }
+  return response.data.data.content;
+}

@@ -6,9 +6,11 @@ type Props = {
   isFromMe: boolean;
   sentAt: string;
   isRead: boolean;
-  imageUrl?: string; // si le message contient une image
+  imageUrl?: any;
   onDelete?: () => void;
   isDeletable?: boolean;
+  deletedAt?: any;
+  edited?: any;
 };
 
 export default function MessageBubble({
@@ -16,8 +18,10 @@ export default function MessageBubble({
   isFromMe,
   sentAt,
   isRead,
-  imageUrl,
   onDelete,
+  imageUrl,
+  deletedAt,
+  edited,
   isDeletable,
 }: Props) {
   return (

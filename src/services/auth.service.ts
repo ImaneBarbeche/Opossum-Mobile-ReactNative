@@ -156,3 +156,15 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
     throw error;
   }
 }
+
+export function forgotPassword(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+
+export function resetPassword(arg0: string, arg1: string): any {
+  throw new Error('Function not implemented.');
+}
+
+export function register(arg0: { email: string; password: string; confirmPassword: string; firstName: string; lastName: string; acceptTerms: boolean; }) {
+  throw new Error('Function not implemented.');
+}

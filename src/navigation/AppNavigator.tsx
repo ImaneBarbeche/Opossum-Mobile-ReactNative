@@ -1,21 +1,14 @@
-// AppNavigator.tsx
-// Gestion de la navigation de l'application
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import AuthStack from "./AuthStack";
 import MainTab from "./MainTab";
-import { useAuth } from "../context/AuthContext"; // Import du contexte d'authentification
-
-// Import des nouveaux écrans
-import MyMessageListingsScreen from "../screens/Messaging/MyMessageListingsScreen";
-import ListingConversationScreen from "../screens/Messaging/ListingConversationScreen"; // Correction du nom de l'import
+import { useAuth } from "../context/AuthContext";
 
 // Deep linking config
 const linking = {
   prefixes: ["http://192.168.1.7:8081", "https://opossum.app", "opossum://"],
   config: {
     screens: {
-      // AuthStack screens
       Login: "login",
       Register: "register",
       ForgotPassword: "forgot-password",
@@ -25,12 +18,11 @@ const linking = {
           token: (token: string) => `${token}`,
         },
       },
-      // Nouvelle partie pour les messages
       MyMessageListings: "mes-messages",
-      ListingConversation: {
-        path: "listing/:listingId/conversation",
+      ConversationScreen: {
+        path: "conversation/:conversationId",
         parse: {
-          listingId: (id: string) => Number(id),
+          conversationId: (id: string) => `${id}`,
         },
       },
     },
@@ -39,8 +31,6 @@ const linking = {
 
 const AppNavigator = () => {
   const { isAuthenticated, user } = useAuth();
-
-  // Gestion du status utilisateur : si BLOCKED ou DELETED, reste sur AuthStack
   const userStatus = user?.status;
   const canAccessApp = isAuthenticated && userStatus === "ACTIVE";
 

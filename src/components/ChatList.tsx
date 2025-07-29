@@ -8,18 +8,21 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-// Service pour récupérer tous les messages de l'utilisateur
-import { getUserMessages } from "./../services/message.service";
+// If getUserConversations is a default export:
+import { getUserConversations } from "../services/message.service";
+// Or, if the correct named export is different, e.g. 'fetchUserConversations':
+// import { fetchUserConversations as getUserConversations } from "../services/message.service";
+import type { Message } from "../models/Message";
 
 type Props = {
-  token: string; // JWT de l'utilisateur connecté
-  myUserId: string; // ID de l'utilisateur connecté
+  token: string;
+  myUserId: string;
   onSelectConversation: (listingId: string, otherUserId: string) => void;
 };
 
 type Thread = {
   listingId: string;
-  annonceTitle: string;
+  listingTitle: string;
   otherUser: {
     id: string;
     firstName: string;
@@ -33,15 +36,6 @@ type Thread = {
   unreadCount: number;
 };
 
-// Ajout du type pour la réponse API
-type GetUserMessagesResponse = {
-  success: boolean;
-  data: {
-    messages: any[];
-    // Ajoute d'autres propriétés si besoin
-  };
-};
-
 export default function ChatList({
   token,
   myUserId,
@@ -53,62 +47,34 @@ export default function ChatList({
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    getUserMessages(token, myUserId)
-      .then((res) => {
-        const response = res.data as GetUserMessagesResponse;
-        if (mounted && response.success) {
-          const messages = response.data.messages; // Liste plate de messages
-          // Regroupe les messages par annonce et autre user
+
+    getUserConversations(token, myUserId)
+      .then((conversations) => {
+        if (mounted) {
           const threadMap = new Map<string, Thread>();
-          messages.forEach((msg) => {
-            const otherId =
-              msg.senderId === myUserId ? msg.receiverId : msg.senderId;
-            const key = `${msg.listingId}-${otherId}`;
-            const isUnread = !msg.isRead && msg.senderId !== myUserId;
-            if (!threadMap.has(key)) {
-              threadMap.set(key, {
-                listingId: msg.listingId,
-                annonceTitle: msg.annonceTitle ?? "Annonce",
-                otherUser: {
-                  id: otherId,
-                  firstName: msg.otherUserFirstName ?? "",
-                  lastName: msg.otherUserLastName ?? "",
-                  avatarUrl: msg.otherUserAvatarUrl,
-                },
-                lastMessage: {
-                  content: msg.content,
-                  sentAt: msg.sentAt,
-                },
-                unreadCount: isUnread ? 1 : 0,
-              });
-            } else {
-              const thread = threadMap.get(key)!;
-              // Met à jour le dernier message si celui-ci est plus récent
-              if (new Date(msg.sentAt) > new Date(thread.lastMessage.sentAt)) {
-                thread.lastMessage = {
-                  content: msg.content,
-                  sentAt: msg.sentAt,
-                };
-              }
-              // Incrémente le compteur de non lus
-              if (isUnread) {
-                thread.unreadCount += 1;
-              }
-            }
+          conversations.forEach((conversation) => {
+            const thread: Thread = {
+              listingId: conversation.listingId,
+              listingTitle: conversation.listingTitle,
+              otherUser: Array.isArray(conversation.otherUser)
+                ? conversation.otherUser.find((u: any) => u.id !== myUserId) ||
+                  conversation.otherUser[0]
+                : conversation.otherUser,
+              lastMessage: conversation.lastMessage,
+              unreadCount: conversation.unreadCount,
+            };
+            threadMap.set(conversation.listingId, thread);
           });
-          setThreads(
-            Array.from(threadMap.values()).sort(
-              (a, b) =>
-                new Date(b.lastMessage.sentAt).getTime() -
-                new Date(a.lastMessage.sentAt).getTime()
-            )
-          );
+          setThreads(Array.from(threadMap.values()));
         }
       })
-      .catch(() => {
-        /* gestion d'erreur simplifiée */
+      .catch((error) => {
+        console.error("Error fetching conversations:", error);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
     return () => {
       mounted = false;
     };
@@ -136,7 +102,7 @@ export default function ChatList({
             style={styles.avatar}
           />
           <View style={styles.info}>
-            <Text style={styles.title}>{item.annonceTitle}</Text>
+            <Text style={styles.title}>{item.listingTitle}</Text>
             <Text style={styles.user}>
               {item.otherUser.firstName} {item.otherUser.lastName}
             </Text>

@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import MyMessageListingsScreen from "../screens/Messaging/MyMessageListingsScreen";
-import ListingConversationScreen from "../screens/Messaging/ListingConversationScreen";
+import ConversationScreen from "../screens/ConversationsScreen";
 
 const Stack = createStackNavigator();
 
@@ -17,10 +17,9 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
 
   return (
     <Stack.Navigator id={undefined}>
-      {/* Liste des annonces où l'utilisateur a écrit un message */}
       <Stack.Screen
         name="MyMessageListings"
-        options={{ title: "Mes Messages" }}
+        options={{ title: "Mes Conversations" }}
       >
         {(props) => (
           <MyMessageListingsScreen
@@ -30,17 +29,12 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
           />
         )}
       </Stack.Screen>
-      {/* Conversation entre l'utilisateur et le propriétaire pour une annonce */}
       <Stack.Screen
-        name="AnnonceConversation"
+        name="ConversationScreen"
         options={{ title: "Conversation" }}
       >
         {(props) => (
-          <ListingConversationScreen
-            {...props}
-            token={token}
-            myUserId={myUserId}
-          />
+          <ConversationScreen {...props} token={token} myUserId={myUserId} />
         )}
       </Stack.Screen>
     </Stack.Navigator>
