@@ -26,5 +26,6 @@
     "web": {
       "favicon": "./assets/icons/favicon.png"
     }
+    
   }
 }

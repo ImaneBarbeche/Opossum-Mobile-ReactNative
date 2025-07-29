@@ -6,7 +6,8 @@ import { Image } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import Toast from "react-native-toast-message";
 import Loader from "../../components/Loader";
-
+import { useEffect } from "react";
+import * as Linking from "expo-linking";
 import { validateLoginForm } from "../../utils/loginValidation";
 
 /**
@@ -22,6 +23,11 @@ const LoginScreen = ({ navigation }: any) => {
   // État local pour stocker le mot de passe saisi
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    const url = Linking.createURL("auth/reset-password?token=abc123");
+    console.log("Lien deep généré :", url);
+  }, []);
+
   // Fonction pour gérer la connexion
   const handleLogin = async () => {
     const validation = validateLoginForm({ email, password });
@@ -34,10 +40,7 @@ const LoginScreen = ({ navigation }: any) => {
     }
     try {
       await login({ email, password });
-      // Si le login échoue pour cause de statut (BLOCKED/DELETED), Toast sera géré dans AuthContext,
-      // tu peux rajouter ici une gestion d'affichage si tu veux aller plus loin.
     } catch (error: any) {
-      // Si le login refuse à cause du statut, le message d'erreur vient d'AuthContext
       Toast.show({
         type: "error",
         text1: "Erreur",

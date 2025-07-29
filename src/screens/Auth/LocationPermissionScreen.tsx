@@ -11,7 +11,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 type RootStackParamList = {
   Accueil: undefined;
   MainTab: undefined;
-  // Ajoute d'autres routes ici si besoin
 };
 type Props = {
   navigation: StackNavigationProp<RootStackParamList>;
@@ -22,7 +21,13 @@ const LocationPermissionScreen: React.FC<Props> = () => {
   const { setIsAuthenticated } = useAuth();
   // Fonction appelée si l'utilisateur accepte
   const handleAccept = async () => {
-    await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission refusée');
+      return;
+    }
+    const loc = await Location.getCurrentPositionAsync({});
+    alert(`Lat: ${loc.coords.latitude}, Lon: ${loc.coords.longitude}`);
     setIsAuthenticated(true);
   };
 

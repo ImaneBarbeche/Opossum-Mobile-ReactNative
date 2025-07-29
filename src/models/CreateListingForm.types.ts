@@ -1,0 +1,32 @@
+export interface CreateListingFormProps {
+  title: string;
+  setTitle: (v: string) => void;
+  type: "LOST" | "FOUND" | "";
+  setType: (v: "LOST" | "FOUND" | "") => void;
+  description: string;
+  setDescription: (v: string) => void;
+  category: string;
+  setCategory: (v: string) => void;
+  address: string;
+  setAddress: (v: string) => void;
+  city: string;
+  setCity: (v: string) => void;
+  useCurrentLocation: boolean;
+  setUseCurrentLocation: (v: boolean) => void;
+  date: Date;
+  setDate: (v: Date) => void;
+  showDatePicker: boolean;
+  setShowDatePicker: (v: boolean) => void;
+  showTimePicker: boolean;
+  setShowTimePicker: (v: boolean) => void;
+  images: { id: string, url: string, thumbnail: string }[];
+  setImages: (v: { id: string, url: string, thumbnail: string }[]) => void;
+  onRemoveImage: (idx: number) => void;
+  isLoading: boolean;
+  error: string | null;
+  onImagePick: () => void;
+  onDateChange: (event: any, selectedDate?: Date) => void;
+  onTimeChange: (event: any, selectedTime?: Date) => void;
+  onSubmit: () => void;
+  onLogout: () => void;
+}

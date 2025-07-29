@@ -1,34 +1,31 @@
-import { componentStyles, colors, spacing, typography } from "../theme";
-// Profil utilisateur
+import { colors } from "../theme";
+import { profileScreenStyles } from "../theme/profileScreenStyles";
 import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  Image,
   ScrollView,
-  Modal,
-  Platform,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { getValidAccessToken } from "../services/token.helper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { updateUserProfile, deleteUserAccount } from "../services/user.service";
 import Loader from "../components/Loader";
-import ProfileEditForm from "../components/ProfileEditForm";
-import ProfileAvatar from "../components/ProfileAvatar";
-import ProfileHeader from "../components/ProfileHeader";
-import ProfileInfoBlock from "../components/ProfileInfoBlock";
-import DeleteAccountButton from "../components/DeleteAccountButton";
+import ProfileEditForm from "../components/user/ProfileEditForm";
+import ProfileAvatar from "../components/user/ProfileAvatar";
+import ProfileInfoBlock from "../components/user/ProfileInfoBlock";
+import DeleteAccountButton from "../components/user/DeleteAccountButton";
 import { validateProfileForm } from "../utils/profileValidation";
-import ScreenBackground from "../components/ScreenBackground";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import Toast from "react-native-toast-message";
-import DeleteAccountModal from "../components/DeleteAccountModal";
+import DeleteAccountModal from "../components/user/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
+  // Avatar upload state
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const { user, logout, loading, setUser } = useAuth();
 
   // Gérer le statut utilisateur (ACTIVE, BLOCKED, DELETED)
@@ -174,7 +171,7 @@ const ProfileScreen: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  };
+  }; // <-- Add this closing bracket for handleSave
 
   // Suppression du compte avec double confirmation et saisie du mot de passe
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
@@ -182,18 +179,15 @@ const ProfileScreen: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Suppression du compte",
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => setShowPasswordPrompt(true),
-        },
-      ]
-    );
+    Toast.show({
+      type: "info",
+      text1: "Suppression du compte",
+      text2:
+        "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      position: "bottom",
+      autoHide: false,
+      onPress: () => setShowPasswordPrompt(true),
+    });
   };
 
   const handleConfirmDelete = async () => {
@@ -228,10 +222,12 @@ const ProfileScreen: React.FC = () => {
       });
       logout();
     } catch (error: any) {
+      const errorMsg =
+        error?.error?.message || "Erreur lors de la suppression.";
       Toast.show({
         type: "error",
         text1: "Erreur",
-        text2: error?.error?.message || "Erreur lors de la suppression.",
+        text2: errorMsg.length > 80 ? errorMsg.slice(0, 77) + "..." : errorMsg,
       });
     } finally {
       setDeleting(false);
@@ -241,38 +237,41 @@ const ProfileScreen: React.FC = () => {
     <>
       {(saving || deleting) && <Loader visible={saving || deleting} />}
       <FloatingLogoutButton onLogout={logout} />
-      <ScrollView contentContainerStyle={{ marginTop: 32, marginBottom: 32 }}>
-        <ProfileHeader
-          avatarUrl={user?.avatar}
-          firstName={user?.firstName}
-          email={user?.email}
-        />
+      <ScrollView contentContainerStyle={profileScreenStyles.scrollContent}>
+        <View style={profileScreenStyles.avatarBlock}>
+          <TouchableOpacity
+            onPress={async () => {
+              if (!editMode) return;
+              // ...existing code...
+            }}
+            activeOpacity={editMode ? 0.7 : 1}
+            style={profileScreenStyles.avatarTouchable}
+            accessibilityLabel={editMode ? "Changer l’avatar" : "Avatar"}
+          >
+            <ProfileAvatar
+              avatarUrl={user?.avatar}
+              firstName={user?.firstName}
+            />
+            {avatarUploading && (
+              <Text style={profileScreenStyles.avatarLoadingText}>
+                Chargement...
+              </Text>
+            )}
+            {editMode && !avatarUploading && (
+              <Text style={profileScreenStyles.avatarChangeText}>
+                Changer l’avatar
+              </Text>
+            )}
+          </TouchableOpacity>
+          <Text style={profileScreenStyles.emailText}>{user?.email}</Text>
+        </View>
 
-        <View
-          style={{
-            backgroundColor: colors.white,
-            borderRadius: 24,
-            padding: 24,
-            maxWidth: 420,
-            width: "90%",
-            alignItems: "center",
-            alignSelf: "center",
-            marginTop: 32,
-            marginBottom: 32,
-            shadowColor: colors.black,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-            elevation: 4,
-          }}
-        >
+        <View style={profileScreenStyles.card}>
           {!editMode && (
-            <View
-              style={{ width: "100%", alignItems: "flex-end", marginBottom: 2 }}
-            >
+            <View style={profileScreenStyles.editBtnRow}>
               <TouchableOpacity
                 onPress={handleEdit}
-                style={{ marginLeft: 2, padding: 2 }}
+                style={profileScreenStyles.editBtn}
                 accessibilityLabel="Modifier le profil"
               >
                 <MaterialIcons name="edit" size={22} color="#1976d2" />
@@ -282,17 +281,7 @@ const ProfileScreen: React.FC = () => {
           {editMode ? (
             <>
               <TextInput
-                style={{
-                  width: 260,
-                  backgroundColor: "#f8f8f8",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 8,
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  fontSize: 16,
-                  alignSelf: "center",
-                }}
+                style={profileScreenStyles.textInput}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Prénom"
@@ -304,8 +293,6 @@ const ProfileScreen: React.FC = () => {
                 setLastName={setLastName}
                 phone={phone}
                 setPhone={setPhone}
-                avatar={avatar}
-                setAvatar={setAvatar}
                 saving={saving}
                 onSave={handleSave}
                 onCancel={handleCancel}

@@ -1,7 +1,5 @@
 import Toast from "react-native-toast-message";
-// Accueil après connexion
-
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
@@ -15,16 +13,13 @@ import {
 import { componentStyles, colors, spacing, typography } from "../theme";
 import { useAuth } from "../context/AuthContext";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import { getUserListings, deleteListing } from "../services/listing.service";
-import EditListingModal from "../components/EditListingModal";
-import { Listing } from "../models/Listing";
-import { Ionicons } from "@expo/vector-icons";
+import { getMyListings, deleteListing } from "../services/annonce.service";
+import { Listing } from "../models/Annonce";
 import { useNavigation } from "@react-navigation/native";
 
 const ListingScreen: React.FC = () => {
   const { user, token, logout } = useAuth();
-  const [listings, setlistings] = useState<Listing[]>([]);
-  // Plus de stockage local, tout passe par l'API
+  const [annonces, setAnnonces] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation() as any;
@@ -79,7 +74,11 @@ const ListingScreen: React.FC = () => {
 
   const renderItem = ({ item }: { item: Listing }) => {
     const safeUri =
-      item.thumbnailUrl && item.thumbnailUrl.trim() !== ""
+      item.photoUrl && item.photoUrl.trim() !== ""
+        ? item.photoUrl.startsWith("http")
+          ? item.photoUrl
+          : `${process.env.EXPO_PUBLIC_API_BASE_URL || ""}${item.photoUrl}`
+        : item.thumbnailUrl && item.thumbnailUrl.trim() !== ""
         ? item.thumbnailUrl.startsWith("http")
           ? item.thumbnailUrl
           : `${process.env.EXPO_PUBLIC_API_BASE_URL || ""}${item.thumbnailUrl}`
@@ -104,9 +103,9 @@ const ListingScreen: React.FC = () => {
           <RNImage
             source={{ uri: safeUri }}
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: 8,
+              width: 120,
+              height: 120,
+              borderRadius: 16,
               marginRight: 12,
               backgroundColor: colors.mediumGray,
             }}

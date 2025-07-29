@@ -6,19 +6,23 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from "react-native";
-import { componentStyles, colors, spacing, typography } from "../theme";
+import Toast from "react-native-toast-message";
+import { componentStyles, colors, typography } from "../theme";
+import { objectDetailScreenStyles } from "../theme/objectDetailScreenStyles";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   getListingDetails,
   updateListing,
   deleteListing,
-} from "../services/listing.service";
+  fetchDistance,
+} from "../services/annonce.service";
+import { getCategoryLabel } from "../utils/categories";
+import * as Location from "expo-location";
 import { getValidAccessToken } from "../services/token.helper";
-import EditListingModal from "../components/EditListingModal";
+import EditListingModal from "../components/listings/EditListingModal";
 
 type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 
@@ -31,9 +35,59 @@ const ObjectDetailScreen = () => {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  // Distance à l'annonce (doit être après data)
+  const [distanceText, setDistanceText] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   // On ne calcule isOwner que si data est défini
   const isOwner =
     data && (user?.id === data.user?.id || user?.id === data.userId);
+
+  // Récupère la position réelle de l'utilisateur au montage
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
+        let location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (location?.coords) {
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (
+      data &&
+      data.latitude &&
+      data.longitude &&
+      userLocation &&
+      userLocation.latitude &&
+      userLocation.longitude
+    ) {
+      fetchDistance({
+        fromLat: userLocation.latitude,
+        fromLon: userLocation.longitude,
+        toLat: data.latitude,
+        toLon: data.longitude,
+        unit: "km",
+      })
+        .then((res) => {
+          setDistanceText(res.data.distance.text);
+        })
+        .catch(() => setDistanceText(null));
+    }
+  }, [data, userLocation]);
   useEffect(() => {
     setLoading(true);
     getListingDetails(id)
@@ -64,212 +118,179 @@ const ObjectDetailScreen = () => {
   if (!data) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.lightGray }}>
+    <View style={objectDetailScreenStyles.root}>
       <View style={{ height: 32 }} />
       <View
         style={[
-          componentStyles.card,
-          {
-            flex: 1,
-            minHeight: 420,
-            margin: 16,
-            backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
-            padding: 24,
-            justifyContent: "flex-start",
-          },
+          objectDetailScreenStyles.card,
+          { backgroundColor: data.type === "FOUND" ? "#DFF6E0" : "#FDF6E3" },
         ]}
       >
         {/* Boutons d'action en haut à droite */}
         {isOwner && (
-          <View
-            style={{
-              position: "absolute",
-              top: 18,
-              right: 18,
-              flexDirection: "row",
-              zIndex: 10,
-            }}
-          >
+          <View style={objectDetailScreenStyles.actionRow}>
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.primary,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                marginRight: 8,
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: "#000",
-                shadowOpacity: 0.08,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
+              style={[
+                objectDetailScreenStyles.actionBtn,
+                { backgroundColor: colors.primary, marginRight: 8 },
+              ]}
               onPress={() => setEditModalVisible(true)}
             >
               <Ionicons name="pencil" size={20} color={colors.white} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.error,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: "#000",
-                shadowOpacity: 0.08,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
+              style={[
+                objectDetailScreenStyles.actionBtn,
+                { backgroundColor: colors.error },
+              ]}
               onPress={async () => {
-                Alert.alert(
-                  "Supprimer l'annonce",
-                  "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
-                  [
-                    { text: "Annuler", style: "cancel" },
-                    {
-                      text: "Supprimer",
-                      style: "destructive",
-                      onPress: async () => {
-                        try {
-                          setLoading(true);
-                          const token = await getValidAccessToken();
-                          if (!token) throw new Error("Token manquant");
-                          await deleteListing(data.id, token);
-                          Alert.alert(
-                            "Succès",
-                            "Annonce supprimée avec succès"
-                          );
-                          navigation.goBack();
-                        } catch (e: any) {
-                          let backendMsg =
-                            e?.response?.data?.message ||
-                            e?.response?.data?.error ||
-                            e.message ||
-                            "Erreur lors de la suppression";
-                          if (typeof backendMsg !== "string")
-                            backendMsg = JSON.stringify(backendMsg);
-                          Alert.alert("Erreur", backendMsg);
-                        } finally {
-                          setLoading(false);
-                        }
-                      },
-                    },
-                  ]
-                );
+                // Toast de confirmation à la place de l'alerte de suppression
+                Toast.show({
+                  type: "info",
+                  text1: "Suppression",
+                  text2:
+                    "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
+                  position: "bottom",
+                  autoHide: false,
+                  onPress: async () => {
+                    try {
+                      setLoading(true);
+                      const token = await getValidAccessToken();
+                      if (!token) throw new Error("Token manquant");
+                      await deleteListing(data.id, token);
+                      Toast.show({
+                        type: "success",
+                        text1: "Succès",
+                        text2: "Annonce supprimée avec succès",
+                        position: "bottom",
+                      });
+                      navigation.goBack();
+                    } catch (e: any) {
+                      let backendMsg =
+                        e?.response?.data?.message ||
+                        e?.response?.data?.error ||
+                        e.message ||
+                        "Erreur lors de la suppression";
+                      if (typeof backendMsg !== "string")
+                        backendMsg = JSON.stringify(backendMsg);
+                      Toast.show({
+                        type: "error",
+                        text1: "Erreur",
+                        text2: backendMsg,
+                        position: "bottom",
+                      });
+                    } finally {
+                      setLoading(false);
+                    }
+                  },
+                });
               }}
             >
               <Ionicons name="trash" size={20} color={colors.white} />
             </TouchableOpacity>
           </View>
         )}
-        {/* PHOTO CENTRÉE */}
+        {/* PHOTOS : carrousel horizontal si plusieurs images, sinon image unique */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
-          <Image
-            source={{ uri: data.photoUrl || "https://via.placeholder.com/120" }}
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 16,
-              backgroundColor: colors.mediumGray,
-              marginBottom: 12,
-            }}
-          />
+          {Array.isArray(data.photos) && data.photos.length > 1 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={objectDetailScreenStyles.photoScroll}
+            >
+              {data.photos.map((url: string, idx: number) => (
+                <Image
+                  key={idx}
+                  source={{ uri: url || "https://via.placeholder.com/120" }}
+                  style={objectDetailScreenStyles.photoItem}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Image
+              source={{
+                uri:
+                  Array.isArray(data.photos) && data.photos[0]
+                    ? data.photos[0]
+                    : data.photoUrl && data.photoUrl.trim() !== ""
+                    ? data.photoUrl
+                    : data.thumbnailUrl && data.thumbnailUrl.trim() !== ""
+                    ? data.thumbnailUrl
+                    : "https://via.placeholder.com/120",
+              }}
+              style={objectDetailScreenStyles.photo}
+            />
+          )}
           {/* TITRE CENTRÉ */}
-          <Text
-            style={[typography.h2, { textAlign: "center", marginBottom: 6 }]}
-          >
-            {data.title}
-          </Text>
+          <Text style={objectDetailScreenStyles.title}>{data.title}</Text>
         </View>
         {/* TYPE ET CATÉGORIE CENTRÉS */}
         <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "bold",
-            color: data.type === "FOUND" ? colors.primary : colors.error,
-            textAlign: "center",
-            marginBottom: 2,
-          }}
+          style={[
+            objectDetailScreenStyles.type,
+            { color: data.type === "FOUND" ? colors.primary : colors.error },
+          ]}
         >
           {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
         </Text>
-        <Text style={{ fontSize: 15, textAlign: "center", marginBottom: 12 }}>
-          Catégorie : {data.category}
+        <Text style={objectDetailScreenStyles.category}>
+          Catégorie : {getCategoryLabel(data.category)}
         </Text>
         {/* DESCRIPTION */}
-        <Text
-          style={{
-            fontSize: 16,
-            marginBottom: 16,
-            color: colors.darkGray,
-            textAlign: "center",
-          }}
-        >
+        <Text style={objectDetailScreenStyles.description}>
           {data.description}
         </Text>
-        {/* LIEU */}
-        <View style={{ marginBottom: 12, alignItems: "center" }}>
-          <Text style={{ fontWeight: "bold" }}>Lieu :</Text>
+        {/* LIEU + DISTANCE */}
+        <View style={objectDetailScreenStyles.locationBlock}>
+          <Text style={objectDetailScreenStyles.locationLabel}>Lieu :</Text>
           {data.location ? (
             <>
-              <Text style={{ textAlign: "center" }}>
+              <Text style={objectDetailScreenStyles.locationText}>
                 {data.location.address || ""}
                 {data.location.address && data.location.city ? ", " : ""}
                 {data.location.city || ""}
               </Text>
-              <Text style={{ textAlign: "center" }}>
+              <Text style={objectDetailScreenStyles.locationText}>
                 Lat: {data.location.latitude ?? ""} / Long:{" "}
                 {data.location.longitude ?? ""}
               </Text>
+              {distanceText && (
+                <Text style={objectDetailScreenStyles.distance}>
+                  À {distanceText} de votre position
+                </Text>
+              )}
             </>
           ) : (
-            <Text style={{ textAlign: "center" }}>Non renseigné</Text>
+            <Text style={objectDetailScreenStyles.locationText}>
+              Non renseigné
+            </Text>
           )}
         </View>
         {/* DATE */}
-        <Text
-          style={{
-            color: colors.darkGray,
-            marginBottom: 16,
-            textAlign: "center",
-          }}
-        >
+        <Text style={objectDetailScreenStyles.date}>
           Créée le : {new Date(data.createdAt).toLocaleString()}
         </Text>
         {/* PROPRIÉTAIRE */}
         {!isOwner && data.user && (
-          <View style={{ marginBottom: 10, alignItems: "center" }}>
-            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
+          <View style={objectDetailScreenStyles.ownerBlock}>
+            <Text
+              style={[
+                objectDetailScreenStyles.locationLabel,
+                { marginBottom: 4 },
+              ]}
+            >
               Propriétaire :
             </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+            <View style={objectDetailScreenStyles.ownerRow}>
               <Image
                 source={{ uri: data.user.avatar }}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  marginRight: 10,
-                }}
+                style={objectDetailScreenStyles.ownerAvatar}
               />
               <Text>
                 {data.user.firstName} {data.user.lastName}
               </Text>
               <TouchableOpacity
-                style={{
-                  backgroundColor: colors.primary,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  marginLeft: 8,
-                }}
+                style={objectDetailScreenStyles.ownerBtn}
                 onPress={() =>
                   data.user &&
                   navigation.navigate("Mes annonces", {
@@ -278,24 +299,12 @@ const ObjectDetailScreen = () => {
                   })
                 }
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontWeight: "bold",
-                    fontSize: 14,
-                  }}
-                >
+                <Text style={objectDetailScreenStyles.ownerBtnText}>
                   Voir profil
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{
-                  backgroundColor: "#2e7d32",
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  marginLeft: 8,
-                }}
+                style={objectDetailScreenStyles.contactBtn}
                 onPress={() =>
                   data.user &&
                   navigation.navigate("Messages", {
@@ -304,13 +313,7 @@ const ObjectDetailScreen = () => {
                   })
                 }
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontWeight: "bold",
-                    fontSize: 14,
-                  }}
-                >
+                <Text style={objectDetailScreenStyles.contactBtnText}>
                   Contacter
                 </Text>
               </TouchableOpacity>
@@ -318,6 +321,67 @@ const ObjectDetailScreen = () => {
           </View>
         )}
       </View>
+
+      {/* Modal d'édition de l'annonce (propriétaire uniquement) */}
+      {isOwner && data && (
+        <EditListingModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          listing={{
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            category: data.category,
+            status: data.status,
+          }}
+          onSave={async (fields) => {
+            if (!data.id) {
+              Toast.show({
+                type: "error",
+                text1: "Erreur",
+                text2: "L'identifiant de l'annonce est manquant",
+                position: "bottom",
+              });
+              return;
+            }
+            try {
+              setLoading(true);
+              const token = await getValidAccessToken();
+              if (!token) {
+                Toast.show({
+                  type: "error",
+                  text1: "Erreur",
+                  text2: "Votre session a expiré. Veuillez vous reconnecter.",
+                  position: "bottom",
+                });
+                setLoading(false);
+                return;
+              }
+              await updateListing(data.id, token, {
+                ...fields,
+                status: fields.status as
+                  | "ACTIVE"
+                  | "RESOLVED"
+                  | "ARCHIVED"
+                  | "DELETED",
+              });
+              setEditModalVisible(false);
+              // Recharge les données après édition
+              const updated = await getListingDetails(data.id, token);
+              setData(updated);
+            } catch (e: any) {
+              Toast.show({
+                type: "error",
+                text1: "Erreur",
+                text2: e.message || "Erreur lors de la modification",
+                position: "bottom",
+              });
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
+      )}
     </View>
   );
 };

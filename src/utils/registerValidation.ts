@@ -8,7 +8,6 @@ export interface RegisterFormValues {
   password: string;
   confirmPassword: string;
   phone?: string;
-  avatar?: string;
 }
 
 export interface ValidationResult {
@@ -31,9 +30,6 @@ export function validateRegisterForm(values: RegisterFormValues): ValidationResu
   }
   if (values.phone && values.phone.length > 0 && !/^\+?[0-9\s-]{6,20}$/.test(values.phone)) {
     return { valid: false, error: { text1: 'Erreur', text2: 'Le numéro de téléphone est invalide.' } };
-  }
-  if (values.avatar && values.avatar.length > 0 && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(values.avatar)) {
-    return { valid: false, error: { text1: 'Erreur', text2: 'L\'URL de l\'avatar doit être une URL d\'image valide.' } };
   }
   if (!isStrongPassword(values.password)) {
     return { valid: false, error: { text1: 'Erreur', text2: 'Le mot de passe doit comporter au moins 8 caractères, une majuscule, une minuscule et un chiffre.' } };

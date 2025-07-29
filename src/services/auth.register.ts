@@ -13,8 +13,7 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
       lastName: data.lastName,
     };
     if (data.phone) body.phone = data.phone;
-    if (data.avatar) body.avatar = data.avatar;
-    // confirmPassword et acceptTerms ne sont pas envoyés si non attendus par l'API
+
     const response = await fetch(AUTH_ENDPOINTS.register, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,7 +52,6 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
         lastName: result.lastName,
         role: result.role,
         phone: result.phone ?? "",
-        avatar: result.avatar ?? "",
       },
       access_token: result.accessToken,
       refresh_token: result.refreshToken,

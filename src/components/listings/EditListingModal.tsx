@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity } from "react-native";
+<<<<<<< HEAD:src/components/EditListingModal.tsx
 import { Picker } from "@react-native-picker/picker";
 import { componentStyles, colors, spacing, typography } from "../theme";
+=======
+import { Picker } from '@react-native-picker/picker';
+import { componentStyles, colors, spacing, typography } from '../../theme';
+>>>>>>> AuthProfileListings:src/components/listings/EditListingModal.tsx
 
 interface EditListingModalProps {
   visible: boolean;
@@ -21,12 +26,16 @@ interface EditListingModalProps {
   }) => void;
 }
 
+<<<<<<< HEAD:src/components/EditListingModal.tsx
 const EditListingModal: React.FC<EditListingModalProps> = ({
   visible,
   onClose,
   listing,
   onSave,
 }) => {
+=======
+const EditListingModal: React.FC<EditListingModalProps> = ({ visible, onClose, listing, onSave }) => {
+>>>>>>> AuthProfileListings:src/components/listings/EditListingModal.tsx
   const [title, setTitle] = useState(listing.title);
   const [description, setDescription] = useState(listing.description);
   const [category, setCategory] = useState(listing.category);

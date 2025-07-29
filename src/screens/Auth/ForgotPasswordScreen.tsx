@@ -1,6 +1,5 @@
 // Écran de mot de passe oublié
 import React, { useState } from 'react';
-// (navigation supprimée, types inutiles retirés)
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { forgotPassword } from '../../services/auth.password';

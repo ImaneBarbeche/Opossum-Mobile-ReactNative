@@ -1,19 +1,14 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapListView from "../components/MapListView";
-import MapMapView from "../components/MapMapView";
-import MapSearchBar from "../components/MapSearchBar";
-import MapFilterModal from "../components/MapFilterModal";
-import { componentStyles, colors, spacing, typography } from "../theme";
-import { Modal } from "react-native";
-import { FlatList } from "react-native";
-import { TextInput } from "react-native";
+import MapListView from "../components/map/MapListView";
+import MapMapView from "../components/map/MapMapView";
+import MapSearchBar from "../components/map/MapSearchBar";
+import MapFilterModal from "../components/map/MapFilterModal";
+import { colors } from "../theme";
 import { Platform } from "react-native";
-import { searchListings } from "../services/listing.service";
+import * as Location from "expo-location";
+import { fetchMapListings } from "../services/annonce.service";
 import { useAuth } from "../context/AuthContext";
-
-import { Ionicons } from "@expo/vector-icons";
 
 const MapScreen: React.FC = () => {
   // Dynamically require MapView and Marker only on mobile
@@ -46,41 +41,92 @@ const MapScreen: React.FC = () => {
     setShowList(true);
   };
 
-  // Position mockée de l'utilisateur (à remplacer par la vraie localisation)
-  const userLocation = {
+  // Position réelle de l'utilisateur (par défaut Lille, remplacée après autorisation)
+  const [userLocation, setUserLocation] = React.useState({
     latitude: 50.6938,
     longitude: 3.1746,
-  };
+  });
+
+  React.useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        // Permission refusée, on garde la position par défaut
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      if (location?.coords) {
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      }
+    })();
+  }, []);
   // Etat pour les annonces récupérées via l'API
-  const [listings, setListings] = React.useState<any[]>([]);
+  const [markers, setMarkers] = React.useState<any[]>([]);
+  // Log détaillé pour debug : afficher les markers récupérés depuis l’API
+  React.useEffect(() => {
+    if (markers && markers.length > 0) {
+      const mapped = markers.map((m) => ({
+        id: m.id,
+        titre: m.title,
+        latitude: m.lat,
+        longitude: m.lng,
+      }));
+    } else {
+    }
+  }, [markers]);
+
+  // Mapping pour affichage correct sur la carte
+  const mappedMarkers = markers.map((m) => ({
+    ...m,
+    latitude: m.lat,
+    longitude: m.lng,
+    titre: m.title,
+  }));
+  // const [nearbyListings, setNearbyListings] = React.useState<any[]>([]);
   const { token } = useAuth();
 
   React.useEffect(() => {
-    const fetchListings = async () => {
+    // Récupère les markers pour la carte ET la liste (une seule source)
+    const fetchMarkers = async () => {
       try {
-        const params = {
-          q: filterQ || undefined,
-          type: filterType || undefined,
-          category: filterCategory || undefined,
-          city: filterCity || undefined,
+        // Construction dynamique des params sans les clés undefined
+        const paramsRaw = {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          radius: 10,
+          type: filterType,
+          category: filterCategory,
+          q: filterQ, // Ajout du filtre de recherche
           page: filterPage ? Number(filterPage) : 0,
           size: filterSize ? Number(filterSize) : 20,
+          token: token,
         };
-        const data = await searchListings(params, token || undefined);
-        setListings(data);
+        const params = Object.fromEntries(
+          Object.entries(paramsRaw).filter(
+            ([_, v]) => v !== undefined && v !== null
+          )
+        );
+        const res = await fetchMapListings(params);
+        setMarkers(res.data || []);
       } catch (e) {
-        setListings([]);
+        setMarkers([]);
       }
     };
-    fetchListings();
+    fetchMarkers();
   }, [
-    filterQ,
     filterType,
     filterCategory,
-    filterCity,
     filterPage,
     filterSize,
     token,
+    userLocation.latitude,
+    userLocation.longitude,
+    filterQ,
   ]);
 
   return (
@@ -100,13 +146,13 @@ const MapScreen: React.FC = () => {
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <MapListView listings={listings} />
+        <MapListView listings={mappedMarkers} />
       ) : (
         <MapMapView
           MapView={MapView}
           Marker={Marker}
           userLocation={userLocation}
-          listings={listings}
+          listings={mappedMarkers}
         />
       )}
       {/* Modale de recherche avancée extraite */}
