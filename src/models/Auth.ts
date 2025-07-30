@@ -34,7 +34,6 @@ export interface RegisterResponse {
     lastName: string;
     role?: string;
     phone?: string;
-    avatar?: string;
   };
   access_token?: string;
   refresh_token?: string;

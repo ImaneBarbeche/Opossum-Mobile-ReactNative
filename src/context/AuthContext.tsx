@@ -110,8 +110,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         firstName:
           response.user.firstName != null ? response.user.firstName : "",
         lastName: response.user.lastName != null ? response.user.lastName : "",
-        avatar:
-          response.user.avatar != null ? String(response.user.avatar) : "",
         phone: response.user.phone != null ? String(response.user.phone) : "",
       };
       setUser(userToSet);
