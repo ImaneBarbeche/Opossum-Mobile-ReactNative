@@ -1,5 +1,6 @@
 import React from "react";
-import { Button, Alert } from "react-native";
+import { Button } from "react-native";
+import Toast from "react-native-toast-message";
 import * as ImagePicker from "expo-image-picker";
 import { uploadFile } from "../services/filesService";
 
@@ -28,7 +29,7 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
     const filename = uri.split("/").pop();
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(type)) {
-      Alert.alert("Erreur", "Format non supporté (JPEG/PNG/WebP uniquement)");
+      Toast.show({ type: "error", text1: "Format non supporté", text2: "JPEG/PNG/WebP uniquement" });
       return;
     }
     // Pour la taille, il faut récupérer la taille du fichier (option selon la lib RN)
@@ -41,10 +42,10 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
       if (data.success) {
         onUploaded(data.data);
       } else {
-        Alert.alert("Erreur", "Upload échoué");
+        Toast.show({ type: "error", text1: "Erreur", text2: "Upload échoué" });
       }
     } catch (e) {
-      Alert.alert("Erreur", "Problème lors de l’upload");
+      Toast.show({ type: "error", text1: "Erreur", text2: "Problème lors de l’upload" });
     }
   };
 

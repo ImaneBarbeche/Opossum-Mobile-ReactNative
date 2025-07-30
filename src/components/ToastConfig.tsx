@@ -1,6 +1,5 @@
 import React from "react";
 import { BaseToast, ErrorToast } from "react-native-toast-message";
-import { Text } from "react-native";
 
 const toastTextStyle = {
   fontSize: 14,

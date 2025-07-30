@@ -11,7 +11,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import FloatingLogoutButton from "../components/FloatingLogoutButton";
+import Toast from "react-native-toast-message";
 import {
   getConversationMessages,
   sendMessage,
@@ -73,7 +73,7 @@ const ChatScreen: React.FC<Props> = ({
           setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
         }
       })
-      .catch(() => Alert.alert("Erreur", "Impossible d'envoyer le message"));
+      .catch(() => Toast.show({ type: "error", text1: "Erreur", text2: "Impossible d'envoyer le message" }));
   };
 
   const handleImageUploaded = (fileData: any) => {
@@ -86,27 +86,31 @@ const ChatScreen: React.FC<Props> = ({
         if (response.data.success)
           setMessages((m) => [...m, response.data.data.message]);
       })
-      .catch(() => Alert.alert("Erreur", "Impossible d’envoyer la photo"));
+      .catch(() => Toast.show({ type: "error", text1: "Erreur", text2: "Impossible d’envoyer la photo" }));
   };
 
   const handleDeleteMessage = (msgId: string) => {
-    Alert.alert("Supprimer", "Confirmer la suppression de ce message ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Supprimer",
-        style: "destructive",
-        onPress: () => {
-          deleteMessage(token, msgId)
-            .then((res) => {
-              const response = res as unknown as { data: { success: boolean } };
-              if (response.data.success) {
-                setMessages((m) => m.filter((msg) => msg.messageId !== msgId));
-              }
-            })
-            .catch(() => Alert.alert("Erreur", "Impossible de supprimer"));
+    Alert.alert(
+      "Suppression",
+      "Confirmer la suppression de ce message ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: () => {
+            deleteMessage(token, msgId)
+              .then((res) => {
+                const response = res as unknown as { data: { success: boolean } };
+                if (response.data.success) {
+                  setMessages((m) => m.filter((msg) => msg.messageId !== msgId));
+                }
+              })
+              .catch(() => Toast.show({ type: "error", text1: "Erreur", text2: "Impossible de supprimer" }));
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   if (loading) return <ActivityIndicator />;
