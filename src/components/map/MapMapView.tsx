@@ -6,9 +6,11 @@ interface MapMapViewProps {
   Marker: any;
   userLocation: { latitude: number; longitude: number };
   listings: any[];
+  region?: any;
+  onRegionChangeComplete?: (region: any) => void;
 }
 
-const MapMapView: React.FC<MapMapViewProps> = ({ MapView, Marker, userLocation, listings }) => {
+const MapMapView: React.FC<MapMapViewProps> = ({ MapView, Marker, userLocation, listings, region, onRegionChangeComplete }) => {
   if (Platform.OS === 'web' || !MapView) {
     return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>La carte n'est pas disponible sur le web.</Text></View>;
   }
@@ -27,12 +29,13 @@ const MapMapView: React.FC<MapMapViewProps> = ({ MapView, Marker, userLocation, 
     }}>
       <MapView
         style={{ flex: 1 }}
-        region={{
+        region={region ? region : {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
+        onRegionChangeComplete={onRegionChangeComplete}
       >
         <Marker
           coordinate={userLocation}

@@ -23,18 +23,17 @@ const MapScreen: React.FC = () => {
   // Etats pour les filtres avancés
   const [filterQ, setFilterQ] = React.useState<string>("");
   const [filterType, setFilterType] = React.useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = React.useState<string | null>(
-    null
-  );
+  const [filterCategory, setFilterCategory] = React.useState<string | null>(null);
   const [filterCity, setFilterCity] = React.useState<string>("");
   const [filterPage, setFilterPage] = React.useState<string>("0");
   const [filterSize, setFilterSize] = React.useState<string>("20");
   // Etat pour basculer entre carte et liste
   const [showList, setShowList] = React.useState(false);
   const { user, logout, loading } = useAuth();
-  // Etat pour la barre de recherche simple (fusionné avec filterQ)
   // Etat pour la modale de recherche avancée
   const [filterModalVisible, setFilterModalVisible] = React.useState(false);
+  // Etat pour la région visible de la carte
+  const [mapRegion, setMapRegion] = React.useState<any | null>(null);
 
   // Handler pour basculer vers la vue liste (à brancher sur la navigation)
   const goToListView = () => {
@@ -61,6 +60,13 @@ const MapScreen: React.FC = () => {
         setUserLocation({
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
+        });
+        // Initialiser la région de la carte
+        setMapRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
         });
       }
     })();
@@ -90,15 +96,25 @@ const MapScreen: React.FC = () => {
   // const [nearbyListings, setNearbyListings] = React.useState<any[]>([]);
   const { token } = useAuth();
 
+  // Fonction pour calculer le rayon (en km) à partir de la région de la carte
+  function calculateRadius(region: any) {
+    if (!region) return 10; // Valeur par défaut si la région n'est pas définie
+    // Approximation : 1° latitude ≈ 111 km
+    const latRadius = (region.latitudeDelta || 0.0922) * 111;
+    // On prend la moitié pour avoir le rayon depuis le centre
+    return Math.round(latRadius / 2);
+  }
+
   React.useEffect(() => {
     // Récupère les markers pour la carte ET la liste (une seule source)
     const fetchMarkers = async () => {
       try {
+        const dynamicRadius = calculateRadius(mapRegion);
         // Construction dynamique des params sans les clés undefined
         const paramsRaw = {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
-          radius: 10,
+          radius: dynamicRadius,
           type: filterType,
           category: filterCategory,
           q: filterQ, // Ajout du filtre de recherche
@@ -129,6 +145,7 @@ const MapScreen: React.FC = () => {
     userLocation.latitude,
     userLocation.longitude,
     filterQ,
+    mapRegion,
   ]);
 
   return (
@@ -155,6 +172,8 @@ const MapScreen: React.FC = () => {
           Marker={Marker}
           userLocation={userLocation}
           listings={mappedMarkers}
+          region={mapRegion}
+          onRegionChangeComplete={setMapRegion}
         />
       )}
       {/* Modale de recherche avancée extraite */}

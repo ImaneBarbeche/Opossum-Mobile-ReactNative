@@ -62,7 +62,7 @@ const ChatScreen: React.FC<Props> = ({
 
   const handleSend = () => {
     if (!input.trim()) return;
-    sendMessage(token, listingId, input.trim())
+    sendMessage(token, listingId, input.trim(), otherUserId)
       .then((res) => {
         const response = res as unknown as {
           data: { success: boolean; data: { message: Message } };
@@ -78,7 +78,7 @@ const ChatScreen: React.FC<Props> = ({
 
   const handleImageUploaded = (fileData: any) => {
     const imageUrl = fileData.url || fileData.fileUrl;
-    sendMessage(token, listingId, `[photo] ${imageUrl}`)
+    sendMessage(token, listingId, `[photo] ${imageUrl}`, otherUserId)
       .then((res) => {
         const response = res as unknown as {
           data: { success: boolean; data: { message: Message } };
