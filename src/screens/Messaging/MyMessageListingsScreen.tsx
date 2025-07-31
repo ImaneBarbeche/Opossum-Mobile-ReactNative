@@ -10,6 +10,7 @@ import {
 import { componentStyles, colors, spacing, typography } from "../../theme";
 import type { Conversation } from "../../models/Conversation";
 import { getMyMessageListings } from "../../services/message.service";
+import { User } from "../../models/User";
 
 type MyMessageListingsScreenProps = {
   token: string;
@@ -194,13 +195,21 @@ export default function MyMessageListingsScreen({
         keyExtractor={(item) => item.conversationId}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() =>
-              navigation?.navigate("ConversationScreen", {
+            onPress={() => {
+              // Find the other user (not the current user)
+              const otherUser =
+                item.otherUser.find((user) => user.id !== myUserId) ||
+                item.otherUser[0];
+
+              navigation?.navigate("ConversationChatScreen", {
+                mode: "chat",
                 conversationId: item.conversationId,
-                listingTitle: item.listingTitle,
                 listingId: item.listingId,
-              })
-            }
+                otherUserId: otherUser.id,
+                otherUserName: `${otherUser.firstName} ${otherUser.lastName}`,
+                listingTitle: item.listingTitle,
+              });
+            }}
             style={[
               componentStyles.card,
               {

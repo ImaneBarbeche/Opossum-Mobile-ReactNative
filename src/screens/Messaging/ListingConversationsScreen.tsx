@@ -17,19 +17,19 @@ type RouteParams = {
   listingTitle: string; // ✅ Changé de "titre" à "listingTitle" pour cohérence
 };
 
-type ListingConversationScreenProps = {
+type ListingConversationsScreenProps = {
   token: string;
   myUserId: string;
   navigation?: any;
   route?: any;
 };
 
-export default function ListingConversationScreen({
+export default function ListingConversationsScreen({
   token,
   myUserId,
   navigation,
   route,
-}: ListingConversationScreenProps) {
+}: ListingConversationsScreenProps) {
   const routeParams =
     route?.params ??
     useRoute<RouteProp<{ params: RouteParams }, "params">>().params;
