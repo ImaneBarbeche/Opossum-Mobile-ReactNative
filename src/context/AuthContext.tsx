@@ -35,7 +35,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // État pour le token JWT
   const [token, setToken] = useState<string | null>(null);
 
-  // Debug: log user and token changes
   React.useEffect(() => {}, [user]);
   React.useEffect(() => {}, [token]);
 

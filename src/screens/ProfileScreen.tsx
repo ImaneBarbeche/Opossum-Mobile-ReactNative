@@ -88,7 +88,6 @@ const ProfileScreen: React.FC = () => {
     );
   }
 
-  // Log du user à chaque rendu pour debug
   React.useEffect(() => {}, [user]);
 
   const [editMode, setEditMode] = useState(false);

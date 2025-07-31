@@ -49,7 +49,6 @@ export default function MyMessageListingsScreen({
 
         // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
         const data = await getMyMessageListings(token, myUserId, 0, 10);
-        console.log("[DEBUG] getMyMessageListings raw data:", data);
         if (Array.isArray(data)) {
           setAnnouncements(data);
         } else {
