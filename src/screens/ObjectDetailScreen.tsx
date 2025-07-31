@@ -82,8 +82,8 @@ const ObjectDetailScreen = () => {
         toLon: data.longitude,
         unit: "km",
       })
-        .then((res) => {
-          setDistanceText(res.data.distance.text);
+        .then((res: any) => {
+          setDistanceText(res.data?.distance?.text ?? null);
         })
         .catch(() => setDistanceText(null));
     }

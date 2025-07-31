@@ -3,6 +3,7 @@
     "name": "opossum-mobile",
     "slug": "opossum-mobile",
     "version": "1.0.0",
+    "scheme": "opposum-mobile",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
     "userInterfaceStyle": "light",

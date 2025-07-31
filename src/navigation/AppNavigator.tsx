@@ -38,7 +38,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer linking={linking} fallback={<></>}>
-      {canAccessApp ? <MainTab /> : <AuthStack />}
+      {isAuthenticated ? <MainTab /> : <AuthStack />}
     </NavigationContainer>
   );
 };
