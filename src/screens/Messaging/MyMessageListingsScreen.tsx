@@ -48,7 +48,7 @@ export default function MyMessageListingsScreen({
         setError(null);
 
         // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
-        const data = await getMyMessageListings(token, myUserId, 0, 10);
+        const data = await getMyMessageListings(token, 0, 10);
         if (Array.isArray(data)) {
           setAnnouncements(data);
         } else {
@@ -73,7 +73,7 @@ export default function MyMessageListingsScreen({
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getMyMessageListings(token, myUserId, 0, 10)
+    getMyMessageListings(token, 0, 10)
       .then((data) => {
         setAnnouncements(Array.isArray(data) ? data : []);
         setError(null);

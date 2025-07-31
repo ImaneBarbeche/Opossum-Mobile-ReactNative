@@ -46,7 +46,7 @@ export default function ChatList({
     let mounted = true;
     setLoading(true);
 
-    getMyMessageListings(token, myUserId)
+    getMyMessageListings(token, 0, 10)
       .then(async (announcements) => {
         if (!mounted) return;
         // Pour chaque annonce, charger les conversations associées
