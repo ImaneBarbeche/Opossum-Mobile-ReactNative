@@ -14,7 +14,7 @@ export interface Message {
 // DTOs pour les requêtes
 export interface SendMessageRequest {
   toUserId: string; // UUID
-  texte: string; // Nom exact du backend
+  content: string;
 }
 
 export interface ContactOwnerRequest {

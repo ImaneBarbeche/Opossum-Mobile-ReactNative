@@ -310,10 +310,14 @@ const ObjectDetailScreen = () => {
                 style={objectDetailScreenStyles.contactBtn}
                 onPress={() =>
                   data.user &&
-                  navigation.navigate("ConversationChatScreen", {
-                    mode: "contact",
-                    listingId: data.id,
-                    receiverId: data.user.id,
+                  navigation.navigate("Messages", {
+                    screen: "ConversationChatScreen",
+                    params: {
+                      mode: "contact",
+                      listingId: data.id,
+                      receiverId: data.user.id,
+                      content: ""
+                    },
                   })
                 }
               >

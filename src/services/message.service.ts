@@ -142,7 +142,7 @@ export async function sendMessage(
   try {
     const requestBody: SendMessageRequest = {
       toUserId,
-      texte: content, // ✅ Backend utilise "texte" pas "content"
+      content,
     };
     
     console.log("🌐 sendMessage - URL:", MESSAGE_ENDPOINTS.sendMessage(conversationId));
