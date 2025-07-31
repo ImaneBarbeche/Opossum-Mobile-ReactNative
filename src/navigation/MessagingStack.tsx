@@ -2,6 +2,7 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import MyMessageListingsScreen from "../screens/Messaging/MyMessageListingsScreen";
 import ConversationChatScreen from "../screens/Messaging/ConversationChatScreen";
+import ListingConversationsScreen from "../screens/Messaging/ListingConversationsScreen";
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,18 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
       >
         {(props) => (
           <ConversationChatScreen
+            {...props}
+            token={token}
+            myUserId={myUserId}
+          />
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="ListingConversationsScreen"
+        options={{ title: "Conversations de l'annonce" }}
+      >
+        {(props) => (
+          <ListingConversationsScreen
             {...props}
             token={token}
             myUserId={myUserId}

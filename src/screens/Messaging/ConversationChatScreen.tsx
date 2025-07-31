@@ -104,14 +104,10 @@ export default function ConversationChatScreen({
 
       try {
         setLoadingListing(true);
-        console.log(
-          "🔍 Chargement des infos de l'annonce:",
-          routeParams.listingId
-        );
+      
 
         const listing = await getListingDetails(routeParams.listingId, token);
 
-        console.log("✅ Informations de l'annonce:", listing);
         setListingInfo(listing);
 
         // Récupération du nom du propriétaire
@@ -145,12 +141,6 @@ export default function ConversationChatScreen({
       return;
     }
 
-    console.log("=== DEBUT loadMessages ===");
-    console.log(
-      "📍 ConversationId:",
-      (routeParams as ChatModeParams).conversationId
-    );
-
     try {
       setLoading(true);
 
@@ -162,7 +152,6 @@ export default function ConversationChatScreen({
           50
         );
 
-      console.log("✅ Messages reçus:", response);
 
       const activeMessages = response.messages.filter(
         (msg) => msg.status === "ACTIVE"
@@ -202,22 +191,12 @@ export default function ConversationChatScreen({
 
     setSending(true);
     try {
-      console.log("🚀 Envoi du premier message...");
-      console.log("📍 ListingId:", routeParams.listingId);
-      console.log(
-        "📍 ReceiverId:",
-        (routeParams as ContactModeParams).receiverId
-      );
-
       const response = await contactListingOwner(
         token,
         routeParams.listingId,
         newMessage.trim(),
         (routeParams as ContactModeParams).receiverId
       );
-
-      console.log("✅ Conversation créée:", response);
-
       Alert.alert("Succès", "Message envoyé avec succès !", [
         {
           text: "Voir la conversation",
@@ -259,9 +238,6 @@ export default function ConversationChatScreen({
   // ✅ Envoi de message - Mode Chat (message dans conversation existante)
   const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim() || sending || !isChatMode || !token) return;
-
-    console.log("🚀 Envoi message:", newMessage.trim());
-
     setSending(true);
     try {
       const response = await sendMessage(
@@ -270,9 +246,6 @@ export default function ConversationChatScreen({
         newMessage.trim(),
         (routeParams as ChatModeParams).otherUserId
       );
-
-      console.log("✅ Message envoyé:", response);
-
       setMessages((prev) => [...prev, response.message]);
       setNewMessage("");
 

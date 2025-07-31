@@ -294,13 +294,21 @@ const ObjectDetailScreen = () => {
               </Text>
               <TouchableOpacity
                 style={objectDetailScreenStyles.ownerBtn}
-                onPress={() =>
-                  data.user &&
-                  navigation.navigate("Mes annonces", {
-                    screen: "PublicProfile",
-                    params: { userId: data.user.id },
-                  })
-                }
+                onPress={() => {
+                  if (data.user && data.user.id) {
+                    navigation.navigate("Mes annonces", {
+                      screen: "PublicProfile",
+                      params: { userId: data.user.id },
+                    });
+                  } else {
+                    Toast.show({
+                      type: "error",
+                      text1: "Erreur",
+                      text2: "Propriétaire inconnu",
+                      position: "bottom",
+                    });
+                  }
+                }}
               >
                 <Text style={objectDetailScreenStyles.ownerBtnText}>
                   Voir profil
@@ -308,18 +316,26 @@ const ObjectDetailScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={objectDetailScreenStyles.contactBtn}
-                onPress={() =>
-                  data.user &&
-                  navigation.navigate("Messages", {
-                    screen: "ConversationChatScreen",
-                    params: {
-                      mode: "contact",
-                      listingId: data.id,
-                      receiverId: data.user.id,
-                      content: ""
-                    },
-                  })
-                }
+                onPress={() => {
+                  if (data.user && data.user.id) {
+                    navigation.navigate("Messages", {
+                      screen: "ConversationChatScreen",
+                      params: {
+                        mode: "contact",
+                        listingId: data.id,
+                        receiverId: data.user.id,
+                        content: ""
+                      },
+                    });
+                  } else {
+                    Toast.show({
+                      type: "error",
+                      text1: "Erreur",
+                      text2: "Propriétaire inconnu",
+                      position: "bottom",
+                    });
+                  }
+                }}
               >
                 <Text style={objectDetailScreenStyles.contactBtnText}>
                   Contacter

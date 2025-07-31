@@ -8,8 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../../theme";
-import type { Conversation } from "../../models/Conversation";
-import { getMyMessageListings } from "../../services/message.service";
+import { getMyMessageListings, getListingConversations } from "../../services/message.service";
 import { User } from "../../models/User";
 
 type MyMessageListingsScreenProps = {
@@ -24,19 +23,14 @@ export default function MyMessageListingsScreen({
   myUserId,
   navigation,
 }: MyMessageListingsScreenProps) {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchConversations = useCallback(
     async (isRefresh = false) => {
-      console.log("=== DEBUT fetchConversations ===");
-      console.log("📍 Token présent:", !!token);
-      console.log("📍 MyUserId:", myUserId);
-
       if (!token) {
-        console.log("❌ Token manquant");
         setError("Token manquant");
         setLoading(false);
         return;
@@ -50,27 +44,19 @@ export default function MyMessageListingsScreen({
         }
 
         setError(null);
-        console.log("🚀 Appel de getMyMessageListings...");
 
         // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
         const data = await getMyMessageListings(token, myUserId, 0, 10);
-        console.log("✅ Données reçues:");
-        console.log("📊 Type:", typeof data);
-        console.log("📊 Est tableau:", Array.isArray(data));
-        console.log("📊 Longueur:", data?.length);
-        console.log("📊 Contenu:", JSON.stringify(data, null, 2));
-
         if (Array.isArray(data)) {
-          setConversations(data);
+          setAnnouncements(data);
         } else {
-          console.log("⚠️ Données pas en tableau, tableau vide");
-          setConversations([]);
+          setAnnouncements([]);
           setError("Format de données inattendu de l'API");
         }
       } catch (err: any) {
         console.error("❌ ERREUR complète:", err);
         setError(err.message || "Erreur lors du chargement des conversations");
-        setConversations([]);
+        setAnnouncements([]);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -84,8 +70,18 @@ export default function MyMessageListingsScreen({
   }, [fetchConversations]);
 
   const onRefresh = useCallback(() => {
-    fetchConversations(true);
-  }, [fetchConversations]);
+    setRefreshing(true);
+    getMyMessageListings(token, myUserId, 0, 10)
+      .then((data) => {
+        setAnnouncements(Array.isArray(data) ? data : []);
+        setError(null);
+      })
+      .catch((err) => {
+        setError(err.message || "Erreur lors du chargement des annonces");
+        setAnnouncements([]);
+      })
+      .finally(() => setRefreshing(false));
+  }, [token, myUserId]);
 
   const retryLoad = useCallback(() => {
     setError(null);
@@ -171,130 +167,37 @@ export default function MyMessageListingsScreen({
     );
   }
 
+  // Au clic sur une annonce, charger les conversations pour cette annonce
+  const handleAnnouncementPress = async (listingId, listingTitle) => {
+    setLoading(true);
+    try {
+      const conversations = await getListingConversations(token, listingId, 0, 10);
+      navigation.navigate("ListingConversationsScreen", {
+        conversations,
+        listingId,
+        listingTitle,
+      });
+    } catch (err) {
+      setError(err.message || "Erreur lors du chargement des conversations");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View
-      style={[
-        componentStyles.container,
-        { backgroundColor: colors.lightGray, paddingTop: 64 },
-      ]}
-    >
-      <Text
-        style={[
-          typography.h1,
-          {
-            color: colors.primary,
-            marginBottom: spacing.md,
-            alignSelf: "center",
-          },
-        ]}
-      >
-        Liste de mes annonces avec discussions
-      </Text>
+    <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 64 }]}> 
+      <Text style={[typography.h1, { color: colors.primary, marginBottom: 16, alignSelf: "center" }]}>Liste de mes annonces avec discussions</Text>
       <FlatList
-        data={conversations}
-        keyExtractor={(item) => item.conversationId}
+        data={announcements}
+        keyExtractor={(item) => item.listingId}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => {
-              // Find the other user (not the current user)
-              const otherUser =
-                item.otherUser.find((user) => user.id !== myUserId) ||
-                item.otherUser[0];
-
-              navigation?.navigate("ConversationChatScreen", {
-                mode: "chat",
-                conversationId: item.conversationId,
-                listingId: item.listingId,
-                otherUserId: otherUser.id,
-                otherUserName: `${otherUser.firstName} ${otherUser.lastName}`,
-                listingTitle: item.listingTitle,
-              });
-            }}
-            style={[
-              componentStyles.card,
-              {
-                padding: 16,
-                marginBottom: 12,
-                flexDirection: "column",
-                backgroundColor: colors.white,
-                borderLeftWidth: 4,
-                borderLeftColor:
-                  item.unreadCount > 0 ? colors.primary : colors.lightGray,
-              },
-            ]}
+            onPress={() => handleAnnouncementPress(item.listingId, item.title)}
+            style={[componentStyles.card, { padding: 16, marginBottom: 12, backgroundColor: colors.white }]}
             activeOpacity={0.8}
           >
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  typography.h3,
-                  { color: colors.black, marginBottom: 8 },
-                ]}
-              >
-                {item.listingTitle}
-              </Text>
-
-              {item.lastMessage && (
-                <Text
-                  style={[
-                    typography.body,
-                    {
-                      color: colors.darkGray,
-                      marginBottom: 8,
-                    },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {item.lastMessage.content || "Aucun message"}
-                </Text>
-              )}
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                {item.unreadCount > 0 && (
-                  <View
-                    style={{
-                      backgroundColor: colors.primary,
-                      borderRadius: 12,
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: colors.white,
-                        fontSize: 12,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {item.unreadCount} nouveau
-                      {item.unreadCount > 1 ? "x" : ""}
-                    </Text>
-                  </View>
-                )}
-
-                {item.lastMessage?.sentAt && (
-                  <Text
-                    style={[typography.caption, { color: colors.mediumGray }]}
-                  >
-                    {new Date(item.lastMessage.sentAt).toLocaleDateString(
-                      "fr-FR",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
-                  </Text>
-                )}
-              </View>
-            </View>
+            <Text style={[typography.h3, { color: colors.black, marginBottom: 8 }]}>{item.title}</Text>
+            <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>Conversations: {item.conversationCount}</Text>
           </TouchableOpacity>
         )}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
@@ -308,25 +211,8 @@ export default function MyMessageListingsScreen({
         }
         ListEmptyComponent={
           <View style={{ alignItems: "center", marginTop: 32 }}>
-            <Text
-              style={{
-                textAlign: "center",
-                color: colors.darkGray,
-                fontSize: 16,
-              }}
-            >
-              Aucune conversation trouvée
-            </Text>
-            <Text
-              style={{
-                textAlign: "center",
-                color: colors.mediumGray,
-                marginTop: 8,
-              }}
-            >
-              Les conversations apparaîtront ici quand vous recevrez des
-              messages sur vos annonces
-            </Text>
+            <Text style={{ textAlign: "center", color: colors.darkGray, fontSize: 16 }}>Aucune annonce trouvée</Text>
+            <Text style={{ textAlign: "center", color: colors.mediumGray, marginTop: 8 }}>Les annonces apparaîtront ici quand vous aurez des conversations</Text>
           </View>
         }
       />

@@ -43,12 +43,7 @@ export default function ListingConversationsScreen({
 
   const fetchConversations = useCallback(
     async (isRefresh = false) => {
-      console.log("=== DEBUT fetchConversations ===");
-      console.log("📍 ListingId:", listingId);
-      console.log("📍 Token présent:", !!token);
-
       if (!token) {
-        console.log("❌ Token manquant");
         setError("Token manquant");
         setLoading(false);
         return;
@@ -62,21 +57,13 @@ export default function ListingConversationsScreen({
         }
 
         setError(null);
-        console.log("🚀 Appel de getListingConversations...");
 
         // ✅ Utilise la vraie API backend - GET /api/v1/messages/listings/{listingId}/conversations
         const data = await getListingConversations(token, listingId, 0, 10);
-
-        console.log("✅ Conversations reçues:");
-        console.log("📊 Type:", typeof data);
-        console.log("📊 Est tableau:", Array.isArray(data));
-        console.log("📊 Longueur:", data?.length);
-        console.log("📊 Contenu:", JSON.stringify(data, null, 2));
-
+        console.log("[ListingConversationsScreen] Réponse getListingConversations:", data);
         if (Array.isArray(data)) {
           setConversations(data);
         } else {
-          console.log("⚠️ Les données ne sont pas un tableau");
           setConversations([]);
           setError("Format de données inattendu de l'API");
         }
@@ -97,8 +84,6 @@ export default function ListingConversationsScreen({
 
   // ✅ Supprimé useMock, utilise directement la vraie API
   useEffect(() => {
-    console.log("🎯 useEffect déclenché pour ListingConversation");
-    console.log("🎯 listingId:", listingId);
     fetchConversations();
   }, [fetchConversations]);
 
@@ -113,11 +98,7 @@ export default function ListingConversationsScreen({
 
   const handleConversationPress = useCallback(
     (conversation: ConversationSummary) => {
-      console.log(
-        "📱 Navigation vers ChatScreen:",
-        conversation.conversationId
-      );
-      navigation?.navigate("ChatScreen", {
+      navigation?.navigate("ConversationChatScreen", {
         conversationId: conversation.conversationId,
         listingId: conversation.listingId,
         otherUserId: conversation.otherUserId,
