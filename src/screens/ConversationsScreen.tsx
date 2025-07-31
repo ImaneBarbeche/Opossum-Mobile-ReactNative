@@ -23,39 +23,9 @@ type ConversationScreenProps = {
   route?: any;
 };
 
-const MOCK_MESSAGES: Message[] = [
-  {
-    messageId: "1",
-    conversationId: "c1",
-    listingId: "l1",
-    senderId: "99",
-    receiverId: "101",
-    content: "Bonjour, le vélo est toujours dispo ?",
-    sentAt: "2025-07-24 09:00",
-    isRead: true,
-    status: "ACTIVE",
-    createdAt: "2025-07-24 09:00",
-    updatedAt: "2025-07-24 09:00",
-  },
-  {
-    messageId: "2",
-    conversationId: "c1",
-    listingId: "l1",
-    senderId: "101",
-    receiverId: "99",
-    content: "Oui, bien sûr !",
-    sentAt: "2025-07-24 09:05",
-    isRead: true,
-    status: "ACTIVE",
-    createdAt: "2025-07-24 09:05",
-    updatedAt: "2025-07-24 09:05",
-  },
-];
-
 export default function ConversationScreen({
   token,
   myUserId,
-  useMock = true,
   navigation,
   route,
 }: ConversationScreenProps) {
@@ -68,30 +38,37 @@ export default function ConversationScreen({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (useMock) {
-      setTimeout(() => {
-        setMessages(
-          MOCK_MESSAGES.filter((m) => m.conversationId === conversationId)
-        );
-        setLoading(false);
-      }, 500);
-    } else {
-      fetch(
-        `http://localhost:8080/api/conversations/${conversationId}/messages`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
-        }
-      )
-        .then((res) => res.json())
-        .then((data) => {
+    let isMounted = true;
+    setLoading(true);
+    fetch(
+      `http://localhost:8080/api/conversations/${conversationId}/messages`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      }
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("Erreur réseau");
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted) {
           setMessages(
             (data as Message[]).filter((msg) => msg.status === "ACTIVE")
           );
-          setLoading(false);
-        });
-    }
-  }, [conversationId, useMock, token]);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setMessages([]);
+        // Optionnel : tu peux ajouter un setError("Erreur de chargement des messages");
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [conversationId, token]);
 
   if (loading)
     return (
