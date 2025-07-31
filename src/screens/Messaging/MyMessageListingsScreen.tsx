@@ -30,7 +30,12 @@ export default function MyMessageListingsScreen({
 
   const fetchConversations = useCallback(
     async (isRefresh = false) => {
+      console.log("=== DEBUT fetchConversations ===");
+      console.log("📍 Token présent:", !!token);
+      console.log("📍 MyUserId:", myUserId);
+
       if (!token) {
+        console.log("❌ Token manquant");
         setError("Token manquant");
         setLoading(false);
         return;
@@ -44,12 +49,27 @@ export default function MyMessageListingsScreen({
         }
 
         setError(null);
+        console.log("🚀 Appel de getMyMessageListings...");
 
-        const data = await getMyMessageListings(token, myUserId);
-        setConversations(data);
+        // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
+        const data = await getMyMessageListings(token, myUserId, 0, 10);
+        console.log("✅ Données reçues:");
+        console.log("📊 Type:", typeof data);
+        console.log("📊 Est tableau:", Array.isArray(data));
+        console.log("📊 Longueur:", data?.length);
+        console.log("📊 Contenu:", JSON.stringify(data, null, 2));
+
+        if (Array.isArray(data)) {
+          setConversations(data);
+        } else {
+          console.log("⚠️ Données pas en tableau, tableau vide");
+          setConversations([]);
+          setError("Format de données inattendu de l'API");
+        }
       } catch (err: any) {
-        console.error("Error fetching conversations:", err);
+        console.error("❌ ERREUR complète:", err);
         setError(err.message || "Erreur lors du chargement des conversations");
+        setConversations([]);
       } finally {
         setLoading(false);
         setRefreshing(false);

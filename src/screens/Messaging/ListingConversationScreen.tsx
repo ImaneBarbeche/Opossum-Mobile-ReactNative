@@ -1,126 +1,134 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../../theme";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import type { Message } from "../../models/Message";
+import type { ConversationSummary } from "../../models/Conversation";
+import { getListingConversations } from "../../services/message.service";
 
 type RouteParams = {
   listingId: string;
-  titre: string;
+  listingTitle: string; // ✅ Changé de "titre" à "listingTitle" pour cohérence
 };
 
 type ListingConversationScreenProps = {
   token: string;
   myUserId: string;
-  useMock?: boolean;
   navigation?: any;
   route?: any;
-};
-
-// MOCK DATA : messages pour chaque annonce
-const MOCK_MESSAGES: { [key: string]: Message[] } = {
-  "1": [
-    {
-      messageId: "1",
-      conversationId: "c1",
-      listingId: "1",
-      senderId: "99",
-      receiverId: "101",
-      content: "Bonjour, le vélo est toujours dispo ?",
-      sentAt: "2025-07-24 09:00",
-      isRead: true,
-      status: "ACTIVE",
-      createdAt: "2025-07-24 09:00",
-      updatedAt: "2025-07-24 09:00",
-    },
-    {
-      messageId: "2",
-      conversationId: "c1",
-      listingId: "1",
-      senderId: "101",
-      receiverId: "99",
-      content: "Oui, bien sûr !",
-      sentAt: "2025-07-24 09:05",
-      isRead: true,
-      status: "ACTIVE",
-      createdAt: "2025-07-24 09:05",
-      updatedAt: "2025-07-24 09:05",
-    },
-  ],
-  "2": [
-    {
-      messageId: "3",
-      conversationId: "c2",
-      listingId: "2",
-      senderId: "99",
-      receiverId: "202",
-      content: "L'appart est libre le week-end ?",
-      sentAt: "2025-07-24 10:00",
-      isRead: true,
-      status: "ACTIVE",
-      createdAt: "2025-07-24 10:00",
-      updatedAt: "2025-07-24 10:00",
-    },
-    {
-      messageId: "4",
-      conversationId: "c2",
-      listingId: "2",
-      senderId: "202",
-      receiverId: "99",
-      content: "Oui, dispo samedi et dimanche.",
-      sentAt: "2025-07-24 10:05",
-      isRead: true,
-      status: "ACTIVE",
-      createdAt: "2025-07-24 10:05",
-      updatedAt: "2025-07-24 10:05",
-    },
-  ],
 };
 
 export default function ListingConversationScreen({
   token,
   myUserId,
-  useMock = true,
   navigation,
   route,
 }: ListingConversationScreenProps) {
   const routeParams =
     route?.params ??
     useRoute<RouteProp<{ params: RouteParams }, "params">>().params;
-  const { listingId, titre } = routeParams;
+  const { listingId, listingTitle } = routeParams;
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  // ✅ Changé de Message[] à ConversationSummary[] car on affiche les conversations, pas les messages
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (useMock) {
-      setTimeout(() => {
-        setMessages(MOCK_MESSAGES[listingId] || []);
+  const fetchConversations = useCallback(
+    async (isRefresh = false) => {
+      console.log("=== DEBUT fetchConversations ===");
+      console.log("📍 ListingId:", listingId);
+      console.log("📍 Token présent:", !!token);
+
+      if (!token) {
+        console.log("❌ Token manquant");
+        setError("Token manquant");
         setLoading(false);
-      }, 500);
-    } else {
-      fetch(`http://localhost:8080/api/listings/${listingId}/conversation`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          // On filtre côté front les messages supprimés (status !== "ACTIVE")
-          setMessages(
-            (data as Message[]).filter((msg) => msg.status === "ACTIVE")
-          );
-          setLoading(false);
-        });
-    }
-  }, [listingId, useMock, token]);
+        return;
+      }
 
-  if (loading)
+      try {
+        if (isRefresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        setError(null);
+        console.log("🚀 Appel de getListingConversations...");
+
+        // ✅ Utilise la vraie API backend - GET /api/v1/messages/listings/{listingId}/conversations
+        const data = await getListingConversations(token, listingId, 0, 10);
+
+        console.log("✅ Conversations reçues:");
+        console.log("📊 Type:", typeof data);
+        console.log("📊 Est tableau:", Array.isArray(data));
+        console.log("📊 Longueur:", data?.length);
+        console.log("📊 Contenu:", JSON.stringify(data, null, 2));
+
+        if (Array.isArray(data)) {
+          setConversations(data);
+        } else {
+          console.log("⚠️ Les données ne sont pas un tableau");
+          setConversations([]);
+          setError("Format de données inattendu de l'API");
+        }
+      } catch (err: any) {
+        console.error("❌ ERREUR dans fetchConversations:");
+        console.error("❌ Message:", err.message);
+        console.error("❌ Erreur complète:", err);
+
+        setError(err.message || "Erreur lors du chargement des conversations");
+        setConversations([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [token, listingId]
+  );
+
+  // ✅ Supprimé useMock, utilise directement la vraie API
+  useEffect(() => {
+    console.log("🎯 useEffect déclenché pour ListingConversation");
+    console.log("🎯 listingId:", listingId);
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const onRefresh = useCallback(() => {
+    fetchConversations(true);
+  }, [fetchConversations]);
+
+  const retryLoad = useCallback(() => {
+    setError(null);
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const handleConversationPress = useCallback(
+    (conversation: ConversationSummary) => {
+      console.log(
+        "📱 Navigation vers ChatScreen:",
+        conversation.conversationId
+      );
+      navigation?.navigate("ChatScreen", {
+        conversationId: conversation.conversationId,
+        listingId: conversation.listingId,
+        otherUserId: conversation.otherUserId,
+        otherUserName: conversation.otherUserName,
+        listingTitle: listingTitle,
+      });
+    },
+    [navigation, listingTitle]
+  );
+
+  if (loading && !refreshing) {
     return (
       <View
         style={[
@@ -128,6 +136,18 @@ export default function ListingConversationScreen({
           { backgroundColor: colors.lightGray, paddingTop: 64 },
         ]}
       >
+        <Text
+          style={[
+            typography.h1,
+            {
+              color: colors.primary,
+              marginBottom: spacing.md,
+              alignSelf: "center",
+            },
+          ]}
+        >
+          Conversations : {listingTitle}
+        </Text>
         <ActivityIndicator
           size="large"
           color={colors.primary}
@@ -135,6 +155,57 @@ export default function ListingConversationScreen({
         />
       </View>
     );
+  }
+
+  if (error && !refreshing) {
+    return (
+      <View
+        style={[
+          componentStyles.container,
+          { backgroundColor: colors.lightGray, paddingTop: 64 },
+        ]}
+      >
+        <Text
+          style={[
+            typography.h1,
+            {
+              color: colors.primary,
+              marginBottom: spacing.md,
+              alignSelf: "center",
+            },
+          ]}
+        >
+          Conversations : {listingTitle}
+        </Text>
+        <View style={{ padding: 16, alignItems: "center" }}>
+          <Text
+            style={{
+              color: colors.error,
+              textAlign: "center",
+              marginBottom: 16,
+            }}
+          >
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={retryLoad}
+            style={{
+              borderRadius: 8,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: colors.white, fontWeight: "bold" }}>
+              Réessayer
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -153,60 +224,136 @@ export default function ListingConversationScreen({
           },
         ]}
       >
-        Conversations pour : {titre}
+        Conversations : {listingTitle}
       </Text>
       <FlatList
-        data={messages}
-        keyExtractor={(item) => item.messageId}
+        data={conversations}
+        keyExtractor={(item) => item.conversationId} // ✅ Utilise conversationId au lieu de messageId
         renderItem={({ item }) => (
           <TouchableOpacity
+            onPress={() => handleConversationPress(item)}
             style={[
               componentStyles.card,
               {
-                padding: 10,
-                marginBottom: 16,
+                padding: 16,
+                marginBottom: 12,
                 flexDirection: "column",
-                backgroundColor:
-                  item.senderId === myUserId ? "#DFF6E0" : "#FDF6E3",
+                backgroundColor: colors.white,
+                borderLeftWidth: 4,
+                borderLeftColor:
+                  item.unreadCount > 0 ? colors.primary : colors.lightGray,
               },
             ]}
             activeOpacity={0.8}
           >
             <View style={{ flex: 1 }}>
-              <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>
-                {item.senderId === myUserId ? "Moi" : "Propriétaire"}
-              </Text>
-              <Text
-                style={[
-                  typography.caption,
-                  {
-                    fontWeight: "bold",
-                    color:
-                      item.senderId === myUserId
-                        ? colors.success
-                        : colors.primary,
-                    marginBottom: 2,
-                  },
-                ]}
+              {/* ✅ Affiche le nom de l'autre utilisateur au lieu de "Moi" ou "Propriétaire" */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 8,
+                }}
               >
-                {item.content}
-              </Text>
-              <Text
-                style={[
-                  typography.body,
-                  { color: colors.darkGray, marginBottom: 8 },
-                ]}
-              >
-                {item.sentAt}
+                <Text
+                  style={[
+                    typography.h3,
+                    {
+                      color: colors.black,
+                      flex: 1,
+                      fontWeight: item.unreadCount > 0 ? "bold" : "normal",
+                    },
+                  ]}
+                >
+                  {item.otherUserName}
+                </Text>
+
+                {/* ✅ Badge pour les messages non lus */}
+                {item.unreadCount > 0 && (
+                  <View
+                    style={{
+                      backgroundColor: colors.primary,
+                      borderRadius: 12,
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      marginLeft: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.white,
+                        fontSize: 12,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item.unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* ✅ Aperçu du dernier message */}
+              {item.lastMessagePreview && (
+                <Text
+                  style={[
+                    typography.body,
+                    {
+                      color: colors.darkGray,
+                      marginBottom: 8,
+                      fontStyle: item.unreadCount > 0 ? "normal" : "italic",
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {item.lastMessagePreview}
+                </Text>
+              )}
+
+              {/* ✅ Date de la dernière activité */}
+              <Text style={[typography.caption, { color: colors.mediumGray }]}>
+                {new Date(item.lastActivityAt).toLocaleString("fr-FR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </Text>
             </View>
           </TouchableOpacity>
         )}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
         ListEmptyComponent={
-          <Text style={{ textAlign: "center", marginTop: 32 }}>
-            Aucun message trouvé.
-          </Text>
+          <View style={{ alignItems: "center", marginTop: 32 }}>
+            <Text
+              style={{
+                textAlign: "center",
+                color: colors.darkGray,
+                fontSize: 16,
+              }}
+            >
+              Aucune conversation trouvée
+            </Text>
+            <Text
+              style={{
+                textAlign: "center",
+                color: colors.mediumGray,
+                marginTop: 8,
+              }}
+            >
+              Les conversations apparaîtront ici quand des utilisateurs vous
+              contacteront
+            </Text>
+          </View>
         }
       />
     </View>

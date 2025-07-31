@@ -1,86 +1,153 @@
 import { MESSAGE_ENDPOINTS } from "../config/api";
-import type { Message } from "../models/Message";
-import type { Conversation } from "../models/Conversation";
+import type { 
+  Message, 
+  ContactOwnerRequest, 
+  ContactOwnerResponse, 
+  SendMessageRequest, 
+  SendMessageResponse,
+  DeleteMessageResponse,
+  MarkReadResponse 
+} from "../models/Message";
+import type { 
+  Conversation, 
+  ConversationSummary, 
+  AnnouncementWithConversation,
+  ConversationMessagesResponse 
+} from "../models/Conversation";
 
 /**
- * Récupère toutes les conversations de l'utilisateur
+ * 🎯 1. Liste des annonces avec conversations (MyMessageListingsScreen)
+ * Backend: GET /api/v1/messages/listings/messages
+ * Retourne: Page<AnnouncementWithConversationDto>
  */
-export async function getUserConversations(
+export async function getMyMessageListings(
   token: string,
-  myUserId: string
+  myUserId: string,
+  page: number = 0, // ✅ Backend Spring commence à 0
+  size: number = 10, // ✅ Backend utilise "size" pas "limit"
+  type?: string,
+  status?: string,
+  search?: string
 ): Promise<Conversation[]> {
   try {
-    const response = await fetch(MESSAGE_ENDPOINTS.conversations, {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+    
+    if (type) params.append('type', type);
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+    
+    const url = `${MESSAGE_ENDPOINTS.listingsWithMessages}?${params}`;
+    console.log("🌐 getMyMessageListings - URL:", url);
+    
+    const response = await fetch(url, {
       method: "GET",
-      headers: {
+      headers: { 
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       credentials: "include",
     });
     
+    console.log("📡 getMyMessageListings - Status:", response.status);
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ getMyMessageListings - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log("📦 getMyMessageListings - Réponse:", JSON.stringify(data, null, 2));
     
-    // Vérifier la structure de la réponse
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.conversations && Array.isArray(data.conversations)) {
-      return data.conversations;
-    } else if (data.data && Array.isArray(data.data)) {
-      return data.data;
-    } else {
-      console.warn('Structure de réponse inattendue pour getUserConversations:', data);
-      return [];
-    }
+    // ✅ Backend retourne Page<AnnouncementWithConversationDto>
+    const announcements: AnnouncementWithConversation[] = data.content || [];
+    
+    // Transformer en format Conversation pour compatibilité UI
+    return announcements.map((announcement) => ({
+      conversationId: `listing_${announcement.listingId}`,
+      listingId: announcement.listingId,
+      listingTitle: announcement.title,
+      otherUser: [], // Pas disponible dans AnnouncementWithConversationDto
+      lastMessage: null, // Pas disponible dans AnnouncementWithConversationDto
+      unreadCount: announcement.conversationCount, // conversationCount comme proxy
+    }));
+    
   } catch (error) {
-    console.error('Erreur dans getUserConversations:', error);
-    throw error;
+    console.error("💥 getMyMessageListings - Erreur:", error);
+    throw new Error("Erreur lors de la récupération des annonces avec messages");
   }
 }
 
 /**
- * Envoie un premier message (ouvrir une conversation)
+ * 🎯 2. Contacter propriétaire (créer conversation)
+ * Backend: POST /api/v1/messages/contact/{listingId}
+ * Body: ContactOwnerRequest { receiverId, content }
+ * Retourne: ContactOwnerResponse { conversationId, firstMessage }
  */
 export async function contactListingOwner(
   token: string,
   listingId: string,
-  content: string
-): Promise<Message> {
+  content: string,
+  receiverId: string
+): Promise<ContactOwnerResponse> {
   try {
-    const response = await fetch(MESSAGE_ENDPOINTS.contact(listingId), {
+    const requestBody: ContactOwnerRequest = {
+      receiverId,
+      content,
+    };
+    
+    console.log("🌐 contactListingOwner - URL:", MESSAGE_ENDPOINTS.contactOwner(listingId));
+    console.log("📤 contactListingOwner - Body:", requestBody);
+    
+    const response = await fetch(MESSAGE_ENDPOINTS.contactOwner(listingId), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ content }),
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ contactListingOwner - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log("✅ contactListingOwner - Succès:", result);
+    return result;
   } catch (error) {
-    console.error('Erreur dans contactListingOwner:', error);
+    console.error("💥 contactListingOwner - Erreur:", error);
     throw error;
   }
 }
 
 /**
- * Envoie un message dans une conversation
+ * 🎯 3. Envoyer message dans conversation existante
+ * Backend: POST /api/v1/messages/conversations/{conversationId}/messages/send
+ * Body: SendMessageRequest { toUserId, texte }
+ * Retourne: SendMessageResponse
  */
 export async function sendMessage(
   token: string,
   conversationId: string,
-  content: string
-): Promise<Message> {
+  content: string,
+  toUserId: string
+): Promise<SendMessageResponse> {
   try {
+    const requestBody: SendMessageRequest = {
+      toUserId,
+      texte: content, // ✅ Backend utilise "texte" pas "content"
+    };
+    
+    console.log("🌐 sendMessage - URL:", MESSAGE_ENDPOINTS.sendMessage(conversationId));
+    console.log("📤 sendMessage - Body:", requestBody);
+    
     const response = await fetch(MESSAGE_ENDPOINTS.sendMessage(conversationId), {
       method: "POST",
       headers: {
@@ -88,101 +155,40 @@ export async function sendMessage(
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ content }),
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ sendMessage - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log("✅ sendMessage - Succès:", result);
+    return result;
   } catch (error) {
-    console.error('Erreur dans sendMessage:', error);
+    console.error("💥 sendMessage - Erreur:", error);
     throw error;
   }
 }
 
 /**
- * Liste paginée des annonces où l'utilisateur a des conversations (niveau 1)
- */
-export async function getMyMessageListings(
-  token: string,
-  myUserId: string,
-  page: number = 1,
-  limit: number = 10
-): Promise<Conversation[]> {
-  try {
-    console.log('Calling API:', `${MESSAGE_ENDPOINTS.listingMessages}?page=${page}&limit=${limit}`);
-    
-    const response = await fetch(`${MESSAGE_ENDPOINTS.listingMessages}?page=${page}&limit=${limit}`, {
-      method: "GET",
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log('API Response:', data);
-    
-    // Gérer différentes structures de réponse possible
-    let listings = [];
-    
-    if (Array.isArray(data)) {
-      // Si la réponse est directement un tableau
-      listings = data;
-    } else if (data.listings && Array.isArray(data.listings)) {
-      // Si la réponse a une propriété 'listings'
-      listings = data.listings;
-    } else if (data.data && Array.isArray(data.data)) {
-      // Si la réponse a une propriété 'data'
-      listings = data.data;
-    } else if (data.content && Array.isArray(data.content)) {
-      // Si la réponse a une propriété 'content'
-      listings = data.content;
-    } else {
-      console.warn('Structure de réponse inattendue:', data);
-      return []; // Retourner un tableau vide
-    }
-    
-    // Transformer les données pour correspondre au modèle Conversation
-    return listings.map((listing: any) => ({
-      conversationId: listing.conversationId || listing.listingId || listing.id || `conv_${Date.now()}_${Math.random()}`,
-      listingId: listing.listingId || listing.id,
-      listingTitle: listing.listingTitle || listing.title || 'Titre non disponible',
-      otherUser: listing.otherUser || listing.participants || [],
-      lastMessage: listing.lastMessage || {
-        id: '',
-        content: 'Aucun message',
-        senderId: '',
-        sentAt: new Date().toISOString(),
-        status: 'ACTIVE' as const
-      },
-      unreadCount: listing.unreadCount || 0,
-    }));
-    
-  } catch (error) {
-    console.error('Erreur dans getMyMessageListings:', error);
-    throw new Error("Erreur lors de la récupération des annonces avec messages");
-  }
-}
-
-/**
- * Liste paginée des conversations dans une annonce sélectionnée (niveau 2)
+ * 🎯 4. Conversations d'une annonce (niveau 2)
+ * Backend: GET /api/v1/messages/listings/{listingId}/conversations
+ * Retourne: Page<ConversationSummaryDto>
  */
 export async function getListingConversations(
   token: string,
   listingId: string,
-  page: number = 1,
-  limit: number = 10
-): Promise<Conversation[]> {
+  page: number = 0,
+  size: number = 10
+): Promise<ConversationSummary[]> {
   try {
-    const response = await fetch(`${MESSAGE_ENDPOINTS.listingConversations(listingId)}?page=${page}&limit=${limit}`, {
+    const url = `${MESSAGE_ENDPOINTS.listingConversations(listingId)}?page=${page}&size=${size}`;
+    console.log("🌐 getListingConversations - URL:", url);
+    
+    const response = await fetch(url, {
       method: "GET",
       headers: { 
         Authorization: `Bearer ${token}`,
@@ -192,39 +198,39 @@ export async function getListingConversations(
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ getListingConversations - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log("📦 getListingConversations - Réponse:", data);
     
-    // Vérifier la structure de la réponse
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.conversations && Array.isArray(data.conversations)) {
-      return data.conversations;
-    } else if (data.data && Array.isArray(data.data)) {
-      return data.data;
-    } else if (data.content && Array.isArray(data.content)) {
-      return data.content;
-    } else {
-      console.warn('Structure de réponse inattendue pour getListingConversations:', data);
-      return [];
-    }
+    // ✅ Backend retourne Page<ConversationSummaryDto>
+    return data.content || [];
+    
   } catch (error) {
-    console.error('Erreur dans getListingConversations:', error);
+    console.error("💥 getListingConversations - Erreur:", error);
     throw new Error("Erreur lors de la récupération des conversations");
   }
 }
 
 /**
- * Afficher les messages d'une conversation sélectionnée
+ * 🎯 5. Messages d'une conversation (niveau 3)
+ * Backend: GET /api/v1/messages/conversations/{conversationId}/messages
+ * Retourne: ConversationMessagesResponse
  */
 export async function getConversationMessages(
   token: string,
-  conversationId: string
-): Promise<Message[]> {
+  conversationId: string,
+  page: number = 0,
+  size: number = 20
+): Promise<ConversationMessagesResponse> {
   try {
-    const response = await fetch(MESSAGE_ENDPOINTS.getMessages(conversationId), {
+    const url = `${MESSAGE_ENDPOINTS.conversationMessages(conversationId)}?page=${page}&size=${size}`;
+    console.log("🌐 getConversationMessages - URL:", url);
+    
+    const response = await fetch(url, {
       method: "GET",
       headers: { 
         Authorization: `Bearer ${token}`,
@@ -234,90 +240,71 @@ export async function getConversationMessages(
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ getConversationMessages - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
     
-    const data = await response.json();
+    const result = await response.json();
+    console.log("📦 getConversationMessages - Réponse:", result);
     
-    // Vérifier la structure de la réponse
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.messages && Array.isArray(data.messages)) {
-      return data.messages;
-    } else if (data.data && Array.isArray(data.data)) {
-      return data.data;
-    } else {
-      console.warn('Structure de réponse inattendue pour getConversationMessages:', data);
-      return [];
-    }
+    // ✅ Backend retourne ConversationMessagesResponse directement
+    return result;
+    
   } catch (error) {
-    console.error('Erreur dans getConversationMessages:', error);
+    console.error("💥 getConversationMessages - Erreur:", error);
     throw new Error("Erreur lors de la récupération des messages");
   }
 }
 
 /**
- * Marquer tous les messages non lus comme lus dans une conversation
- */
-export async function markAllMessagesAsRead(
-  token: string,
-  conversationId: string
-): Promise<void> {
-  try {
-    const response = await fetch(MESSAGE_ENDPOINTS.markAsRead(conversationId), {
-      method: "POST",
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error('Erreur dans markAllMessagesAsRead:', error);
-    throw new Error("Erreur lors du marquage des messages comme lus");
-  }
-}
-
-/**
- * Marquer une conversation comme lue (alias pour ChatScreen)
+ * 🎯 6. Marquer conversation comme lue
+ * Backend: PUT /api/v1/messages/conversations/{conversationId}/read
+ * Retourne: MarkReadResponse
  */
 export async function markConversationAsRead(
-  token: string, 
-  listingId: string, 
-  otherUserId?: string
-): Promise<void> {
+  token: string,
+  conversationId: string
+): Promise<MarkReadResponse> {
   try {
-    const response = await fetch(MESSAGE_ENDPOINTS.markAsRead(listingId), {
-      method: "PATCH",
+    console.log("🌐 markConversationAsRead - URL:", MESSAGE_ENDPOINTS.markAsRead(conversationId));
+    
+    const response = await fetch(MESSAGE_ENDPOINTS.markAsRead(conversationId), {
+      method: "PUT", // ✅ Backend utilise PUT pas POST
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ otherUserId }),
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ markConversationAsRead - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
+    
+    const result = await response.json();
+    console.log("✅ markConversationAsRead - Succès:", result);
+    return result;
   } catch (error) {
-    console.error('Erreur dans markConversationAsRead:', error);
+    console.error("💥 markConversationAsRead - Erreur:", error);
     throw new Error("Erreur lors du marquage de la conversation comme lue");
   }
 }
 
 /**
- * Supprimer (soft) un message (seul l'expéditeur peut le faire dans les 24h)
+ * 🎯 7. Supprimer message
+ * Backend: DELETE /api/v1/messages/{messageId}/delete
+ * Retourne: DeleteMessageResponse
  */
 export async function deleteMessage(
   token: string,
   messageId: string
-): Promise<void> {
+): Promise<DeleteMessageResponse> {
   try {
+    console.log("🌐 deleteMessage - URL:", MESSAGE_ENDPOINTS.deleteMessage(messageId));
+    
     const response = await fetch(MESSAGE_ENDPOINTS.deleteMessage(messageId), {
       method: "DELETE",
       headers: { 
@@ -328,49 +315,33 @@ export async function deleteMessage(
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ deleteMessage - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
+    
+    const result = await response.json();
+    console.log("✅ deleteMessage - Succès:", result);
+    return result;
   } catch (error) {
-    console.error('Erreur dans deleteMessage:', error);
+    console.error("💥 deleteMessage - Erreur:", error);
     throw new Error("Erreur lors de la suppression du message");
   }
 }
 
 /**
- * Archiver un message (optionnel si besoin)
- */
-export async function archiveMessage(
-  token: string,
-  messageId: string
-): Promise<void> {
-  try {
-    const response = await fetch(MESSAGE_ENDPOINTS.archiveMessage(messageId), {
-      method: "POST",
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error('Erreur dans archiveMessage:', error);
-    throw new Error("Erreur lors de l'archivage du message");
-  }
-}
-
-/**
- * Signaler un message
+ * 🎯 8. Signaler message
+ * Backend: POST /api/v1/messages/{messageId}/report
+ * Retourne: void (ResponseEntity<Void>)
  */
 export async function reportMessage(
   token: string,
   messageId: string,
-  reason: string
+  reason?: string
 ): Promise<void> {
   try {
+    console.log("🌐 reportMessage - URL:", MESSAGE_ENDPOINTS.reportMessage(messageId));
+    
     const response = await fetch(MESSAGE_ENDPOINTS.reportMessage(messageId), {
       method: "POST",
       headers: { 
@@ -378,14 +349,18 @@ export async function reportMessage(
         "Content-Type": "application/json" 
       },
       credentials: "include",
-      body: JSON.stringify({ reason }),
+      body: reason ? JSON.stringify({ reason }) : undefined,
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("❌ reportMessage - Erreur:", errorText);
       throw new Error(`Erreur ${response.status}: ${response.statusText}`);
     }
+    
+    console.log("✅ reportMessage - Message signalé avec succès");
   } catch (error) {
-    console.error('Erreur dans reportMessage:', error);
+    console.error("💥 reportMessage - Erreur:", error);
     throw new Error("Erreur lors du signalement du message");
   }
 }

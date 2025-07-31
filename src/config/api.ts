@@ -35,14 +35,12 @@ export const ANNOUNCE_ENDPOINTS = {
 
 // Endpoints messaging
 export const MESSAGE_ENDPOINTS = {
-  conversations: `${API_BASE_URL}/conversations`,
-  contact: (listingId: string) => `${API_BASE_URL}/contact/${listingId}`,
-  sendMessage: (conversationId: string) => `${API_BASE_URL}/conversations/${conversationId}/messages/send`,
-  getMessages: (conversationId: string) => `${API_BASE_URL}/conversations/${conversationId}/messages`,
-  deleteMessage: (messageId: string) => `${API_BASE_URL}/{messageId}/delete`,
-  archiveMessage: (messageId: string) => `${API_BASE_URL}/${messageId}/archive`,
-  reportMessage: (messageId: string) => `${API_BASE_URL}/${messageId}/report`,
-  listingMessages: `${API_BASE_URL}/listings/messages`,
-  listingConversations: (listingId: string) => `${API_BASE_URL}/listings/${listingId}/conversations`,
-  markAsRead: (conversationId: string) => `${API_BASE_URL}/conversations/${conversationId}/read`,
-};
+   listingsWithMessages: `${API_BASE_URL}/messages/listings/messages`, // Liste des annonces avec conversations
+  contactOwner: (listingId: string) => `${API_BASE_URL}/messages/contact/${listingId}`, // Contacter propriétaire
+  sendMessage: (conversationId: string) => `${API_BASE_URL}/messages/conversations/${conversationId}/messages/send`, // Envoyer message
+  listingConversations: (listingId: string) => `${API_BASE_URL}/messages/listings/${listingId}/conversations`, // Conversations d'une annonce
+  conversationMessages: (conversationId: string) => `${API_BASE_URL}/messages/conversations/${conversationId}/messages`, // Messages d'une conversation
+  markAsRead: (conversationId: string) => `${API_BASE_URL}/messages/conversations/${conversationId}/read`, // Marquer comme lu
+  deleteMessage: (messageId: string) => `${API_BASE_URL}/messages/${messageId}/delete`, // Supprimer message
+  reportMessage: (messageId: string) => `${API_BASE_URL}/messages/${messageId}/report`, // Signaler message
+  };

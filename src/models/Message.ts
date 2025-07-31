@@ -1,18 +1,45 @@
-export type MessageStatus = "ACTIVE" | "DELETED" | "REPORTED" | "ARCHIVED";
-
 export interface Message {
-  messageId: string;              // UUID du message
-  conversationId: string;         // UUID de la conversation
-  listingId: string;              // UUID de l'annonce
-  senderId: string;               // UUID de l'expéditeur
-  receiverId: string;             // UUID du destinataire
-  content: string;                // Corps du message
-  isRead: boolean;                // Statut de lecture
-  status: MessageStatus;          // Statut du message (enum)
-  sentAt: string;                 // Date d'envoi (ISO string)
-  createdAt: string;              // Date de création (ISO string)
-  updatedAt: string;              // Dernière modification (ISO string)
-  deletedAt?: string | null;      // Date de suppression (soft delete), optionnelle
-  edited?: boolean;               // Indique si le message a été édité, optionnel
-  reportCount?: number;           // Nombre de signalements, optionnel
+  messageId: string; // UUID du backend
+  content: string;
+  senderId: string; // UUID du backend
+  receiverId: string; // UUID du backend
+  isFromMe: boolean;
+  isRead: boolean;
+  sentAt: string; // ISO string (Instant du backend)
+  status: "ACTIVE" | "DELETED" | "ARCHIVED";
+  createdAt: string;
+  updatedAt: string;
 }
+
+// DTOs pour les requêtes
+export interface SendMessageRequest {
+  toUserId: string; // UUID
+  texte: string; // Nom exact du backend
+}
+
+export interface ContactOwnerRequest {
+  receiverId: string; // UUID
+  content: string;
+}
+
+// DTOs pour les réponses
+export interface SendMessageResponse {
+  message: Message;
+  conversationId: string;
+}
+
+export interface ContactOwnerResponse {
+  conversationId: string;
+  firstMessage: Message;
+}
+
+export interface DeleteMessageResponse {
+  status: "ACTIVE" | "DELETED" | "ARCHIVED";
+  message: string;
+}
+
+export interface MarkReadResponse {
+  messagesMarkedAsRead: number;
+  info: string;
+}
+
