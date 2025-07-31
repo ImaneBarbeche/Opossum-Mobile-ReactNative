@@ -34,6 +34,8 @@ const MapScreen: React.FC = () => {
   const [filterModalVisible, setFilterModalVisible] = React.useState(false);
   // Etat pour la région visible de la carte
   const [mapRegion, setMapRegion] = React.useState<any | null>(null);
+  // Etat pour la dernière ville/adresse utilisée pour le centrage
+  const [lastCenteredCity, setLastCenteredCity] = React.useState<string>("");
 
   // Handler pour basculer vers la vue liste (à brancher sur la navigation)
   const goToListView = () => {
@@ -73,7 +75,6 @@ const MapScreen: React.FC = () => {
   }, []);
   // Etat pour les annonces récupérées via l'API
   const [markers, setMarkers] = React.useState<any[]>([]);
-  // Log détaillé pour debug : afficher les markers récupérés depuis l’API
   React.useEffect(() => {
     if (markers && markers.length > 0) {
       const mapped = markers.map((m) => ({
@@ -132,6 +133,7 @@ const MapScreen: React.FC = () => {
         const data = (res as { data?: any[] }).data || [];
         setMarkers(data);
       } catch (e) {
+        console.error("[API] fetchMapListings error:", e);
         setMarkers([]);
       }
     };
@@ -179,7 +181,25 @@ const MapScreen: React.FC = () => {
       {/* Modale de recherche avancée extraite */}
       <MapFilterModal
         visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
+        onClose={async () => {
+          // Si une ville/adresse est saisie et différente de la dernière centrée
+          if (filterCity && filterCity !== lastCenteredCity) {
+            // Géocodage
+            const geocode = await import("../utils/geocode");
+            const coords = await geocode.geocodeAddress(filterCity, "");
+            if (coords) {
+              setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });
+              setMapRegion({
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              });
+              setLastCenteredCity(filterCity);
+            }
+          }
+          setFilterModalVisible(false);
+        }}
         filterQ={filterQ}
         setFilterQ={setFilterQ}
         filterType={filterType}
@@ -192,13 +212,39 @@ const MapScreen: React.FC = () => {
         setFilterPage={setFilterPage}
         filterSize={filterSize}
         setFilterSize={setFilterSize}
-        onReset={() => {
+        onReset={async () => {
           setFilterQ("");
           setFilterType(null);
           setFilterCategory(null);
           setFilterCity("");
           setFilterPage("0");
           setFilterSize("20");
+          setLastCenteredCity("");
+          // Revenir à la position GPS ou par défaut
+          let location;
+          try {
+            location = await import("expo-location").then(mod => mod.getCurrentPositionAsync({ accuracy: mod.Accuracy.Balanced }));
+          } catch {
+            location = null;
+          }
+          if (location && location.coords) {
+            setUserLocation({ latitude: location.coords.latitude, longitude: location.coords.longitude });
+            setMapRegion({
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            });
+          } else {
+            // Position par défaut Lille
+            setUserLocation({ latitude: 50.6938, longitude: 3.1746 });
+            setMapRegion({
+              latitude: 50.6938,
+              longitude: 3.1746,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            });
+          }
           setFilterModalVisible(false);
         }}
       />

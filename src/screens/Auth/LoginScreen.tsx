@@ -25,7 +25,6 @@ const LoginScreen = ({ navigation }: any) => {
 
   useEffect(() => {
     const url = Linking.createURL("auth/reset-password?token=abc123");
-    console.log("Lien deep généré :", url);
   }, []);
 
   // Fonction pour gérer la connexion
