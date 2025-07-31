@@ -1,5 +1,7 @@
 // Configuration des couleurs de l'application Opossum
 export const colors = {
+  successLight: '#E6F9ED',
+  warningLight: '#FFF9E6',
   // Couleurs principales
   primary: '#A8D5A8',
   primaryDark: '#85C485',

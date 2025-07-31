@@ -355,95 +355,25 @@ export default function ConversationChatScreen({
   // ✅ Interface Mode Contact
   if (isContactMode) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 32 }}>
-          <Text
-            style={[
-              typography.h1,
-              {
-                color: colors.primary,
-                marginBottom: spacing.lg,
-                textAlign: "center",
-              },
-            ]}
-          >
-            Contacter {ownerName}
-          </Text>
+      <SafeAreaView style={styles.safeAreaContainer}>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 40 }}>
+          <Text style={[typography.h1, { color: colors.primary, marginBottom: spacing.lg, textAlign: "center" }]}>Contacter {ownerName}</Text>
 
           {/* Informations de l'annonce */}
           {listingInfo && (
-            <View
-              style={[
-                componentStyles.card,
-                {
-                  padding: 16,
-                  marginBottom: spacing.lg,
-                  backgroundColor:
-                    listingInfo.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  typography.h3,
-                  { color: colors.black, marginBottom: spacing.sm },
-                ]}
-              >
-                À propos de :
-              </Text>
-              <Text
-                style={[
-                  typography.h3, // ✅ Utilise h3 existant
-                  {
-                    color: colors.black,
-                    marginBottom: spacing.xs,
-                    fontSize: 18, // ✅ Taille légèrement plus petite que h3
-                    fontWeight: "600", // ✅ Plus léger que h3
-                  },
-                ]}
-              >
-                {listingInfo.title}
-              </Text>
-              <Text
-                style={[
-                  typography.caption,
-                  {
-                    color:
-                      listingInfo.type === "FOUND"
-                        ? colors.success
-                        : colors.error,
-                    fontWeight: "bold",
-                    marginBottom: spacing.sm,
-                  },
-                ]}
-              >
-                {listingInfo.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
-              </Text>
+            <View style={[styles.listingCard, { backgroundColor: listingInfo.type === "FOUND" ? colors.successLight : colors.warningLight }]}> 
+              <Text style={[typography.h3, { color: colors.black, marginBottom: spacing.sm }]}>À propos de :</Text>
+              <Text style={[typography.h3, { color: colors.black, marginBottom: spacing.xs, fontSize: 18, fontWeight: "600" }]}>{listingInfo.title}</Text>
+              <Text style={[typography.caption, { color: listingInfo.type === "FOUND" ? colors.success : colors.error, fontWeight: "bold", marginBottom: spacing.sm }]}>{listingInfo.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}</Text>
               {listingInfo.description && (
-                <Text
-                  style={[
-                    typography.body,
-                    { color: colors.darkGray, fontStyle: "italic" },
-                  ]}
-                  numberOfLines={3}
-                >
-                  {listingInfo.description}
-                </Text>
+                <Text style={[typography.body, { color: colors.darkGray, fontStyle: "italic" }]} numberOfLines={3}>{listingInfo.description}</Text>
               )}
             </View>
           )}
 
           {/* Formulaire de message */}
-          <View style={[componentStyles.card, { padding: 16 }]}>
-            <Text
-              style={[
-                typography.h3,
-                { color: colors.black, marginBottom: spacing.sm },
-              ]}
-            >
-              Votre message :
-            </Text>
-
+          <View style={styles.contactFormCard}>
+            <Text style={[typography.h3, { color: colors.black, marginBottom: spacing.sm }]}>Votre message :</Text>
             <TextInput
               style={styles.contactTextInput}
               placeholder="Bonjour, je suis intéressé par votre annonce..."
@@ -454,57 +384,19 @@ export default function ConversationChatScreen({
               maxLength={500}
               editable={!sending}
             />
-
-            <Text
-              style={[
-                typography.caption,
-                { color: colors.mediumGray, marginBottom: spacing.md },
-              ]}
-            >
-              {newMessage.length}/500 caractères
-            </Text>
-
+            <Text style={[typography.caption, { color: colors.mediumGray, marginBottom: spacing.md }]}>{newMessage.length}/500 caractères</Text>
             <TouchableOpacity
               onPress={handleSendFirstMessage}
               disabled={sending || !newMessage.trim()}
-              style={[
-                styles.contactSendButton,
-                (sending || !newMessage.trim()) &&
-                  styles.contactSendButtonDisabled,
-              ]}
+              style={[styles.contactSendButton, (sending || !newMessage.trim()) && styles.contactSendButtonDisabled]}
             >
-              {sending && (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.white}
-                  style={{ marginRight: 8 }}
-                />
-              )}
-              <Text
-                style={[
-                  typography.button,
-                  { color: colors.white, fontWeight: "bold" },
-                ]}
-              >
-                {sending ? "Envoi en cours..." : "Envoyer le message"}
-              </Text>
+              {sending && <ActivityIndicator size="small" color={colors.white} style={{ marginRight: 8 }} />}
+              <Text style={[typography.button, { color: colors.white, fontWeight: "bold" }]}>{sending ? "Envoi en cours..." : "Envoyer le message"}</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ marginTop: spacing.lg, padding: 16 }}>
-            <Text
-              style={[
-                typography.caption,
-                {
-                  color: colors.mediumGray,
-                  textAlign: "center",
-                  fontStyle: "italic",
-                },
-              ]}
-            >
-              Votre message sera envoyé au propriétaire de cette annonce. Une
-              conversation sera créée pour vous permettre d'échanger.
-            </Text>
+          <View style={styles.infoBox}>
+            <Text style={[typography.caption, { color: colors.mediumGray, textAlign: "center", fontStyle: "italic" }]}>Votre message sera envoyé au propriétaire de cette annonce. Une conversation sera créée pour vous permettre d'échanger.</Text>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -595,4 +487,3 @@ export default function ConversationChatScreen({
   );
 }
 
-// ...existing code...
