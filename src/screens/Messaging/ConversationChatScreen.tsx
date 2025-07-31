@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
@@ -29,6 +28,7 @@ import MessageBubble from "../../components/MessageBubble";
 import type { Message } from "../../models/Message";
 import type { ConversationMessagesResponse } from "../../models/Conversation";
 import { colors, typography, componentStyles, spacing } from "../../theme";
+import styles from "../../theme/conversationChatScreenStyles";
 
 // ✅ Types pour gérer les deux modes
 type ContactModeParams = {
@@ -513,51 +513,53 @@ export default function ConversationChatScreen({
 
   // ✅ Interface Mode Chat
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeAreaContainer}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 24}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.messageId}
-          renderItem={({ item }) => (
-            <MessageBubble
-              content={item.content}
-              isFromMe={item.senderId === myUserId}
-              sentAt={item.sentAt}
-              isRead={item.isRead}
-              onDelete={
-                item.senderId === myUserId && item.status === "ACTIVE"
-                  ? () => handleDeleteMessage(item.messageId)
-                  : undefined
-              }
-              isDeletable={
-                item.senderId === myUserId &&
-                item.status === "ACTIVE" &&
-                Date.now() - new Date(item.sentAt).getTime() <
-                  24 * 60 * 60 * 1000
-              }
-            />
-          )}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                Aucun message dans cette conversation
-              </Text>
-              <Text style={styles.emptySubtext}>
-                Envoyez le premier message !
-              </Text>
-            </View>
-          }
-          onContentSizeChange={() =>
-            flatListRef.current?.scrollToEnd({ animated: false })
-          }
-          contentContainerStyle={styles.messagesList}
-        />
-
+        <View style={{ flex: 1 }}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.messageId}
+            renderItem={({ item }) => (
+              <MessageBubble
+                content={item.content}
+                isFromMe={item.senderId === myUserId}
+                sentAt={item.sentAt}
+                isRead={item.isRead}
+                onDelete={
+                  item.senderId === myUserId && item.status === "ACTIVE"
+                    ? () => handleDeleteMessage(item.messageId)
+                    : undefined
+                }
+                isDeletable={
+                  item.senderId === myUserId &&
+                  item.status === "ACTIVE" &&
+                  Date.now() - new Date(item.sentAt).getTime() <
+                    24 * 60 * 60 * 1000
+                }
+              />
+            )}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  Aucun message dans cette conversation
+                </Text>
+                <Text style={styles.emptySubtext}>
+                  Envoyez le premier message !
+                </Text>
+              </View>
+            }
+            onContentSizeChange={() =>
+              flatListRef.current?.scrollToEnd({ animated: false })
+            }
+            contentContainerStyle={styles.messagesList}
+            style={{ flexGrow: 1 }}
+          />
+        </View>
         <View style={styles.inputContainer}>
           <View style={styles.inputRow}>
             <TextInput
@@ -593,99 +595,4 @@ export default function ConversationChatScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.lightGray,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.darkGray,
-    marginTop: 16,
-  },
-  messagesList: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: 100,
-  },
-  emptyText: {
-    ...typography.h3,
-    color: colors.darkGray,
-    textAlign: "center",
-  },
-  emptySubtext: {
-    ...typography.body,
-    color: colors.mediumGray,
-    textAlign: "center",
-    marginTop: 8,
-  },
-  inputContainer: {
-    backgroundColor: colors.white,
-    borderTopWidth: 1,
-    borderTopColor: colors.lightGray,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: colors.lightGray,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginRight: 12,
-    maxHeight: 100,
-    fontSize: 16,
-  },
-  sendButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sendButtonDisabled: {
-    backgroundColor: colors.mediumGray,
-  },
-  sendButtonText: {
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  // ✅ Styles spécifiques au mode Contact
-  contactTextInput: {
-    borderWidth: 1,
-    borderColor: colors.mediumGray,
-    borderRadius: 8,
-    padding: 12,
-    height: 120,
-    textAlignVertical: "top",
-    backgroundColor: colors.white,
-    marginBottom: spacing.md,
-    fontSize: 16,
-  },
-  contactSendButton: {
-    backgroundColor: colors.primary,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  contactSendButtonDisabled: {
-    backgroundColor: colors.mediumGray,
-  },
-});
+// ...existing code...
