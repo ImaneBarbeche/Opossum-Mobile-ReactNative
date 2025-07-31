@@ -115,9 +115,9 @@ const MapScreen: React.FC = () => {
         const paramsRaw = {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
-          radius: dynamicRadius,
-          type: filterType,
-          category: filterCategory,
+          radius: Math.max(1, Math.min(dynamicRadius, 50)),
+          type: filterType || "",
+          category: filterCategory || "",
           q: filterQ, // Ajout du filtre de recherche
           page: filterPage ? Number(filterPage) : 0,
           size: filterSize ? Number(filterSize) : 20,

@@ -104,25 +104,19 @@ export default function ConversationChatScreen({
 
       try {
         setLoadingListing(true);
-      
-
         const listing = await getListingDetails(routeParams.listingId, token);
-
         setListingInfo(listing);
-
-        // Récupération du nom du propriétaire
         if (listing.user) {
-          const fullName = `${listing.user.firstName || ""} ${
-            listing.user.lastName || ""
-          }`.trim();
+          const fullName = `${listing.user.firstName || ""} ${listing.user.lastName || ""}`.trim();
           setOwnerName(fullName || "Propriétaire");
         }
       } catch (error: any) {
         console.error("❌ Erreur chargement annonce:", error);
-        Alert.alert(
-          "Erreur",
-          "Impossible de charger les informations de l'annonce"
-        );
+        Toast.show({
+          type: "error",
+          text1: "Erreur",
+          text2: "Impossible de charger les informations de l'annonce",
+        });
       } finally {
         setLoadingListing(false);
         setLoading(false);
@@ -151,7 +145,6 @@ export default function ConversationChatScreen({
           0,
           50
         );
-      console.log("[ConversationChatScreen] getConversationMessages response:", response);
 
       const activeMessages = response.messages.filter(
         (msg) => msg.status === "ACTIVE"
@@ -184,7 +177,11 @@ export default function ConversationChatScreen({
       !myUserId
     ) {
       if (!newMessage.trim()) {
-        Alert.alert("Erreur", "Veuillez écrire un message");
+        Toast.show({
+          type: "error",
+          text1: "Erreur",
+          text2: "Veuillez écrire un message",
+        });
       }
       return;
     }
@@ -197,29 +194,28 @@ export default function ConversationChatScreen({
         newMessage.trim(),
         (routeParams as ContactModeParams).receiverId
       );
-      Alert.alert("Succès", "Message envoyé avec succès !", [
-        {
-          text: "Voir la conversation",
-          onPress: () => {
-            // ✅ Basculer vers le mode Chat
-            navigation?.replace("ConversationChatScreen", {
-              mode: "chat",
-              conversationId: response.conversationId,
-              listingId: routeParams.listingId,
-              otherUserId: (routeParams as ContactModeParams).receiverId,
-              otherUserName: ownerName,
-              listingTitle: listingInfo?.title || "Annonce",
-            });
-          },
+      Toast.show({
+        type: "success",
+        text1: "Succès",
+        text2: "Message envoyé avec succès !",
+        onHide: () => {
+          navigation?.replace("ConversationChatScreen", {
+            mode: "chat",
+            conversationId: response.conversationId,
+            listingId: routeParams.listingId,
+            otherUserId: (routeParams as ContactModeParams).receiverId,
+            otherUserName: ownerName,
+            listingTitle: listingInfo?.title || "Annonce",
+          });
         },
-        {
-          text: "Retour",
-          onPress: () => navigation?.goBack(),
-        },
-      ]);
+      });
     } catch (error: any) {
       console.error("❌ Erreur envoi message:", error);
-      Alert.alert("Erreur", error.message || "Impossible d'envoyer le message");
+      Toast.show({
+        type: "error",
+        text1: "Erreur",
+        text2: error.message || "Impossible d'envoyer le message",
+      });
     } finally {
       setSending(false);
     }

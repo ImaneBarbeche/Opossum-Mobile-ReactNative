@@ -99,6 +99,7 @@ export default function ListingConversationsScreen({
   const handleConversationPress = useCallback(
     (conversation: ConversationSummary) => {
       navigation?.navigate("ConversationChatScreen", {
+        mode: "chat", 
         conversationId: conversation.conversationId,
         listingId: conversation.listingId,
         otherUserId: conversation.otherUserId,
