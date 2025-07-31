@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import { componentStyles, colors, spacing, typography } from "../../theme";
+import { colors } from "../../theme";
+import { messagingScreenStyles } from "../../theme/messagingScreenStyles";
 import { getMyMessageListings, getListingConversations } from "../../services/message.service";
 import { User } from "../../models/User";
 
@@ -88,79 +89,39 @@ export default function MyMessageListingsScreen({
     fetchConversations();
   }, [fetchConversations]);
 
+
+  const Header = () => (
+    <Text style={messagingScreenStyles.header}>Liste de mes annonces avec discussions</Text>
+  );
+
   if (loading && !refreshing) {
     return (
-      <View
-        style={[
-          componentStyles.container,
-          { backgroundColor: colors.lightGray, paddingTop: 64 },
-        ]}
-      >
-        <Text
-          style={[
-            typography.h1,
-            {
-              color: colors.primary,
-              marginBottom: spacing.md,
-              alignSelf: "center",
-            },
-          ]}
-        >
-          Liste de mes annonces avec discussions
-        </Text>
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-          style={{ marginTop: 32 }}
-        />
+      <View style={messagingScreenStyles.container}>
+        <Header />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32, alignSelf: "center" }} />
       </View>
     );
   }
 
   if (error && !refreshing) {
     return (
-      <View
-        style={[
-          componentStyles.container,
-          { backgroundColor: colors.lightGray, paddingTop: 64 },
-        ]}
-      >
-        <Text
-          style={[
-            typography.h1,
-            {
-              color: colors.primary,
-              marginBottom: spacing.md,
-              alignSelf: "center",
-            },
-          ]}
-        >
-          Liste de mes annonces avec discussions
-        </Text>
-        <View style={{ padding: 16, alignItems: "center" }}>
-          <Text
-            style={{
-              color: colors.error,
-              textAlign: "center",
-              marginBottom: 16,
-            }}
-          >
-            {error}
-          </Text>
+      <View style={messagingScreenStyles.container}>
+        <Header />
+        <View style={{ backgroundColor: colors.white, borderRadius: 12, padding: 20, alignItems: "center", shadowColor: colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 }}>
+          <Text style={{ color: colors.error, textAlign: "center", marginBottom: 16, fontSize: 16 }}>{error}</Text>
           <TouchableOpacity
             onPress={retryLoad}
             style={{
               borderRadius: 8,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
+              marginTop: 8,
             }}
           >
-            <Text style={{ color: colors.white, fontWeight: "bold" }}>
-              Réessayer
-            </Text>
+            <Text style={{ color: colors.white, fontWeight: "bold", fontSize: 16 }}>Réessayer</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -184,23 +145,36 @@ export default function MyMessageListingsScreen({
     }
   };
 
+  console.log("[MyMessageListingsScreen] Announcements:", announcements);
+
   return (
-    <View style={[componentStyles.container, { backgroundColor: colors.lightGray, paddingTop: 64 }]}> 
-      <Text style={[typography.h1, { color: colors.primary, marginBottom: 16, alignSelf: "center" }]}>Liste de mes annonces avec discussions</Text>
+    <View style={messagingScreenStyles.container}>
+      <Header />
       <FlatList
         data={announcements}
         keyExtractor={(item) => item.listingId}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handleAnnouncementPress(item.listingId, item.title)}
-            style={[componentStyles.card, { padding: 16, marginBottom: 12, backgroundColor: colors.white }]}
-            activeOpacity={0.8}
+            onPress={() => handleAnnouncementPress(item.listingId, item.listingTitle)}
+            style={messagingScreenStyles.card}
+            activeOpacity={0.85}
           >
-            <Text style={[typography.h3, { color: colors.black, marginBottom: 8 }]}>{item.title}</Text>
-            <Text style={[typography.body, { color: colors.darkGray, marginBottom: 8 }]}>Conversations: {item.conversationCount}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={messagingScreenStyles.cardTitle} numberOfLines={2}>
+                {item.listingTitle ? item.listingTitle : "Annonce sans titre"}
+              </Text>
+            </View>
+            <View style={messagingScreenStyles.badgeContainer}>
+              <View style={messagingScreenStyles.badge}>
+                <Text style={messagingScreenStyles.badgeText}>
+                  {item.conversationCount ?? item.unreadCount ?? 0}
+                </Text>
+              </View>
+              <Text style={messagingScreenStyles.badgeLabel}>Conversations</Text>
+            </View>
           </TouchableOpacity>
         )}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+        contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 80 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -210,9 +184,9 @@ export default function MyMessageListingsScreen({
           />
         }
         ListEmptyComponent={
-          <View style={{ alignItems: "center", marginTop: 32 }}>
-            <Text style={{ textAlign: "center", color: colors.darkGray, fontSize: 16 }}>Aucune annonce trouvée</Text>
-            <Text style={{ textAlign: "center", color: colors.mediumGray, marginTop: 8 }}>Les annonces apparaîtront ici quand vous aurez des conversations</Text>
+          <View style={messagingScreenStyles.emptyContainer}>
+            <Text style={messagingScreenStyles.emptyText}>Aucune annonce trouvée</Text>
+            <Text style={messagingScreenStyles.emptySubText}>Les annonces apparaîtront ici quand vous aurez des conversations</Text>
           </View>
         }
       />

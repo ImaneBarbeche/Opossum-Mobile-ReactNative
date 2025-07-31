@@ -20,7 +20,7 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
     <Stack.Navigator id={undefined}>
       <Stack.Screen
         name="MyMessageListings"
-        options={{ title: "Mes Conversations" }}
+        options={{ headerShown: false }}
       >
         {(props) => (
           <MyMessageListingsScreen
@@ -32,7 +32,7 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
       </Stack.Screen>
       <Stack.Screen
         name="ConversationChatScreen"
-        options={{ title: "Conversation" }}
+        options={{ headerShown: false }}
       >
         {(props) => (
           <ConversationChatScreen
@@ -44,7 +44,7 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
       </Stack.Screen>
       <Stack.Screen
         name="ListingConversationsScreen"
-        options={{ title: "Conversations de l'annonce" }}
+        options={{ headerShown: false }}
       >
         {(props) => (
           <ListingConversationsScreen
