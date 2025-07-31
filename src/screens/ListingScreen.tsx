@@ -178,7 +178,7 @@ const ListingScreen: React.FC = () => {
           },
         ]}
       >
-        Mes listings
+        Mes annonces
       </Text>
       {isLoading ? (
         <ActivityIndicator

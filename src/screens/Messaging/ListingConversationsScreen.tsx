@@ -113,7 +113,6 @@ export default function ListingConversationsScreen({
   if (loading && !refreshing) {
     return (
       <View style={listingConversationsStyles.container}>
-        <Text style={listingConversationsStyles.header}>Conversations : {listingTitle}</Text>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32, alignSelf: "center" }} />
       </View>
     );
@@ -122,7 +121,6 @@ export default function ListingConversationsScreen({
   if (error && !refreshing) {
     return (
       <View style={listingConversationsStyles.container}>
-        <Text style={listingConversationsStyles.header}>Conversations : {listingTitle}</Text>
         <View style={listingConversationsStyles.errorBox}>
           <Text style={listingConversationsStyles.errorText}>{error}</Text>
           <TouchableOpacity onPress={retryLoad} style={listingConversationsStyles.retryButton}>
@@ -135,7 +133,6 @@ export default function ListingConversationsScreen({
 
   return (
     <View style={listingConversationsStyles.container}>
-      <Text style={listingConversationsStyles.header}>Conversations : {listingTitle}</Text>
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.conversationId}

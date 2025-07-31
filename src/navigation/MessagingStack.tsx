@@ -1,5 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import { colors } from "../theme/colors";
 import MyMessageListingsScreen from "../screens/Messaging/MyMessageListingsScreen";
 import ConversationChatScreen from "../screens/Messaging/ConversationChatScreen";
 import ListingConversationsScreen from "../screens/Messaging/ListingConversationsScreen";
@@ -32,7 +33,7 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
       </Stack.Screen>
       <Stack.Screen
         name="ConversationChatScreen"
-        options={{ headerShown: false }}
+        options={{ headerShown: true }}
       >
         {(props) => (
           <ConversationChatScreen
@@ -44,7 +45,12 @@ export default function MessagingStack({ screenProps }: MessagingStackProps) {
       </Stack.Screen>
       <Stack.Screen
         name="ListingConversationsScreen"
-        options={{ headerShown: false }}
+        options={{
+          headerShown: true,
+          title: "Conversations",
+          headerTitleAlign: "center",
+          headerTitleStyle: { color: colors.primary, fontWeight: "bold" },
+        }}
       >
         {(props) => (
           <ListingConversationsScreen

@@ -318,13 +318,15 @@ export default function ConversationChatScreen({
     if (isContactMode && listingInfo) {
       navigation?.setOptions({
         title: `Contacter ${ownerName}`,
-        headerTitleStyle: { fontSize: 16 },
+        headerTitleStyle: { fontSize: 16 }
+        // Ne pas définir headerLeft ni d'autres options
       });
     } else if (isChatMode) {
       const chatParams = routeParams as ChatModeParams;
       navigation?.setOptions({
         title: `${chatParams.otherUserName} - ${chatParams.listingTitle}`,
-        headerTitleStyle: { fontSize: 16 },
+        headerTitleStyle: { fontSize: 16 }
+        // Ne pas définir headerLeft ni d'autres options
       });
     }
   }, [
