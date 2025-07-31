@@ -9,10 +9,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 // If getUserConversations is a default export:
-import { getUserConversations } from "../services/message.service";
-// Or, if the correct named export is different, e.g. 'fetchUserConversations':
-// import { fetchUserConversations as getUserConversations } from "../services/message.service";
-import type { Message } from "../models/Message";
+import { getMyMessageListings, getListingConversations } from "../services/message.service";
+
 
 type Props = {
   token: string;
@@ -48,25 +46,43 @@ export default function ChatList({
     let mounted = true;
     setLoading(true);
 
-    getUserConversations(token, myUserId)
-      .then((conversations) => {
-        if (mounted) {
-          const threadMap = new Map<string, Thread>();
-          conversations.forEach((conversation) => {
-            const thread: Thread = {
-              listingId: conversation.listingId,
-              listingTitle: conversation.listingTitle,
-              otherUser: Array.isArray(conversation.otherUser)
-                ? conversation.otherUser.find((u: any) => u.id !== myUserId) ||
-                  conversation.otherUser[0]
-                : conversation.otherUser,
-              lastMessage: conversation.lastMessage,
-              unreadCount: conversation.unreadCount,
-            };
-            threadMap.set(conversation.listingId, thread);
-          });
-          setThreads(Array.from(threadMap.values()));
-        }
+    getMyMessageListings(token, myUserId)
+      .then(async (announcements) => {
+        if (!mounted) return;
+        // Pour chaque annonce, charger les conversations associées
+        const allConversations = await Promise.all(
+          announcements.map(async (announcement) => {
+            try {
+              const conversations = await getListingConversations(token, announcement.listingId, 0, 10);
+              // On ajoute le titre de l'annonce à chaque conversation pour l'affichage
+              return conversations.map((conv) => ({
+                ...conv,
+                listingTitle: announcement.title,
+              }));
+            } catch (e) {
+              return [];
+            }
+          })
+        );
+        // Aplatir le tableau de tableaux
+        const flatConversations = allConversations.flat();
+        // Mapper en Thread
+        const threads: Thread[] = flatConversations.map((conv) => ({
+          listingId: conv.listingId,
+          listingTitle: conv.listingTitle,
+          otherUser: {
+            id: conv.otherUserId || "",
+            firstName: conv.otherUserName?.split(" ")[0] || "",
+            lastName: conv.otherUserName?.split(" ").slice(1).join(" ") || "",
+            avatarUrl: undefined, // Pas dispo dans ConversationSummary
+          },
+          lastMessage: {
+            content: conv.lastMessagePreview || "",
+            sentAt: conv.lastActivityAt || "",
+          },
+          unreadCount: conv.unreadCount || 0,
+        }));
+        setThreads(threads);
       })
       .catch((error) => {
         console.error("Error fetching conversations:", error);
