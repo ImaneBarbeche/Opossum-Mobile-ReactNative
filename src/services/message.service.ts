@@ -28,7 +28,7 @@ export async function getMyMessageListings(
   type?: string,
   status?: string,
   search?: string
-): Promise<Conversation[]> {
+): Promise<AnnouncementWithConversation[]> {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -57,17 +57,7 @@ export async function getMyMessageListings(
     
     const data = await response.json();    
     // ✅ Backend retourne Page<AnnouncementWithConversationDto>
-    const announcements: AnnouncementWithConversation[] = data.content || [];
-    
-    // Transformer en format Conversation pour compatibilité UI
-    return announcements.map((announcement) => ({
-      conversationId: `listing_${announcement.listingId}`,
-      listingId: announcement.listingId,
-      listingTitle: announcement.title,
-      otherUser: [], // Pas disponible dans AnnouncementWithConversationDto
-      lastMessage: null, // Pas disponible dans AnnouncementWithConversationDto
-      unreadCount: announcement.conversationCount, // conversationCount comme proxy
-    }));
+    return data.content || [];
     
   } catch (error) {
     console.error("💥 getMyMessageListings - Erreur:", error);

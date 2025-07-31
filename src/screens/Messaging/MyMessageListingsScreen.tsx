@@ -10,6 +10,7 @@ import {
 import { colors } from "../../theme";
 import { messagingScreenStyles } from "../../theme/messagingScreenStyles";
 import { getMyMessageListings, getListingConversations } from "../../services/message.service";
+import { AnnouncementWithConversation } from "../../models/Conversation";
 import { User } from "../../models/User";
 
 type MyMessageListingsScreenProps = {
@@ -24,7 +25,7 @@ export default function MyMessageListingsScreen({
   myUserId,
   navigation,
 }: MyMessageListingsScreenProps) {
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementWithConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export default function MyMessageListingsScreen({
 
         // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
         const data = await getMyMessageListings(token, myUserId, 0, 10);
+        console.log("[DEBUG] getMyMessageListings raw data:", data);
         if (Array.isArray(data)) {
           setAnnouncements(data);
         } else {
@@ -155,19 +157,19 @@ export default function MyMessageListingsScreen({
         keyExtractor={(item) => item.listingId}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handleAnnouncementPress(item.listingId, item.listingTitle)}
+            onPress={() => handleAnnouncementPress(item.listingId, item.title)}
             style={messagingScreenStyles.card}
             activeOpacity={0.85}
           >
             <View style={{ flex: 1 }}>
               <Text style={messagingScreenStyles.cardTitle} numberOfLines={2}>
-                {item.listingTitle ? item.listingTitle : "Annonce sans titre"}
+                {item.title ? item.title : "Annonce sans titre"}
               </Text>
             </View>
             <View style={messagingScreenStyles.badgeContainer}>
               <View style={messagingScreenStyles.badge}>
                 <Text style={messagingScreenStyles.badgeText}>
-                  {item.conversationCount ?? item.unreadCount ?? 0}
+                  {item.conversationCount ?? 0}
                 </Text>
               </View>
               <Text style={messagingScreenStyles.badgeLabel}>Conversations</Text>
