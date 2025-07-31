@@ -151,7 +151,7 @@ export default function ConversationChatScreen({
           0,
           50
         );
-
+      console.log("[ConversationChatScreen] getConversationMessages response:", response);
 
       const activeMessages = response.messages.filter(
         (msg) => msg.status === "ACTIVE"

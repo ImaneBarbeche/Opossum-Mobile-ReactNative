@@ -145,7 +145,7 @@ export default function MyMessageListingsScreen({
     }
   };
 
-  console.log("[MyMessageListingsScreen] Announcements:", announcements);
+
 
   return (
     <View style={messagingScreenStyles.container}>
