@@ -57,7 +57,7 @@ export default function ChatList({
               // On ajoute le titre de l'annonce à chaque conversation pour l'affichage
               return conversations.map((conv) => ({
                 ...conv,
-                listingTitle: announcement.title && announcement.title.trim() !== "" ? announcement.title : `Annonce #${announcement.listingId}`,
+                listingTitle: announcement.listingTitle && announcement.listingTitle.trim() !== "" ? announcement.listingTitle : `Annonce #${announcement.listingId}`,
               }));
             } catch (e) {
               return [];

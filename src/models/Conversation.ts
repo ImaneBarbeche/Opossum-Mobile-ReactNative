@@ -25,7 +25,7 @@ export interface ConversationSummary {
 
 export interface AnnouncementWithConversation {
   listingId: string; // UUID
-  title: string;
+  listingTitle: string;
   conversationCount: number;
 }
 

@@ -49,6 +49,7 @@ export default function MyMessageListingsScreen({
 
         // ✅ Appel API corrigé avec pagination Spring Boot (page=0, size=10)
         const data = await getMyMessageListings(token, 0, 10);
+        console.log("[MyMessageListingsScreen] Réponse API getMyMessageListings:", data);
         if (Array.isArray(data)) {
           setAnnouncements(data);
         } else {
@@ -156,13 +157,13 @@ export default function MyMessageListingsScreen({
         keyExtractor={(item) => item.listingId}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handleAnnouncementPress(item.listingId, item.title)}
+            onPress={() => handleAnnouncementPress(item.listingId, item.listingTitle)}
             style={messagingScreenStyles.card}
             activeOpacity={0.85}
           >
             <View style={{ flex: 1 }}>
               <Text style={messagingScreenStyles.cardTitle} numberOfLines={2}>
-                {item.title ? item.title : "Annonce sans titre"}
+                {item.listingTitle ? item.listingTitle : "Annonce sans titre"}
               </Text>
             </View>
             <View style={messagingScreenStyles.badgeContainer}>
