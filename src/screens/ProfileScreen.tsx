@@ -21,6 +21,7 @@ import DeleteAccountButton from "../components/user/DeleteAccountButton";
 import { validateProfileForm } from "../utils/profileValidation";
 import FloatingLogoutButton from "../components/FloatingLogoutButton";
 import Toast from "react-native-toast-message";
+import { Alert } from "react-native";
 import DeleteAccountModal from "../components/user/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
@@ -179,15 +180,18 @@ const ProfileScreen: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
 
   const handleDeleteAccount = () => {
-    Toast.show({
-      type: "info",
-      text1: "Suppression du compte",
-      text2:
-        "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
-      position: "bottom",
-      autoHide: false,
-      onPress: () => setShowPasswordPrompt(true),
-    });
+    Alert.alert(
+      "Suppression du compte",
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Confirmer",
+          style: "destructive",
+          onPress: () => setShowPasswordPrompt(true),
+        },
+      ]
+    );
   };
 
   const handleConfirmDelete = async () => {

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { componentStyles, colors, typography } from "../theme";
@@ -143,47 +144,49 @@ const ObjectDetailScreen = () => {
                 objectDetailScreenStyles.actionBtn,
                 { backgroundColor: colors.error },
               ]}
-              onPress={async () => {
-                // Toast de confirmation à la place de l'alerte de suppression
-                Toast.show({
-                  type: "info",
-                  text1: "Suppression",
-                  text2:
-                    "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
-                  position: "bottom",
-                  autoHide: false,
-                  onPress: async () => {
-                    try {
-                      setLoading(true);
-                      const token = await getValidAccessToken();
-                      if (!token) throw new Error("Token manquant");
-                      await deleteListing(data.id, token);
-                      Toast.show({
-                        type: "success",
-                        text1: "Succès",
-                        text2: "Annonce supprimée avec succès",
-                        position: "bottom",
-                      });
-                      navigation.goBack();
-                    } catch (e: any) {
-                      let backendMsg =
-                        e?.response?.data?.message ||
-                        e?.response?.data?.error ||
-                        e.message ||
-                        "Erreur lors de la suppression";
-                      if (typeof backendMsg !== "string")
-                        backendMsg = JSON.stringify(backendMsg);
-                      Toast.show({
-                        type: "error",
-                        text1: "Erreur",
-                        text2: backendMsg,
-                        position: "bottom",
-                      });
-                    } finally {
-                      setLoading(false);
-                    }
-                  },
-                });
+              onPress={() => {
+                Alert.alert(
+                  "Suppression",
+                  "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
+                  [
+                    { text: "Annuler", style: "cancel" },
+                    {
+                      text: "Supprimer",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          setLoading(true);
+                          const token = await getValidAccessToken();
+                          if (!token) throw new Error("Token manquant");
+                          await deleteListing(data.id, token);
+                          Toast.show({
+                            type: "success",
+                            text1: "Succès",
+                            text2: "Annonce supprimée avec succès",
+                            position: "bottom",
+                          });
+                          navigation.goBack();
+                        } catch (e: any) {
+                          let backendMsg =
+                            e?.response?.data?.message ||
+                            e?.response?.data?.error ||
+                            e.message ||
+                            "Erreur lors de la suppression";
+                          if (typeof backendMsg !== "string")
+                            backendMsg = JSON.stringify(backendMsg);
+                          Toast.show({
+                            type: "error",
+                            text1: "Erreur",
+                            text2: backendMsg,
+                            position: "bottom",
+                          });
+                        } finally {
+                          setLoading(false);
+                        }
+                      },
+                    },
+                  ]
+                );
               }}
             >
               <Ionicons name="trash" size={20} color={colors.white} />
