@@ -22,7 +22,6 @@ import type {
  */
 export async function getMyMessageListings(
   token: string,
-  myUserId: string,
   page: number = 0, // ✅ Backend Spring commence à 0
   size: number = 10, // ✅ Backend utilise "size" pas "limit"
   type?: string,
