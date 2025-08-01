@@ -37,7 +37,11 @@ export const uploadFile = async (fileUri: string, token: string): Promise<Upload
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+    const data = response.data;
+    if (data && typeof data === 'object') {
+      return { success: true, ...data };
+    }
+    return { success: true };
   } catch (error: any) {
     // Ajoute la réponse brute pour le Toast
     if (error.response) {
@@ -54,3 +58,18 @@ export const uploadFile = async (fileUri: string, token: string): Promise<Upload
     };
   }
 };
+
+// Téléchargement d’un fichier/image à partir de son id
+export async function downloadFile(fileId: string, thumbnail = false) {
+  const BASE_URL = 'http://localhost:8080/api/v1/files';
+  const url = `${BASE_URL}/${fileId}${thumbnail ? '?thumbnail=true' : ''}`;
+  return axios.get(url, {
+    responseType: 'blob',
+  });
+}
+
+// Helper pour obtenir l’URL publique d’une image (affichage direct dans l’app)
+export function getFileUrl(fileId: string, thumbnail = false) {
+  const BASE_URL = 'http://localhost:8080/api/v1/files';
+  return `${BASE_URL}/${fileId}${thumbnail ? '?thumbnail=true' : ''}`;
+}

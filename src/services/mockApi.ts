@@ -1,1 +1,0 @@
-// Fichier de mock API pour simuler les réponses du backend

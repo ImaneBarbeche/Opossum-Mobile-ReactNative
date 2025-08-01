@@ -1,8 +1,8 @@
+import { uploadFile } from "../services/files.service";
 import React from "react";
 import { Button } from "react-native";
 import Toast from "react-native-toast-message";
 import * as ImagePicker from "expo-image-picker";
-import { uploadFile } from "../services/filesService";
 
 type Props = {
   onUploaded: (fileData: any) => void; // callback appelé après succès upload
@@ -37,10 +37,9 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
 
     // Upload
     try {
-      const response = await uploadFile({ uri, name: filename, type }, token);
-      const data = response.data as { success: boolean; data: any };
-      if (data.success) {
-        onUploaded(data.data);
+      const response = await uploadFile(uri, token);
+      if (response.success) {
+        onUploaded(response.data);
       } else {
         Toast.show({ type: "error", text1: "Erreur", text2: "Upload échoué" });
       }

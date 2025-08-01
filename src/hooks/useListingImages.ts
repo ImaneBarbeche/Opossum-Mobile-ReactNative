@@ -1,6 +1,6 @@
+import { uploadFile } from '../services/files.service';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadFile } from '../services/files.service';
 
 export function useListingImages(token: string | null) {
   const [images, setImages] = useState<{ id: string, url: string, thumbnail: string }[]>([]);
