@@ -72,7 +72,11 @@ export const createListing = async (token: string, body: CreateListingBody) => {
 
 export const getListingDetails = async (id: string, token?: string) => {
   try {
-    const response = await axios.get(ANNOUNCE_ENDPOINTS.listingDetailsById(id), {
+    const url = ANNOUNCE_ENDPOINTS.listingDetailsById(id);
+    if (!token) {
+      console.error("[getListingDetails] ATTENTION: le token n'est pas transmis ou est undefined ! Vérifiez la récupération et la transmission du token côté frontend.");
+    }
+    const response = await axios.get(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     const item = (response.data as { data: any }).data;
@@ -136,7 +140,6 @@ export const updateListing = async (id: string, token: string, body: UpdateListi
         "Content-Type": "application/json",
       },
     });
-    // Mapping pour compatibilité front : extrait les champs attendus à la racine
     const item = (response.data as { data: any }).data;
     return {
       id: item.id,
@@ -159,7 +162,8 @@ export const updateListing = async (id: string, token: string, body: UpdateListi
       updatedAt: item.updatedAt,
       resolvedAt: item.resolvedAt,
     };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Erreur updateListing:", error?.response?.data || error.message);
     throw error;
   }
 };
@@ -172,7 +176,8 @@ export const deleteListing = async (id: string, token: string) => {
       },
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Erreur deleteListing:", error?.response?.data || error.message);
     throw error;
   }
 };

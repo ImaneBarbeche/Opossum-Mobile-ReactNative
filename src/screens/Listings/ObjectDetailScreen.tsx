@@ -90,16 +90,20 @@ const ObjectDetailScreen = () => {
     }
   }, [data, userLocation]);
   useEffect(() => {
-    setLoading(true);
-    getListingDetails(id)
-      .then((res: any) => {
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const token = await getValidAccessToken();
+        const res = await getListingDetails(id, token);
         setData(res);
         setError(null);
-      })
-      .catch((err: any) => {
+      } catch (err: any) {
         setError(err.message || "Erreur inconnue");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetails();
   }, [id]);
 
   if (loading) {
