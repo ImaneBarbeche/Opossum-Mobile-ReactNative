@@ -1,14 +1,14 @@
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapListView from "../components/map/MapListView";
-import MapMapView from "../components/map/MapMapView";
-import MapSearchBar from "../components/map/MapSearchBar";
-import MapFilterModal from "../components/map/MapFilterModal";
-import { colors } from "../theme";
+import MapListView from "../../components/map/MapListView";
+import MapMapView from "../../components/map/MapMapView";
+import MapSearchBar from "../../components/map/MapSearchBar";
+import MapFilterModal from "../../components/map/MapFilterModal";
+import { colors } from "../../theme";
 import { Platform } from "react-native";
 import * as Location from "expo-location";
-import { fetchMapListings } from "../services/listing.service";
-import { useAuth } from "../context/AuthContext";
+import { fetchMapListings } from "../../services/listing.service";
+import { useAuth } from "../../context/AuthContext";
 
 const MapScreen: React.FC = () => {
   // Dynamically require MapView and Marker only on mobile
@@ -185,7 +185,7 @@ const MapScreen: React.FC = () => {
           // Si une ville/adresse est saisie et différente de la dernière centrée
           if (filterCity && filterCity !== lastCenteredCity) {
             // Géocodage
-            const geocode = await import("../utils/geocode");
+            const geocode = await import("../../utils/geocode");
             const coords = await geocode.geocodeAddress(filterCity, "");
             if (coords) {
               setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });

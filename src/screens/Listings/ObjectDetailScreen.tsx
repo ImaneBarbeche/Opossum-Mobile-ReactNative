@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   Alert,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { componentStyles, colors, typography } from "../theme";
-import { objectDetailScreenStyles } from "../theme/objectDetailScreenStyles";
+import { colors } from "../../theme";
+import { objectDetailScreenStyles } from "../../theme/objectDetailScreenStyles";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -19,11 +19,11 @@ import {
   updateListing,
   deleteListing,
   fetchDistance,
-} from "../services/listing.service";
-import { getCategoryLabel } from "../utils/categories";
+} from "../../services/listing.service";
+import { getCategoryLabel } from "../../utils/categories";
 import * as Location from "expo-location";
-import { getValidAccessToken } from "../services/token.helper";
-import EditListingModal from "../components/listings/EditListingModal";
+import { getValidAccessToken } from "../../services/token.helper";
+import EditListingModal from "../../components/listings/EditListingModal";
 
 type ObjectDetailScreenRouteProp = RouteProp<any, any>;
 

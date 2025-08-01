@@ -4,10 +4,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5, Feather } from "@expo/vector-icons";
 
 import ListingStack from "./ListingStack";
-import MapScreen from "../screens/MapScreen";
+import MapScreen from "../screens/Map/MapScreen";
 import MessagingStack from "./MessagingStack";
-import ProfileScreen from "../screens/ProfileScreen";
-import CreateListingScreen from "../screens/CreateListingScreen";
+import ProfileScreen from "../screens/Profile/ProfileScreen";
+import CreateListingScreen from "../screens/Listings/CreateListingScreen";
 import { useAuth } from "../context/AuthContext";
 
 const Tab = createBottomTabNavigator();

@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator } from "react-native";
-import { componentStyles, colors, spacing, typography } from '../theme';
+import { componentStyles, colors, typography } from '../../theme';
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { getPublicProfile } from '../services/user.service';
+import { getPublicProfile } from '../../services/user.service';
 
 type PublicProfileRouteParams = { userId: string };
 const PublicProfileScreen = () => {
@@ -16,8 +16,7 @@ const PublicProfileScreen = () => {
     setLoading(true);
     getPublicProfile(userId)
       .then((res) => {
-        // res.data ou res selon le backend
-        setUser(res.data ? res.data : res);
+        setUser(res);
       })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));

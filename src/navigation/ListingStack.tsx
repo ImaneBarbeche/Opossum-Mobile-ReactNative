@@ -1,8 +1,8 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import ListingScreen from "../screens/ListingScreen";
-import ObjectDetailScreen from "../screens/ObjectDetailScreen";
-import PublicProfileScreen from "../screens/PublicProfileScreen";
+import ListingScreen from "../screens/Listings/ListingScreen";
+import ObjectDetailScreen from "../screens/Listings/ObjectDetailScreen";
+import PublicProfileScreen from "../screens/Profile/PublicProfileScreen";
 // Placeholder pour EditListingScreen
 const EditListingScreen = () => null;
 

@@ -10,11 +10,11 @@ import {
   Alert,
   Image as RNImage,
 } from "react-native";
-import { componentStyles, colors, spacing, typography } from "../theme";
-import { useAuth } from "../context/AuthContext";
-import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import { deleteListing, getUserListings } from "../services/listing.service";
-import { Listing } from "../models/Listing";
+import { componentStyles, colors, spacing, typography } from "../../theme";
+import { useAuth } from "../../context/AuthContext";
+import FloatingLogoutButton from "../../components/FloatingLogoutButton";
+import { deleteListing, getUserListings } from "../../services/listing.service";
+import { Listing } from "../../models/Listing";
 import { useNavigation } from "@react-navigation/native";
 
 const ListingScreen: React.FC = () => {

@@ -1,13 +1,13 @@
 import Toast from "react-native-toast-message";
 import React, { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { useAuth } from "../context/AuthContext";
-import FloatingLogoutButton from "../components/FloatingLogoutButton";
-import CreateListingForm from "../components/listings/CreateListingForm";
-import { createListing } from "../services/listing.service";
-import { validateCreateListingForm } from "../utils/createListingValidation";
-import { useListingLocation } from "../hooks/useListingLocation";
-import { useListingImages } from "../hooks/useListingImages";
+import { useAuth } from "../../context/AuthContext";
+import FloatingLogoutButton from "../../components/FloatingLogoutButton";
+import CreateListingForm from "../../components/listings/CreateListingForm";
+import { createListing } from "../../services/listing.service";
+import { validateCreateListingForm } from "../../utils/createListingValidation";
+import { useListingLocation } from "../../hooks/useListingLocation";
+import { useListingImages } from "../../hooks/useListingImages";
 
 const CreateListingScreen: React.FC = () => {
   const { token, user, logout } = useAuth();

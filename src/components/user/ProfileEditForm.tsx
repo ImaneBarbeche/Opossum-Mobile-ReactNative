@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { colors } from '../../theme';
 import { profileEditFormStyles } from '../../theme/user';
 import { ProfileEditFormProps } from '../../models/ProfileEditForm.types';
 

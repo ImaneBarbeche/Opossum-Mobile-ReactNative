@@ -1,5 +1,4 @@
-import { colors } from "../theme";
-import { profileScreenStyles } from "../theme/profileScreenStyles";
+import { profileScreenStyles } from "../../theme/profileScreenStyles";
 import React, { useState } from "react";
 import {
   View,
@@ -9,20 +8,20 @@ import {
   ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { getValidAccessToken } from "../services/token.helper";
+import { getValidAccessToken } from "../../services/token.helper";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import { updateUserProfile, deleteUserAccount } from "../services/user.service";
-import Loader from "../components/Loader";
-import ProfileEditForm from "../components/user/ProfileEditForm";
-import ProfileAvatar from "../components/user/ProfileAvatar";
-import ProfileInfoBlock from "../components/user/ProfileInfoBlock";
-import DeleteAccountButton from "../components/user/DeleteAccountButton";
-import { validateProfileForm } from "../utils/profileValidation";
-import FloatingLogoutButton from "../components/FloatingLogoutButton";
+import { useAuth } from "../../context/AuthContext";
+import { updateUserProfile, deleteUserAccount } from "../../services/user.service";
+import Loader from "../../components/Loader";
+import ProfileEditForm from "../../components/user/ProfileEditForm";
+import ProfileAvatar from "../../components/user/ProfileAvatar";
+import ProfileInfoBlock from "../../components/user/ProfileInfoBlock";
+import DeleteAccountButton from "../../components/user/DeleteAccountButton";
+import { validateProfileForm } from "../../utils/profileValidation";
+import FloatingLogoutButton from "../../components/FloatingLogoutButton";
 import Toast from "react-native-toast-message";
 import { Alert } from "react-native";
-import DeleteAccountModal from "../components/user/DeleteAccountModal";
+import DeleteAccountModal from "../../components/user/DeleteAccountModal";
 
 const ProfileScreen: React.FC = () => {
   // Avatar upload state
@@ -148,7 +147,7 @@ const ProfileScreen: React.FC = () => {
       // Rafraîchir le profil utilisateur dans le contexte
       try {
         const { fetchCurrentUserProfile } = await import(
-          "../services/user.service"
+          "../../services/user.service"
         );
         const updatedProfile = await fetchCurrentUserProfile(token);
         if (updatedProfile) {
