@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from "react-native";
-import Modal from "react-native-modal";
+
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
+import messageBubbleStyles from "../theme/messageBubbleStyles";
+import { Modal } from "react-native";
 import Toast from "react-native-toast-message";
 import { reportMessage } from "../services/message.service";
 
@@ -23,6 +25,15 @@ export default function RNModalMessageBubble({
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0]);
   const [customReason, setCustomReason] = useState("");
   const [loadingReport, setLoadingReport] = useState(false);
+  const customReasonInputRef = useRef(null);
+
+  useEffect(() => {
+    if (showReportModal && selectedReason === "Autre") {
+      if (customReasonInputRef.current) {
+        customReasonInputRef.current.focus();
+      }
+    }
+  }, [showReportModal, selectedReason]);
 
   const handleLongPress = () => {
     const options = ["Annuler"];
@@ -32,9 +43,7 @@ export default function RNModalMessageBubble({
     const deleteButtonIndex = isFromMe && isDeletable && onDelete ? 1 : -1;
     const reportButtonIndex = options.length - 1;
 
-    const handleReport = () => {
-      setShowReportModal(true);
-    };
+    const handleReport = () => setShowReportModal(true);
 
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -75,12 +84,15 @@ export default function RNModalMessageBubble({
     setLoadingReport(true);
     const reasonToSend = selectedReason === "Autre" ? customReason : selectedReason;
     try {
+      console.log("[Signalement] Envoi:", { token, messageId, reasonToSend });
       await reportMessage(token, messageId, reasonToSend);
+      console.log("[Signalement] Succès: signalement envoyé");
       setShowReportModal(false);
       setCustomReason("");
       setSelectedReason(REPORT_REASONS[0]);
       Toast.show({ type: "success", text1: "Message signalé avec succès" });
     } catch (e) {
+      console.error("[Signalement] Erreur lors du signalement:", e);
       Alert.alert("Erreur", "Impossible de signaler le message");
     } finally {
       setLoadingReport(false);
@@ -91,140 +103,68 @@ export default function RNModalMessageBubble({
     <>
       <TouchableHighlight
         underlayColor="#e0e0e0"
-        style={[styles.bubble, isFromMe ? styles.mine : styles.theirs]}
+        style={[messageBubbleStyles.bubble, isFromMe ? messageBubbleStyles.mine : messageBubbleStyles.theirs]}
         onLongPress={handleLongPress}
       >
         <View>
           {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.image} />
+            <Image source={{ uri: imageUrl }} style={messageBubbleStyles.image} />
           ) : (
-            <Text style={styles.text}>{content}</Text>
+            <Text style={messageBubbleStyles.text}>{content}</Text>
           )}
-          <View style={styles.row}>
-            <Text style={styles.date}>{new Date(sentAt).toLocaleString()}</Text>
+          <View style={messageBubbleStyles.row}>
+            <Text style={messageBubbleStyles.date}>{new Date(sentAt).toLocaleString()}</Text>
             {isFromMe && (
-              <Text style={styles.status}>{isRead ? "Lu" : "Envoyé"}</Text>
+              <Text style={messageBubbleStyles.status}>{isRead ? "Lu" : "Envoyé"}</Text>
             )}
           </View>
         </View>
       </TouchableHighlight>
       {/* Modal de signalement */}
       <Modal
-        isVisible={showReportModal}
-        onBackdropPress={() => setShowReportModal(false)}
-        onBackButtonPress={() => setShowReportModal(false)}
-        avoidKeyboard
-        useNativeDriver
-        propagateSwipe={true}
-        style={{ margin: 0, justifyContent: "center", alignItems: "center" }}
+        visible={showReportModal}
+        onRequestClose={() => setShowReportModal(false)}
+        animationType="slide"
       >
-        <View style={styles.modalOverlay}>
-          <ScrollView
-            contentContainerStyle={styles.modalContent}
-            keyboardShouldPersistTaps="always"
-          >
-            <Text style={styles.modalTitle}>Signaler le message</Text>
+        <View style={messageBubbleStyles.modalOverlay}>
+          <View style={messageBubbleStyles.modalContent}>
+            <Text style={messageBubbleStyles.modalTitle}>Signaler le message</Text>
             {REPORT_REASONS.map((reason) => (
               <TouchableOpacity
                 key={reason}
-                style={[styles.reasonBtn, selectedReason === reason && styles.reasonBtnSelected]}
-                onPress={() => setSelectedReason(reason)}
+                style={[messageBubbleStyles.reasonBtn, selectedReason === reason && messageBubbleStyles.reasonBtnSelected]}
+                onPress={() => {
+                  setSelectedReason(reason);
+                }}
               >
-                <Text style={styles.reasonText}>{reason}</Text>
+                <Text style={messageBubbleStyles.reasonText}>{reason}</Text>
               </TouchableOpacity>
             ))}
             {selectedReason === "Autre" && (
               <TextInput
-                style={styles.input}
+                ref={customReasonInputRef}
+                style={messageBubbleStyles.input}
                 placeholder="Votre raison..."
                 value={customReason}
                 onChangeText={setCustomReason}
               />
             )}
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16 }}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowReportModal(false)}>
+              <TouchableOpacity style={messageBubbleStyles.cancelBtn} onPress={() => setShowReportModal(false)}>
                 <Text style={{ color: "#333" }}>Annuler</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.submitBtn}
+                style={messageBubbleStyles.submitBtn}
                 onPress={submitReport}
                 disabled={loadingReport || (selectedReason === "Autre" && !customReason)}
               >
-                {loadingReport ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={{ color: "#fff" }}>Signaler</Text>
-                )}
+                {loadingReport ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff" }}>Signaler</Text>}
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </View>
         </View>
       </Modal>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  bubble: { padding: 10, borderRadius: 12, marginVertical: 4, maxWidth: "80%" },
-  mine: { backgroundColor: "#DCF8C6", alignSelf: "flex-end" },
-  theirs: { backgroundColor: "#FFF", alignSelf: "flex-start" },
-  text: { fontSize: 15 },
-  image: { width: 200, height: 200, borderRadius: 12, marginBottom: 8 },
-  row: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  date: { fontSize: 10, color: "#666", marginRight: 10 },
-  status: { fontSize: 10, color: "#0A0", marginRight: 10 },
-  delete: { fontSize: 10, color: "#E33" },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    width: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 16, textAlign: "center" },
-  reasonBtn: {
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: "#eee",
-    marginBottom: 8,
-  },
-  reasonBtnSelected: {
-    backgroundColor: "#cce5ff",
-  },
-  reasonText: { fontSize: 15 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 8,
-    fontSize: 15,
-  },
-  cancelBtn: {
-    backgroundColor: "#eee",
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    marginRight: 8,
-  },
-  submitBtn: {
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    marginLeft: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
