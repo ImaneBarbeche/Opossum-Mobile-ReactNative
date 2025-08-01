@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
 import Toast from "react-native-toast-message";
-import { reportMessage } from "../services/message.service";
+import ReportMessageModal from "./ReportMessageModal";
 import { Modal } from "react-native";
 import messageBubbleStyles from "../theme/messageBubbleStyles";
 
@@ -19,7 +19,7 @@ type Props = {
   messageId?: string;
 };
 
-const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Autre"];
+const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Contenu inapproprié"];
 
 export default function MessageBubble({
   content,
@@ -36,19 +36,24 @@ export default function MessageBubble({
 }: Props) {
   // State pour la modal de signalement
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0]);
-  const [customReason, setCustomReason] = useState("");
-  const [loadingReport, setLoadingReport] = useState(false);
 
 
   // Menu contextuel au long press
   const handleLongPress = () => {
     const options = ["Annuler"];
-    if (isFromMe && isDeletable && onDelete) options.push("Supprimer");
-    options.push("Signaler");
+    let deleteButtonIndex = -1;
+    let reportButtonIndex = -1;
+    // Supprimer uniquement sur mes messages
+    if (isFromMe && isDeletable && onDelete) {
+      options.push("Supprimer");
+      deleteButtonIndex = options.length - 1;
+    }
+    // Signaler uniquement sur les messages reçus
+    if (!isFromMe) {
+      options.push("Signaler");
+      reportButtonIndex = options.length - 1;
+    }
     const cancelButtonIndex = 0;
-    const deleteButtonIndex = isFromMe && isDeletable && onDelete ? 1 : -1;
-    const reportButtonIndex = options.length - 1;
 
     const handleReport = () => {
       setShowReportModal(true);
@@ -65,46 +70,28 @@ export default function MessageBubble({
           if (buttonIndex === deleteButtonIndex && onDelete) {
             onDelete();
           }
-          if (buttonIndex === reportButtonIndex) {
+          if (buttonIndex === reportButtonIndex && !isFromMe) {
             handleReport();
           }
         }
       );
     } else {
+      const alertOptions = [];
+      if (isFromMe && isDeletable && onDelete) {
+        alertOptions.push({ text: "Supprimer", onPress: onDelete, style: "destructive" as const });
+      }
+      if (!isFromMe) {
+        alertOptions.push({ text: "Signaler", onPress: handleReport });
+      }
+      alertOptions.push({ text: "Annuler", style: "cancel" as const });
       Alert.alert(
         "Options du message",
         "Que voulez-vous faire ?",
-        [
-          ...(isFromMe && isDeletable && onDelete
-            ? [{ text: "Supprimer", onPress: onDelete, style: "destructive" as const }]
-            : []),
-          {
-            text: "Signaler",
-            onPress: handleReport,
-          },
-          { text: "Annuler", style: "cancel" as const },
-        ]
+        alertOptions
       );
     }
   };
 
-  // Envoi du signalement
-  const submitReport = async () => {
-    if (!token || !messageId) return;
-    setLoadingReport(true);
-    const reasonToSend = selectedReason === "Autre" ? customReason : selectedReason;
-    try {
-      await reportMessage(token, messageId, reasonToSend);
-      setShowReportModal(false);
-      setCustomReason("");
-      setSelectedReason(REPORT_REASONS[0]);
-      Toast.show({ type: "success", text1: "Message signalé avec succès" });
-    } catch (e) {
-      Alert.alert("Erreur", "Impossible de signaler le message");
-    } finally {
-      setLoadingReport(false);
-    }
-  };
 
   return (
     <>
@@ -127,46 +114,12 @@ export default function MessageBubble({
           </View>
         </View>
       </TouchableHighlight>
-      {/* Modal de signalement */}
-      <Modal
+      <ReportMessageModal
         visible={showReportModal}
-        onRequestClose={() => setShowReportModal(false)}
-        animationType="slide"
-        transparent
-      >
-        <View style={messageBubbleStyles.modalOverlay}>
-          <View style={messageBubbleStyles.modalContent}>
-            <Text style={messageBubbleStyles.modalTitle}>Signaler le message</Text>
-            <View style={{ width: '100%' }}>
-              {REPORT_REASONS.map((reason) => (
-                <TouchableOpacity
-                  key={reason}
-                  style={[messageBubbleStyles.reasonBtn, selectedReason === reason && messageBubbleStyles.reasonBtnSelected]}
-                  onPress={() => setSelectedReason(reason)}
-                >
-                  <Text style={messageBubbleStyles.reasonText}>{reason}</Text>
-                </TouchableOpacity>
-              ))}
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16 }}>
-                <TouchableOpacity style={messageBubbleStyles.cancelBtn} onPress={() => setShowReportModal(false)}>
-                  <Text style={{ color: "#333" }}>Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={messageBubbleStyles.submitBtn}
-                  onPress={submitReport}
-                  disabled={loadingReport}
-                >
-                  {loadingReport ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={{ color: "#fff" }}>Signaler</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowReportModal(false)}
+        token={token}
+        messageId={messageId}
+      />
     </>
   );
 }

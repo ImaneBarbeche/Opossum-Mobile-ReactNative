@@ -435,6 +435,8 @@ export default function ConversationChatScreen({
                   Date.now() - new Date(item.sentAt).getTime() <
                     24 * 60 * 60 * 1000
                 }
+                token={token}
+                messageId={item.messageId}
               />
             )}
             ListEmptyComponent={

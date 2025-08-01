@@ -292,30 +292,30 @@ export async function deleteMessage(
 /**
  * 🎯 8. Signaler message
  * Backend: POST /api/v1/messages/{messageId}/report
- * Retourne: void (ResponseEntity<Void>)
  */
 export async function reportMessage(
-  token: string,
-  messageId: string,
-  reason?: string
-): Promise<void> {
+token: string,
+messageId: string,
+reason?: string
+): Promise<string> {
   try {
     
     const response = await fetch(MESSAGE_ENDPOINTS.reportMessage(messageId), {
       method: "POST",
       headers: { 
         Authorization: `Bearer ${token}`, 
-        "Content-Type": "application/json" 
+        "Content-Type": "text/plain", 
       },
       credentials: "include",
-      body: reason ? JSON.stringify({ reason }) : undefined,
+      body: reason ?? "",
     });
     
+    const responseText = await response.text();
+    console.log('[reportMessage] Réponse brute:', response.status, responseText);
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      throw new Error(`Erreur ${response.status}: ${responseText}`);
     }
-    
+    return responseText;
   } catch (error) {
     console.error("💥 reportMessage - Erreur:", error);
     throw new Error("Erreur lors du signalement du message");

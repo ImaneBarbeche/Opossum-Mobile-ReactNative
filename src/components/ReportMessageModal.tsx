@@ -6,7 +6,7 @@ import { Modal } from "react-native";
 import Toast from "react-native-toast-message";
 import { reportMessage } from "../services/message.service";
 
-const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Autre"];
+const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Contenu inapproprié"];
 
 export default function ReportMessageModal({
   visible,
@@ -24,12 +24,12 @@ export default function ReportMessageModal({
     }
     setLoadingReport(true);
     try {
-      const responseText = await reportMessage(token, messageId, selectedReason);
+      await reportMessage(token, messageId, selectedReason);
       setSelectedReason(REPORT_REASONS[0]);
-      Toast.show({ type: "success", text1: responseText });
+      Toast.show({ type: "success", text1: "Le message a bien été signalé." });
       if (onClose) onClose();
     } catch (e) {
-      Toast.show({ type: "error", text1: e?.message || "Erreur lors du signalement" });
+      Toast.show({ type: "error", text1: "Erreur lors du signalement" });
     } finally {
       setLoadingReport(false);
     }
@@ -39,9 +39,15 @@ export default function ReportMessageModal({
     <Modal
       visible={visible}
       onRequestClose={onClose}
-      animationType="slide"
+      animationType="fade"
+      transparent={true}
     >
-      <View style={messageBubbleStyles.modalOverlay}>
+      <View style={{
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+      }}>
         <View style={messageBubbleStyles.modalContent}>
           <Text style={messageBubbleStyles.modalTitle}>Signaler le message</Text>
           {REPORT_REASONS.map((reason) => (
