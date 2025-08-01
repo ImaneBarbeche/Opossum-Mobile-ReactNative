@@ -3,7 +3,7 @@ import { View, Text, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert,
 import Toast from "react-native-toast-message";
 import ReportMessageModal from "./ReportMessageModal";
 import { Modal } from "react-native";
-import messageBubbleStyles from "../theme/messageBubbleStyles";
+import messageBubbleStyles from "../../theme/messageBubbleStyles";
 
 type Props = {
   content: string;

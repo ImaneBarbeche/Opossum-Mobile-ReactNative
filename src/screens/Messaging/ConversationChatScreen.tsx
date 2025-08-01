@@ -24,7 +24,7 @@ import {
 import { getListingDetails } from "../../services/listing.service";
 import { getValidAccessToken } from "../../services/token.helper";
 import { useAuth } from "../../context/AuthContext";
-import MessageBubble from "../../components/MessageBubble";
+import MessageBubble from "../../components/messages/MessageBubble";
 import type { Message } from "../../models/Message";
 import type { ConversationMessagesResponse } from "../../models/Conversation";
 import { colors, typography, componentStyles, spacing } from "../../theme";

@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 // If getUserConversations is a default export:
-import { getMyMessageListings, getListingConversations } from "../services/message.service";
+import { getMyMessageListings, getListingConversations } from "../../services/message.service";
 
 
 type Props = {

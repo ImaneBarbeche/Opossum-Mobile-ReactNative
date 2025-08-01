@@ -1,10 +1,10 @@
 
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import messageBubbleStyles from "../theme/messageBubbleStyles";
+import messageBubbleStyles from "../../theme/messageBubbleStyles";
 import { Modal } from "react-native";
 import Toast from "react-native-toast-message";
-import { reportMessage } from "../services/message.service";
+import { reportMessage } from "../../services/message.service";
 
 const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Contenu inapproprié"];
 
