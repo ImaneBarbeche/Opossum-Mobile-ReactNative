@@ -3,7 +3,7 @@ import { Modal, View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Picker } from '@react-native-picker/picker';
 import { colors, typography } from '../../theme';
 import { mapFilterModalStyles } from '../../theme/map';
-import { MapFilterModalProps } from "../../models/Annonce";
+import { MapFilterModalProps } from "../../models/Listing";
 
 
 const MapFilterModal: React.FC<MapFilterModalProps & { filterQ?: string; setFilterQ?: (v: string) => void }> = ({
@@ -103,7 +103,7 @@ const MapFilterModal: React.FC<MapFilterModalProps & { filterQ?: string; setFilt
           <TouchableOpacity style={mapFilterModalStyles.button} onPress={onClose}>
             <Text style={mapFilterModalStyles.buttonText}>Valider</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={mapFilterModalStyles.button} onPress={onReset}>
+          <TouchableOpacity style={mapFilterModalStyles.button} onPress={() => { onReset(); onClose(); }}>
             <Text style={mapFilterModalStyles.buttonText}>Réinitialiser</Text>
           </TouchableOpacity>
         </View>
