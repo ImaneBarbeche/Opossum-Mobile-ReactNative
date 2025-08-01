@@ -29,8 +29,9 @@ const ProfileScreen: React.FC = () => {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const { user, logout, loading, setUser } = useAuth();
 
-  // Gérer le statut utilisateur (ACTIVE, BLOCKED, DELETED)
-  if (user?.status === "BLOCKED") {
+  // Gérer le statut utilisateur (ACTIVE, BLOCKED, DELETED ou fallback sur isActive)
+  const userStatus = user?.status ?? (user?.isActive === false ? "DELETED" : "ACTIVE");
+  if (userStatus === "BLOCKED") {
     return (
       <View
         style={{
@@ -59,7 +60,7 @@ const ProfileScreen: React.FC = () => {
       </View>
     );
   }
-  if (user?.status === "DELETED") {
+  if (userStatus === "DELETED") {
     return (
       <View
         style={{
@@ -152,9 +153,10 @@ const ProfileScreen: React.FC = () => {
         const updatedProfile = await fetchCurrentUserProfile(token);
         if (updatedProfile) {
           setUser(updatedProfile);
+        } else {
         }
       } catch (e) {
-        // ignore erreur de refresh
+        Toast.show({ type: "error", text1: "Erreur", text2: "Impossible de rafraîchir le profil utilisateur." });
       }
       Toast.show({
         type: "success",
@@ -166,12 +168,12 @@ const ProfileScreen: React.FC = () => {
       Toast.show({
         type: "error",
         text1: "Erreur",
-        text2: error?.error?.message || "Erreur lors de la mise à jour.",
+        text2: error?.error?.message || error?.message || "Erreur lors de la mise à jour.",
       });
     } finally {
       setSaving(false);
     }
-  }; // <-- Add this closing bracket for handleSave
+  };
 
   // Suppression du compte avec double confirmation et saisie du mot de passe
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
@@ -245,7 +247,25 @@ const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             onPress={async () => {
               if (!editMode) return;
-              // ...existing code...
+              // Ouvre la galerie pour choisir une image
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+              });
+              if (!result.canceled && result.assets && result.assets.length > 0) {
+                setAvatarUploading(true);
+                try {
+                  // Ici, tu peux uploader l'image sur ton serveur si besoin
+                  // Pour l'instant, on prend l'URI locale
+                  setAvatar(result.assets[0].uri);
+                } catch (e) {
+                  Toast.show({ type: 'error', text1: 'Erreur', text2: "Impossible de mettre à jour l'avatar." });
+                } finally {
+                  setAvatarUploading(false);
+                }
+              }
             }}
             activeOpacity={editMode ? 0.7 : 1}
             style={profileScreenStyles.avatarTouchable}

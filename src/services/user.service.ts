@@ -127,6 +127,7 @@ export const fetchCurrentUserProfile = async (token: string): Promise<User | nul
     phone: data.phone != null ? String(data.phone) : "",
     avatar: data.avatar ?? data.avatarUrl ?? "",
     lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
+    status: data.status ?? undefined,
   };
 };
 

@@ -49,7 +49,6 @@ const MapMapView: React.FC<MapMapViewProps> = ({ MapView, Marker, userLocation, 
               coordinate={{ latitude: obj.latitude, longitude: obj.longitude }}
               title={obj.title}
               pinColor={obj.type === "LOST" ? "#E9446A" : "#4EC97B"}
-              // TODO: custom marker icon or avatar
             />
           ) : null
         ))}
