@@ -1,26 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import Modal from "react-native-modal";
 import Toast from "react-native-toast-message";
 import { reportMessage } from "../services/message.service";
-import Modal from "react-native-modal";
-
-type Props = {
-  content: string;
-  isFromMe: boolean;
-  sentAt: string;
-  isRead: boolean;
-  imageUrl?: any;
-  onDelete?: () => void;
-  isDeletable?: boolean;
-  deletedAt?: any;
-  edited?: any;
-  token?: string;
-  messageId?: string;
-};
 
 const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Autre"];
 
-export default function MessageBubble({
+export default function RNModalMessageBubble({
   content,
   isFromMe,
   sentAt,
@@ -32,14 +18,12 @@ export default function MessageBubble({
   isDeletable,
   token,
   messageId,
-}: Props) {
-  // State pour la modal de signalement
+}) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0]);
   const [customReason, setCustomReason] = useState("");
   const [loadingReport, setLoadingReport] = useState(false);
 
-  // Menu contextuel au long press
   const handleLongPress = () => {
     const options = ["Annuler"];
     if (isFromMe && isDeletable && onDelete) options.push("Supprimer");
@@ -86,7 +70,6 @@ export default function MessageBubble({
     }
   };
 
-  // Envoi du signalement
   const submitReport = async () => {
     if (!token || !messageId) return;
     setLoadingReport(true);
@@ -129,43 +112,52 @@ export default function MessageBubble({
       <Modal
         isVisible={showReportModal}
         onBackdropPress={() => setShowReportModal(false)}
-        style={styles.modal}
+        onBackButtonPress={() => setShowReportModal(false)}
+        avoidKeyboard
+        useNativeDriver
+        propagateSwipe={true}
+        style={{ margin: 0, justifyContent: "center", alignItems: "center" }}
       >
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Signaler le message</Text>
-          {REPORT_REASONS.map((reason) => (
-            <TouchableOpacity
-              key={reason}
-              style={[styles.reasonBtn, selectedReason === reason && styles.reasonBtnSelected]}
-              onPress={() => setSelectedReason(reason)}
-            >
-              <Text style={styles.reasonText}>{reason}</Text>
-            </TouchableOpacity>
-          ))}
-          {selectedReason === "Autre" && (
-            <TextInput
-              style={styles.input}
-              placeholder="Votre raison..."
-              value={customReason}
-              onChangeText={setCustomReason}
-            />
-          )}
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16 }}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowReportModal(false)}>
-              <Text style={{ color: "#333" }}>Annuler</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={submitReport}
-              disabled={loadingReport || (selectedReason === "Autre" && !customReason)}
-            >
-              {loadingReport ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: "#fff" }}>Signaler</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        <View style={styles.modalOverlay}>
+          <ScrollView
+            contentContainerStyle={styles.modalContent}
+            keyboardShouldPersistTaps="always"
+          >
+            <Text style={styles.modalTitle}>Signaler le message</Text>
+            {REPORT_REASONS.map((reason) => (
+              <TouchableOpacity
+                key={reason}
+                style={[styles.reasonBtn, selectedReason === reason && styles.reasonBtnSelected]}
+                onPress={() => setSelectedReason(reason)}
+              >
+                <Text style={styles.reasonText}>{reason}</Text>
+              </TouchableOpacity>
+            ))}
+            {selectedReason === "Autre" && (
+              <TextInput
+                style={styles.input}
+                placeholder="Votre raison..."
+                value={customReason}
+                onChangeText={setCustomReason}
+              />
+            )}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16 }}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowReportModal(false)}>
+                <Text style={{ color: "#333" }}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={submitReport}
+                disabled={loadingReport || (selectedReason === "Autre" && !customReason)}
+              >
+                {loadingReport ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={{ color: "#fff" }}>Signaler</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
     </>
@@ -183,18 +175,19 @@ const styles = StyleSheet.create({
   status: { fontSize: 10, color: "#0A0", marginRight: 10 },
   delete: { fontSize: 10, color: "#E33" },
   // Modal styles
-  modal: {
-    justifyContent: "flex-end",
-    margin: 0,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: 16,
     padding: 24,
-    height: "50%",
+    width: "80%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
