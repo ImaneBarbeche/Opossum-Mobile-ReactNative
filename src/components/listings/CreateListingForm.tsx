@@ -24,7 +24,7 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
       <TypeSelector type={type} setType={setType} />
       <TextInput
         style={[componentStyles.input, { marginBottom: spacing.sm }]}
-        placeholder="De quel objet s'agit-il ? (5-200 caractères)"
+        placeholder="Titre de l'annonce (5-200 caractères)"
         value={title}
         onChangeText={setTitle}
       />
@@ -35,23 +35,35 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
         onChangeText={setDescription}
         multiline
       />
-      <View style={{ marginBottom: spacing.sm, width: '100%' }}>
-        <Picker
-          selectedValue={category}
-          onValueChange={handleCategoryChange}
-          style={{ backgroundColor: '#f5f5f5', borderRadius: 8 }}
-        >
-          <Picker.Item label="Choisir une catégorie..." value="" />
-          {categories.map((cat) => (
-            <Picker.Item key={cat.value} label={cat.label} value={cat.value} />
-          ))}
-        </Picker>
+      <View style={{ marginBottom: spacing.md, width: '100%' }}>
+        <View style={{ borderWidth: 1, borderColor: colors.primary, borderRadius: 10, backgroundColor: '#f5f5f5', overflow: 'hidden' }}>
+          <Picker
+            selectedValue={category}
+            onValueChange={handleCategoryChange}
+            style={{ minHeight: 44 }}
+          >
+            <Picker.Item label="Choisir une catégorie..." value="" />
+            {categories.map((cat) => (
+              <Picker.Item key={cat.value} label={`${cat.emoji} ${cat.label}`} value={cat.value} />
+            ))}
+          </Picker>
+        </View>
         {categoryError && (
           <Text style={{ color: colors.error, marginTop: 2 }}>{categoryError}</Text>
         )}
       </View>
       <TextInput
-        style={[componentStyles.input, { marginBottom: spacing.sm }]}
+        style={[
+          componentStyles.input,
+          {
+            marginBottom: spacing.sm,
+            borderRadius: 10,
+            backgroundColor: '#f5f5f5',
+            borderColor: colors.primary,
+            borderWidth: 1,
+            paddingLeft: 14,
+          },
+        ]}
         placeholder="Ville"
         value={city}
         onChangeText={setCity}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { componentStyles, colors, spacing, typography } from "../../theme";
+import { categories as fullCategories } from "../../utils/categories";
 
 interface EditListingModalProps {
   visible: boolean;
@@ -30,14 +31,11 @@ const EditListingModal: React.FC<EditListingModalProps> = ({
   const [title, setTitle] = useState(listing.title);
   const [description, setDescription] = useState(listing.description);
   const [category, setCategory] = useState(listing.category);
-  const categories = [
-    { label: "Électronique", value: "electronics" },
-    { label: "Vêtements", value: "clothing" },
-    { label: "Accessoires", value: "accessories" },
-    { label: "Documents", value: "documents" },
-    { label: "Clés", value: "keys" },
-    { label: "Autre", value: "other" },
-  ];
+  // Utilise la liste complète et harmonisée avec emoji
+  const categories = fullCategories.map(cat => ({
+    label: `${cat.emoji} ${cat.label}`,
+    value: cat.value
+  }));
   const [status, setStatus] = useState(listing.status);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
@@ -85,25 +83,27 @@ const EditListingModal: React.FC<EditListingModalProps> = ({
             placeholder="Description"
             multiline
           />
-          <View style={{ marginBottom: spacing.sm }}>
-            <Picker
-              selectedValue={category}
-              onValueChange={(itemValue) => {
-                setCategory(itemValue);
-                if (itemValue && itemValue.trim() !== "")
-                  setCategoryError(null);
-              }}
-              style={{ backgroundColor: "#f5f5f5", borderRadius: 8 }}
-            >
-              <Picker.Item label="Choisir une catégorie..." value="" />
-              {categories.map((cat) => (
-                <Picker.Item
-                  key={cat.value}
-                  label={cat.label}
-                  value={cat.value}
-                />
-              ))}
-            </Picker>
+          <View style={{ marginBottom: spacing.md }}>
+            <View style={{ borderWidth: 1, borderColor: colors.primary, borderRadius: 10, backgroundColor: '#f5f5f5', overflow: 'hidden' }}>
+              <Picker
+                selectedValue={category}
+                onValueChange={(itemValue) => {
+                  setCategory(itemValue);
+                  if (itemValue && itemValue.trim() !== "")
+                    setCategoryError(null);
+                }}
+                style={{ minHeight: 44 }}
+              >
+                <Picker.Item label="Choisir une catégorie..." value="" />
+                {categories.map((cat) => (
+                  <Picker.Item
+                    key={cat.value}
+                    label={cat.label}
+                    value={cat.value}
+                  />
+                ))}
+              </Picker>
+            </View>
             {categoryError && (
               <Text style={{ color: colors.error, marginTop: 2 }}>
                 {categoryError}

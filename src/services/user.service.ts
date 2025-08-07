@@ -3,7 +3,6 @@ import { API_BASE_URL } from "../config/api";
 export const getPublicProfile = async (userId: string) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/users/${userId}`);
-    console.log('[getPublicProfile] API response:', response.data);
     return response.data;
   } catch (err) {
     if (err.response) {

@@ -244,18 +244,30 @@ const ObjectDetailScreen = () => {
           {/* TITRE CENTRÉ */}
           <Text style={objectDetailScreenStyles.title}>{data.title}</Text>
         </View>
-        {/* TYPE ET CATÉGORIE CENTRÉS */}
-        <Text
-          style={[
-            objectDetailScreenStyles.type,
-            { color: data.type === "FOUND" ? colors.primary : colors.error },
-          ]}
-        >
-          {data.type === "FOUND" ? "Objet trouvé" : "Objet perdu"}
-        </Text>
-        <Text style={objectDetailScreenStyles.category}>
-          Catégorie : {getCategoryLabel(data.category)}
-        </Text>
+        {/* TYPE EN BADGE + CATÉGORIE AVEC EMOJI */}
+        <View style={{ alignItems: 'center', marginBottom: 10 }}>
+          <View style={{
+            backgroundColor: data.type === 'FOUND' ? colors.success : colors.error,
+            borderRadius: 10,
+            paddingHorizontal: 16,
+            paddingVertical: 4,
+            alignSelf: 'center',
+            marginBottom: 8,
+            minWidth: 90,
+          }}>
+            <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 15, textAlign: 'center' }}>
+              {data.type === 'FOUND' ? 'Trouvé' : 'Perdu'}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <Text style={{ fontSize: 20 }}>
+              {require('../../utils/categories').getCategoryEmoji(data.category)}
+            </Text>
+            <Text style={objectDetailScreenStyles.category} numberOfLines={1} ellipsizeMode="tail">
+              {getCategoryLabel(data.category)}
+            </Text>
+          </View>
+        </View>
         {/* DESCRIPTION */}
         <Text style={objectDetailScreenStyles.description}>
           {data.description}

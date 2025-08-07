@@ -7,7 +7,6 @@ import { getPublicProfile } from '../../services/user.service';
 
 const PublicProfileScreen = () => {
   const route = useRoute();
-  console.log('[PublicProfileScreen] route.params =', route.params);
   const { userId } = route.params as { userId: string };
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);

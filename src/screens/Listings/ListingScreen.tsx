@@ -11,6 +11,7 @@ import {
   Image as RNImage,
 } from "react-native";
 import { componentStyles, colors, spacing, typography } from "../../theme";
+import { listingScreenStyles } from "../../theme/listingScreenStyles";
 import { useAuth } from "../../context/AuthContext";
 import FloatingLogoutButton from "../../components/FloatingLogoutButton";
 import { deleteListing, getUserListings } from "../../services/listing.service";
@@ -85,91 +86,79 @@ const ListingScreen: React.FC = () => {
     } else {
       imageSource = require("../../../assets/images/no-photo.png");
     }
+    // Définition des couleurs de badge harmonisées
+    const typeBadge = {
+      label: item.type === 'FOUND' ? 'Trouvé' : 'Perdu',
+      color: item.type === 'FOUND' ? colors.success : colors.error,
+    };
+  let statusBadge: { label: string; color: string } = { label: '', color: colors.success };
+    switch (item.status) {
+      case 'RESOLVED':
+        statusBadge = { label: 'Résolu', color: colors.info };
+        break;
+      case 'ARCHIVED':
+        statusBadge = { label: 'Archivé', color: colors.warning };
+        break;
+      case 'DELETED':
+        statusBadge = { label: 'Supprimé', color: colors.error };
+        break;
+      default:
+        statusBadge = { label: 'Actif', color: colors.success };
+    }
     return (
       <TouchableOpacity
-        style={[
-          componentStyles.card,
-          {
-            padding: 10,
-            marginBottom: 16,
-            flexDirection: "column",
-            backgroundColor: item.type === "FOUND" ? "#DFF6E0" : "#FDF6E3",
-          },
-        ]}
-        activeOpacity={0.8}
-        onPress={() => {
-          navigation.navigate("ObjectDetail", { id: item.id });
-        }}
+        style={{ marginHorizontal: 8, marginVertical: 6 }}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate("ObjectDetail", { id: item.id })}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <RNImage
-            source={imageSource}
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 16,
-              marginRight: 12,
-              backgroundColor: colors.mediumGray,
-            }}
-            resizeMode="cover"
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={[typography.h3, { color: colors.black, flex: 1 }]}> 
-              {item.title}
-            </Text>
-            {/* Affichage du statut de l'listing */}
-            <Text
-              style={[
-                typography.caption,
-                {
-                  fontWeight: "bold",
-                  color:
-                    item.status === "ACTIVE"
-                      ? colors.success
-                      : item.status === "RESOLVED"
-                      ? colors.info
-                      : item.status === "ARCHIVED"
-                      ? colors.warning
-                      : item.status === "DELETED"
-                      ? colors.error
-                      : colors.darkGray,
-                  marginBottom: 2,
-                },
-              ]}
-            >
-              Statut : {item.status}
-            </Text>
-            <Text
-              style={[
-                typography.body,
-                { color: colors.darkGray, marginBottom: 8 },
-              ]}
-            >
-              {item.description}
-            </Text>
+        <View style={[listingScreenStyles.card, { position: 'relative' }]}> 
+          {/* Badges en haut à droite */}
+          <View style={{ position: 'absolute', top: 10, right: 10, flexDirection: 'row', gap: 6, zIndex: 2 }}>
+            <View style={[listingScreenStyles.badge, { backgroundColor: typeBadge.color }]}> 
+              <Text style={listingScreenStyles.badgeText} numberOfLines={1} ellipsizeMode="tail">{typeBadge.label}</Text>
+            </View>
+            <View style={[listingScreenStyles.badge, { backgroundColor: statusBadge.color }]}> 
+              <Text style={listingScreenStyles.badgeText} numberOfLines={1} ellipsizeMode="tail">{statusBadge.label}</Text>
+            </View>
           </View>
-          {/* Boutons édition et corbeille supprimés */}
+          {/* Image et catégorie */}
+          <View style={listingScreenStyles.imageContainer}>
+            <RNImage
+              source={imageSource}
+              style={listingScreenStyles.image}
+              resizeMode="cover"
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: 180, marginTop: 8 }}>
+              <Text style={{ fontSize: 18 }}>
+                {require('../../utils/categories').getCategoryEmoji(item.category)}
+              </Text>
+              <Text
+                style={{ fontSize: 13, fontWeight: '500', color: colors.primaryDark, maxWidth: 140 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {require('../../utils/categories').getCategoryLabel(item.category)}
+              </Text>
+            </View>
+          </View>
+          <View style={listingScreenStyles.content}>
+            <Text style={listingScreenStyles.title}>{item.title}</Text>
+            <Text style={listingScreenStyles.description} numberOfLines={2}>{item.description}</Text>
+            <View style={listingScreenStyles.infoRow}>
+              <Text style={listingScreenStyles.infoText}>{item.city}</Text>
+            </View>
+            {/* Date en bas à droite */}
+            <View style={{ position: 'absolute', bottom: 10, right: 16 }}>
+              <Text style={{ fontSize: 13, color: colors.primaryLight }}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+            </View>
+          </View>
         </View>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: "bold",
-            color: item.type === "LOST" ? colors.error : colors.primary,
-          }}
-        >
-          {item.type === "LOST" ? "Objet perdu" : "Objet trouvé"}
-        </Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View
-      style={[
-        componentStyles.container,
-        { backgroundColor: colors.lightGray, paddingTop: 64 },
-      ]}
-    >
+  <View style={listingScreenStyles.container}>
       <FloatingLogoutButton onLogout={logout} />
       <Text
         style={[
