@@ -52,22 +52,24 @@ const CreateListingForm: React.FC<CreateListingFormProps> = ({
           <Text style={{ color: colors.error, marginTop: 2 }}>{categoryError}</Text>
         )}
       </View>
-      <TextInput
-        style={[
-          componentStyles.input,
-          {
-            marginBottom: spacing.sm,
-            borderRadius: 10,
-            backgroundColor: '#f5f5f5',
-            borderColor: colors.primary,
-            borderWidth: 1,
-            paddingLeft: 14,
-          },
-        ]}
-        placeholder="Ville"
-        value={city}
-        onChangeText={setCity}
-      />
+        <TextInput
+          style={[
+            componentStyles.input,
+            {
+              backgroundColor: '#f5f5f5',
+              borderColor: colors.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              marginBottom: spacing.sm,
+              width: '100%',
+              fontSize: 16,
+              minHeight: 44,
+            },
+          ]}
+          placeholder="Ville où l’objet a été perdu/trouvé"
+          value={city}
+          onChangeText={setCity}
+        />
     
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
         <Text style={{ marginRight: 8 }}>Utiliser la localisation GPS</Text>
