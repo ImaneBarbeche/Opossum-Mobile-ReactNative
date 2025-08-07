@@ -73,16 +73,18 @@ const ListingScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Listing }) => {
-    const safeUri =
-      item.photoUrl && item.photoUrl.trim() !== ""
-        ? item.photoUrl.startsWith("http")
-          ? item.photoUrl
-          : `${process.env.EXPO_PUBLIC_API_BASE_URL || ""}${item.photoUrl}`
-        : item.thumbnailUrl && item.thumbnailUrl.trim() !== ""
-        ? item.thumbnailUrl.startsWith("http")
-          ? item.thumbnailUrl
-          : `${process.env.EXPO_PUBLIC_API_BASE_URL || ""}${item.thumbnailUrl}`
-        : "https://via.placeholder.com/80";
+    // Même logique fallback image que MapListView
+    const isValid = (url?: string) => typeof url === 'string' && url.trim() !== '' && !url.includes('via.placeholder.com/150?text=No+Image') && !url.includes('via.placeholder.com/80');
+    let imageSource: any = null;
+    if (isValid(item.thumbnailUrl)) {
+      imageSource = { uri: item.thumbnailUrl };
+    } else if (isValid(item.photoUrl)) {
+      imageSource = { uri: item.photoUrl };
+    } else if (isValid((item as any).imageUrl)) {
+      imageSource = { uri: (item as any).imageUrl };
+    } else {
+      imageSource = require("../../../assets/images/no-photo.png");
+    }
     return (
       <TouchableOpacity
         style={[
@@ -101,7 +103,7 @@ const ListingScreen: React.FC = () => {
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <RNImage
-            source={{ uri: safeUri }}
+            source={imageSource}
             style={{
               width: 120,
               height: 120,
@@ -109,9 +111,10 @@ const ListingScreen: React.FC = () => {
               marginRight: 12,
               backgroundColor: colors.mediumGray,
             }}
+            resizeMode="cover"
           />
           <View style={{ flex: 1 }}>
-            <Text style={[typography.h3, { color: colors.black, flex: 1 }]}>
+            <Text style={[typography.h3, { color: colors.black, flex: 1 }]}> 
               {item.title}
             </Text>
             {/* Affichage du statut de l'listing */}

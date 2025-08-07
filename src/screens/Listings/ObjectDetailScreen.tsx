@@ -205,29 +205,42 @@ const ObjectDetailScreen = () => {
               showsHorizontalScrollIndicator={false}
               style={objectDetailScreenStyles.photoScroll}
             >
-              {data.photos.map((url: string, idx: number) => (
-                <Image
-                  key={idx}
-                  source={{ uri: url || "https://via.placeholder.com/120" }}
-                  style={objectDetailScreenStyles.photoItem}
-                />
-              ))}
+              {data.photos.map((url: string, idx: number) => {
+                const isValid = (u: string) => typeof u === 'string' && u.trim() !== '' && !u.includes('via.placeholder.com/120') && !u.includes('via.placeholder.com/150?text=No+Image');
+                return isValid(url) ? (
+                  <Image
+                    key={idx}
+                    source={{ uri: url }}
+                    style={objectDetailScreenStyles.photoItem}
+                  />
+                ) : (
+                  <Image
+                    key={idx}
+                    source={require('../../../assets/images/no-photo.png')}
+                    style={objectDetailScreenStyles.photoItem}
+                    resizeMode="contain"
+                  />
+                );
+              })}
             </ScrollView>
-          ) : (
-            <Image
-              source={{
-                uri:
-                  Array.isArray(data.photos) && data.photos[0]
-                    ? data.photos[0]
-                    : data.photoUrl && data.photoUrl.trim() !== ""
-                    ? data.photoUrl
-                    : data.thumbnailUrl && data.thumbnailUrl.trim() !== ""
-                    ? data.thumbnailUrl
-                    : "https://via.placeholder.com/120",
-              }}
-              style={objectDetailScreenStyles.photo}
-            />
-          )}
+          ) : (() => {
+            const isValid = (u: string) => typeof u === 'string' && u.trim() !== '' && !u.includes('via.placeholder.com/120') && !u.includes('via.placeholder.com/150?text=No+Image');
+            let url = null;
+            if (Array.isArray(data.photos) && isValid(data.photos[0])) {
+              url = data.photos[0];
+            } else if (isValid(data.photoUrl)) {
+              url = data.photoUrl;
+            } else if (isValid(data.thumbnailUrl)) {
+              url = data.thumbnailUrl;
+            } else if (isValid(data.imageUrl)) {
+              url = data.imageUrl;
+            }
+            if (url) {
+              return <Image source={{ uri: url }} style={objectDetailScreenStyles.photo} />;
+            } else {
+              return <Image source={require('../../../assets/images/no-photo.png')} style={objectDetailScreenStyles.photo} resizeMode="contain" />;
+            }
+          })()}
           {/* TITRE CENTRÉ */}
           <Text style={objectDetailScreenStyles.title}>{data.title}</Text>
         </View>
@@ -300,10 +313,7 @@ const ObjectDetailScreen = () => {
                 style={objectDetailScreenStyles.ownerBtn}
                 onPress={() => {
                   if (data.user && data.user.id) {
-                    navigation.navigate("Mes annonces", {
-                      screen: "PublicProfile",
-                      params: { userId: data.user.id },
-                    });
+                    navigation.navigate("PublicProfile", { userId: data.user.id });
                   } else {
                     Toast.show({
                       type: "error",

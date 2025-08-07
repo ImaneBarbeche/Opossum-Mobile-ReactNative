@@ -311,7 +311,6 @@ reason?: string
     });
     
     const responseText = await response.text();
-    console.log('[reportMessage] Réponse brute:', response.status, responseText);
     if (!response.ok) {
       throw new Error(`Erreur ${response.status}: ${responseText}`);
     }

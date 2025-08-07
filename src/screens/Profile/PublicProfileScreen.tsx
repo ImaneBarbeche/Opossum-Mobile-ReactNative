@@ -5,20 +5,23 @@ import { componentStyles, colors, typography } from '../../theme';
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { getPublicProfile } from '../../services/user.service';
 
-type PublicProfileRouteParams = { userId: string };
 const PublicProfileScreen = () => {
-  const route = useRoute<RouteProp<{ params: PublicProfileRouteParams }, 'params'>>();
-  const { userId } = route.params;
+  const route = useRoute();
+  console.log('[PublicProfileScreen] route.params =', route.params);
+  const { userId } = route.params as { userId: string };
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     setLoading(true);
     getPublicProfile(userId)
-      .then((res) => {
-        setUser(res);
+      .then((res: any) => {
+        setUser(res.data);
       })
-      .catch(() => setUser(null))
+      .catch((err) => {
+        console.error('[PublicProfileScreen] getPublicProfile error:', err);
+        setUser(null);
+      })
       .finally(() => setLoading(false));
   }, [userId]);
 

@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
+import { listingCardStyles } from '../../theme/listingCardStyles';
+import { Ionicons } from '@expo/vector-icons';
+import { getCategoryLabel, getCategoryEmoji } from '../../utils/categories';
 
 interface MapListViewProps {
   listings: any[];
@@ -11,6 +14,12 @@ import { useNavigation } from '@react-navigation/native';
 
 const MapListView: React.FC<MapListViewProps> = ({ listings }) => {
   const navigation = useNavigation<any>();
+  // Debug: log image fields for each listing
+  React.useEffect(() => {
+    listings.forEach(item => {
+
+    });
+  }, [listings]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.lightGray, paddingTop: 64 }} edges={["top"]}>
       {listings.length === 0 ? (
@@ -21,16 +30,66 @@ const MapListView: React.FC<MapListViewProps> = ({ listings }) => {
           keyExtractor={item => item.id?.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate('Mes annonces', { screen: 'ObjectDetail', params: { id: item.id } })}
-              activeOpacity={0.8}
+          onPress={() => navigation.navigate('Mes annonces', { screen: 'ObjectDetail', params: { id: item.id } })}
+              activeOpacity={0.9}
+              style={{ marginHorizontal: 8, marginVertical: 6 }}
             >
-              <View style={{ backgroundColor: colors.white, margin: 8, borderRadius: 12, padding: 16, shadowColor: colors.black, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 }}>
-                <Text style={{ fontWeight: 'bold', color: colors.primary, fontSize: 16 }}>{item.title}</Text>
-                <Text style={{ color: colors.darkGray, marginTop: 4 }}>{item.description}</Text>
-                <Text style={{ color: colors.mediumGray, marginTop: 4, fontSize: 13 }}>{item.city} • {item.category}</Text>
-                {item.distance !== undefined && (
-                  <Text style={{ color: colors.success, marginTop: 4, fontSize: 13 }}>{item.distance.toFixed(1)} km</Text>
-                )}
+              <View style={[listingCardStyles.card, { flexDirection: 'row', alignItems: 'center' }]}> 
+                <View style={listingCardStyles.imageContainer}>
+                  {/* Affiche l'image seulement si l'URL n'est pas un placeholder */}
+                  {(() => {
+                    const isValid = (url) => typeof url === 'string' && url.trim() !== '' && !url.includes('via.placeholder.com/150?text=No+Image');
+                    if (isValid(item.thumbnailUrl)) {
+                      return <Image source={{ uri: item.thumbnailUrl }} style={listingCardStyles.image} />;
+                    } else if (isValid(item.photoUrl)) {
+                      return <Image source={{ uri: item.photoUrl }} style={listingCardStyles.image} />;
+                    } else if (isValid(item.imageUrl)) {
+                      return <Image source={{ uri: item.imageUrl }} style={listingCardStyles.image} />;
+                    } else {
+                      return (
+                        <Image
+                          source={require('../../../assets/images/no-photo.png')}
+                          style={listingCardStyles.image}
+                          resizeMode="contain"
+                        />
+                      );
+                    }
+                  })()}
+                </View>
+                <View style={[listingCardStyles.content, { flex: 1 }]}> 
+                  {/* Titre */}
+                  <Text style={listingCardStyles.title}>{item.title}</Text>
+                  {/* Catégorie avec emoji */}
+                  <Text style={listingCardStyles.category}>
+                    {getCategoryEmoji(item.category)} {getCategoryLabel(item.category)}
+                  </Text>
+                  {/* Description */}
+                  <Text style={listingCardStyles.description} numberOfLines={2}>{item.description}</Text>
+                  {/* Infos */}
+                  <View style={listingCardStyles.infoRow}>
+                    <Text style={listingCardStyles.infoText}>{item.city}</Text>
+                    {item.distance !== undefined && (
+                      <>
+                        <Ionicons name="walk-outline" size={16} style={listingCardStyles.infoIcon} />
+                        <Text style={listingCardStyles.infoText}>{item.distance.toFixed(1)} km</Text>
+                      </>
+                    )}
+                  </View>
+                </View>
+                <View style={{ alignItems: 'flex-end', flex: 0 }}>
+                  <View style={[
+                    listingCardStyles.badge,
+                    item.status === 'FOUND'
+                      ? { backgroundColor: colors.success }
+                      : item.status === 'RESOLVED'
+                      ? { backgroundColor: colors.info }
+                      : { backgroundColor: colors.error }
+                  ]}>
+                    <Text style={listingCardStyles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+                      {item.status === 'FOUND' ? 'Trouvé' : item.status === 'RESOLVED' ? 'Résolu' : 'Perdu'}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </TouchableOpacity>
           )}
