@@ -146,6 +146,7 @@ export default function ConversationChatScreen({
           50
         );
 
+
       const activeMessages = response.messages.filter(
         (msg) => msg.status === "ACTIVE"
       );
@@ -424,6 +425,8 @@ export default function ConversationChatScreen({
                 isFromMe={item.senderId === myUserId}
                 sentAt={item.sentAt}
                 isRead={item.isRead}
+                senderName={item.senderName}
+                senderAvatarUrl={item.senderAvatarUrl}
                 onDelete={
                   item.senderId === myUserId && item.status === "ACTIVE"
                     ? () => handleDeleteMessage(item.messageId)

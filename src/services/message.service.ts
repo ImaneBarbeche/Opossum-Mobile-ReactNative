@@ -233,7 +233,6 @@ export async function markConversationAsRead(
   conversationId: string
 ): Promise<MarkReadResponse> {
   try {
-    
     const response = await fetch(MESSAGE_ENDPOINTS.markAsRead(conversationId), {
       method: "PUT", // ✅ Backend utilise PUT pas POST
       headers: {

@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
+  Image,
 } from "react-native";
 import { colors } from "../../theme";
 import { listingConversationsStyles } from "../../theme/listingConversationsStyles";
@@ -135,48 +136,81 @@ export default function ListingConversationsScreen({
     <View style={listingConversationsStyles.container}>
       <FlatList
         data={conversations}
-        keyExtractor={(item) => item.conversationId}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => handleConversationPress(item)}
-            style={[listingConversationsStyles.card, {
-              borderLeftColor: item.unreadCount > 0 ? colors.primary : colors.lightGray,
-            }]}
-            activeOpacity={0.8}
-          >
-            <View style={{ flex: 1 }}>
-              <View style={listingConversationsStyles.cardTitleRow}>
-                <Text
-                  style={[listingConversationsStyles.cardTitle, { fontWeight: item.unreadCount > 0 ? "bold" : "normal" }]}
-                >
-                  {item.otherUserName}
-                </Text>
-                {item.unreadCount > 0 && (
-                  <View style={listingConversationsStyles.unreadBadge}>
-                    <Text style={listingConversationsStyles.unreadBadgeText}>{item.unreadCount}</Text>
-                  </View>
-                )}
+  keyExtractor={(item, index) => item.conversationId ? String(item.conversationId) : String(index)}
+        renderItem={({ item }) => {
+          // Avatar générique (image placeholder)
+          return (
+            <TouchableOpacity
+              onPress={() => handleConversationPress(item)}
+              style={[listingConversationsStyles.card, {
+                borderLeftColor: item.unreadCount > 0 ? colors.primary : colors.lightGray,
+                flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16,
+              }]}
+              activeOpacity={0.85}
+            >
+              {/* Avatar */}
+              <View style={{ marginRight: 16 }}>
+                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.lightGray, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <Image
+                    source={require('../../../assets/images/avatar-placeholder.png')}
+                    style={{ width: 44, height: 44, borderRadius: 22, opacity: 0.7 }}
+                    resizeMode="cover"
+                  />
+                  {/* Badge non lu (point bleu) */}
+                  {item.unreadCount > 0 && (
+                    <View style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: colors.primary,
+                      borderWidth: 2,
+                      borderColor: colors.white,
+                    }} />
+                  )}
+                </View>
               </View>
-              {item.lastMessagePreview && (
-                <Text
-                  style={item.unreadCount > 0 ? listingConversationsStyles.lastMessage : listingConversationsStyles.lastMessageItalic}
-                  numberOfLines={2}
-                >
-                  {item.lastMessagePreview}
+              {/* Colonne centrale : nom, message, date */}
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <Text
+                    style={[listingConversationsStyles.cardTitle, { fontWeight: item.unreadCount > 0 ? 'bold' : 'normal', flexShrink: 1, flexGrow: 1, minWidth: 0 }]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.otherUserName}
+                  </Text>
+                  {/* Badge non lu */}
+                  {item.unreadCount > 0 && (
+                    <View style={[listingConversationsStyles.unreadBadge, { marginLeft: 8 }]}> 
+                      <Text style={listingConversationsStyles.unreadBadgeText}>{item.unreadCount}</Text>
+                    </View>
+                  )}
+                </View>
+                {item.lastMessagePreview && (
+                  <Text
+                    style={item.unreadCount > 0 ? listingConversationsStyles.lastMessage : listingConversationsStyles.lastMessageItalic}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.lastMessagePreview}
+                  </Text>
+                )}
+                <Text style={listingConversationsStyles.lastActivity}>
+                  {new Date(item.lastActivityAt).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </Text>
-              )}
-              <Text style={listingConversationsStyles.lastActivity}>
-                {new Date(item.lastActivityAt).toLocaleString("fr-FR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
+              </View>
+            </TouchableOpacity>
+          );
+        }}
         contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 80 }}
         refreshControl={
           <RefreshControl

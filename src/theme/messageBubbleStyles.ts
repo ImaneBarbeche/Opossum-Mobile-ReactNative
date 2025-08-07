@@ -1,15 +1,68 @@
 import { StyleSheet } from "react-native";
 
 const messageBubbleStyles = StyleSheet.create({
-  bubble: { padding: 10, borderRadius: 12, marginVertical: 4, maxWidth: "80%" },
-  mine: { backgroundColor: "#DCF8C6", alignSelf: "flex-end" },
-  theirs: { backgroundColor: "#FFF", alignSelf: "flex-start" },
-  text: { fontSize: 15 },
-  image: { width: 200, height: 200, borderRadius: 12, marginBottom: 8 },
-  row: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  date: { fontSize: 10, color: "#666", marginRight: 10 },
-  status: { fontSize: 10, color: "#0A0", marginRight: 10 },
+  bubble: {
+    padding: 14,
+    borderRadius: 18,
+    marginVertical: 6,
+    maxWidth: "80%",
+    minWidth: 60,
+    position: "relative",
+    marginHorizontal: 8,
+  },
+  mine: {
+    backgroundColor: "#DCF8C6",
+    alignSelf: "flex-end",
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 18,
+  },
+  theirs: {
+    backgroundColor: "#FFF",
+    alignSelf: "flex-start",
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 18,
+  },
+  text: {
+    fontSize: 16,
+    color: "#222",
+    lineHeight: 22,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 14,
+    marginBottom: 8,
+    alignSelf: "center",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    justifyContent: "flex-end",
+  },
+  date: {
+    fontSize: 11,
+    color: "#888",
+    marginRight: 2,
+  },
+  status: {
+    fontSize: 11,
+    color: "#0A0",
+    marginLeft: 2,
+    fontWeight: "bold",
+  },
   delete: { fontSize: 10, color: "#E33" },
+  modernShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  bubbleOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
   // Modal styles
   modalOverlay: {
     flex: 1,

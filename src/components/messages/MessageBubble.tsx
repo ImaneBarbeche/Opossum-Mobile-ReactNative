@@ -1,63 +1,69 @@
 import React, { useState } from "react";
-import { View, Text, TouchableHighlight, Image, ActionSheetIOS, Platform, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
-import Toast from "react-native-toast-message";
+import { View, Text, TouchableOpacity, Image, Platform, ActionSheetIOS, Alert } from "react-native";
 import ReportMessageModal from "./ReportMessageModal";
-import { Modal } from "react-native";
 import messageBubbleStyles from "../../theme/messageBubbleStyles";
 
-type Props = {
-  content: string;
-  isFromMe: boolean;
-  sentAt: string;
-  isRead: boolean;
-  imageUrl?: any;
-  onDelete?: () => void;
-  isDeletable?: boolean;
-  deletedAt?: any;
-  edited?: any;
-  token?: string;
-  messageId?: string;
-};
+const genericAvatar = require("../../../assets/images/avatar-placeholder.png");
 
-const REPORT_REASONS = ["Spam", "Insulte", "Hors sujet", "Contenu inapproprié"];
 
+interface AvatarWithFallbackProps {
+  uri?: string;
+  style?: any;
+}
+function AvatarWithFallback(props: AvatarWithFallbackProps) {
+  const [error, setError] = React.useState(false);
+  if (!props.uri || error) {
+    return <Image source={genericAvatar} style={props.style} />;
+  }
+  return <Image source={{ uri: props.uri }} style={props.style} onError={() => setError(true)} />;
+}
+
+// Harmonized, modern message bubble with shadow, rounded corners, spacing, and improved timestamp/status
 export default function MessageBubble({
   content,
   isFromMe,
   sentAt,
   isRead,
   onDelete,
-  imageUrl,
-  deletedAt,
-  edited,
   isDeletable,
   token,
   messageId,
-}: Props) {
-  // State pour la modal de signalement
+  imageUrl,
+  senderName,
+  senderAvatarUrl,
+}: {
+  content: string;
+  isFromMe?: boolean; // fallback for backend field
+  sentAt: string;
+  isRead?: boolean; // fallback for backend field
+  onDelete?: () => void;
+  isDeletable?: boolean;
+  token?: string | null;
+  messageId?: string;
+  imageUrl?: string;
+  senderName?: string;
+  senderAvatarUrl?: string;
+  // Accepts backend fields for harmonization
+  fromMe?: boolean;
+  read?: boolean;
+}) {
   const [showReportModal, setShowReportModal] = useState(false);
 
+  // Harmonize backend field names
+  const mine = typeof isFromMe !== "undefined" ? isFromMe : !!(typeof arguments[0]?.fromMe !== "undefined" && arguments[0].fromMe);
+  const readStatus = typeof isRead !== "undefined" ? isRead : !!(typeof arguments[0]?.read !== "undefined" && arguments[0].read);
 
-  // Menu contextuel au long press
+  const handleReport = () => setShowReportModal(true);
+
   const handleLongPress = () => {
-    const options = ["Annuler"];
-    let deleteButtonIndex = -1;
-    let reportButtonIndex = -1;
-    // Supprimer uniquement sur mes messages
-    if (isFromMe && isDeletable && onDelete) {
-      options.push("Supprimer");
-      deleteButtonIndex = options.length - 1;
-    }
-    // Signaler uniquement sur les messages reçus
-    if (!isFromMe) {
-      options.push("Signaler");
-      reportButtonIndex = options.length - 1;
-    }
-    const cancelButtonIndex = 0;
-
-    const handleReport = () => {
-      setShowReportModal(true);
-    };
+    const options = [
+      ...(mine && isDeletable && onDelete ? ["Supprimer"] : []),
+      ...(!mine ? ["Signaler"] : []),
+      "Annuler",
+    ];
+    const cancelButtonIndex = options.length - 1;
+    const deleteButtonIndex = options.indexOf("Supprimer");
+    const reportButtonIndex = options.indexOf("Signaler");
 
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -70,17 +76,17 @@ export default function MessageBubble({
           if (buttonIndex === deleteButtonIndex && onDelete) {
             onDelete();
           }
-          if (buttonIndex === reportButtonIndex && !isFromMe) {
+          if (buttonIndex === reportButtonIndex && !mine) {
             handleReport();
           }
         }
       );
     } else {
       const alertOptions = [];
-      if (isFromMe && isDeletable && onDelete) {
+      if (mine && isDeletable && onDelete) {
         alertOptions.push({ text: "Supprimer", onPress: onDelete, style: "destructive" as const });
       }
-      if (!isFromMe) {
+      if (!mine) {
         alertOptions.push({ text: "Signaler", onPress: handleReport });
       }
       alertOptions.push({ text: "Annuler", style: "cancel" as const });
@@ -92,28 +98,43 @@ export default function MessageBubble({
     }
   };
 
-
   return (
     <>
-      <TouchableHighlight
-        underlayColor="#e0e0e0"
-        style={[messageBubbleStyles.bubble, isFromMe ? messageBubbleStyles.mine : messageBubbleStyles.theirs]}
-        onLongPress={handleLongPress}
+      <View
+        style={[
+          messageBubbleStyles.bubble,
+          mine ? messageBubbleStyles.mine : messageBubbleStyles.theirs,
+          messageBubbleStyles.modernShadow,
+        ]}
       >
-        <View>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={messageBubbleStyles.image} />
-          ) : (
-            <Text style={messageBubbleStyles.text}>{content}</Text>
+        {/* Avatar + Name */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+          {!mine && (
+            <AvatarWithFallback uri={senderAvatarUrl} style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8 }} />
           )}
-          <View style={messageBubbleStyles.row}>
-            <Text style={messageBubbleStyles.date}>{new Date(sentAt).toLocaleString()}</Text>
-            {isFromMe && (
-              <Text style={messageBubbleStyles.status}>{isRead ? "Lu" : "Envoyé"}</Text>
-            )}
-          </View>
+          {!mine && senderName && (
+            <Text style={{ fontSize: 13, color: '#888', fontWeight: '600', marginRight: 4 }}>{senderName}</Text>
+          )}
         </View>
-      </TouchableHighlight>
+        {/* Message content */}
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={messageBubbleStyles.image} />
+        ) : (
+          <Text style={messageBubbleStyles.text}>{content}</Text>
+        )}
+        <View style={messageBubbleStyles.row}>
+          <Text style={messageBubbleStyles.date}>{new Date(sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+          {mine && (
+            <Text style={[messageBubbleStyles.status, { marginLeft: 4 }]}>{readStatus ? "Lu" : "Envoyé"}</Text>
+          )}
+        </View>
+        <TouchableOpacity
+          style={messageBubbleStyles.bubbleOverlay}
+          onLongPress={handleLongPress}
+          activeOpacity={0.7}
+        />
+      </View>
+      {/* Report modal remains unchanged */}
       <ReportMessageModal
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
@@ -123,5 +144,6 @@ export default function MessageBubble({
     </>
   );
 }
+
 
 
