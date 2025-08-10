@@ -87,12 +87,16 @@ const MapScreen: React.FC = () => {
     }
   }, [markers]);
 
-  // Mapping pour affichage correct sur la carte
+  // Mapping pour affichage correct sur la carte + injection userId/owner si présents dans la donnée brute
   const mappedMarkers = markers.map((m) => ({
     ...m,
     latitude: m.lat,
     longitude: m.lng,
     titre: m.title,
+    // Ajout userId si présent dans m.user?.id ou m.userId
+    userId: m.user?.id ?? m.userId ?? '',
+    // Ajout owner si présent
+    owner: m.user ?? m.owner ?? null,
   }));
   // const [nearbyListings, setNearbyListings] = React.useState<any[]>([]);
   const { token } = useAuth();
@@ -167,7 +171,7 @@ const MapScreen: React.FC = () => {
       />
       {/* Vue liste ou carte */}
       {showList ? (
-        <MapListView listings={mappedMarkers} />
+        <MapListView listings={mappedMarkers} currentUserId={user?.id} />
       ) : (
         <MapMapView
           MapView={MapView}
