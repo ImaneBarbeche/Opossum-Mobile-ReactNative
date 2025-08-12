@@ -23,7 +23,7 @@ describe('useListingLocation', () => {
     expect(hook.location).toEqual({ latitude: 48.8566, longitude: 2.3522 });
     // Clear location
     act(() => {
-      hook.clearLocation();
+      hook.setLocation(null);
     });
     expect(hook.location).toBeNull();
   });
@@ -34,10 +34,10 @@ describe('useListingLocation', () => {
     act(() => {
       hook.setError('Erreur de localisation');
     });
-    expect(hook.error).toBe('Erreur de localisation');
+    expect(hook.locationError).toBe('Erreur de localisation');
     act(() => {
       hook.setError(null);
     });
-    expect(hook.error).toBeNull();
+    expect(hook.locationError).toBeNull();
   });
 });

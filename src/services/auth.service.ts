@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getValidAccessToken } from './token.helper';
 
 // Décodage simple du JWT (compatible React Native, sans Buffer)
-function decodeJWT(token: string): any {
+export function decodeJWT(token: string): any {
   try {
     const payload = token.split('.')[1];
     // Ajoute le padding manquant si besoin

@@ -44,7 +44,7 @@ export function useListingLocation(useCurrentLocation: boolean, city: string, ad
         latitude: coords.latitude,
         longitude: coords.longitude,
         checkServiceArea: true,
-      });
+      }) as any;
       if (!validationRes.success) {
         setLocationError(
           validationRes.error?.message ||
@@ -57,5 +57,5 @@ export function useListingLocation(useCurrentLocation: boolean, city: string, ad
     }
   };
 
-  return { userLocation, location, locationError, resolveLocation };
+  return { userLocation, location, locationError, resolveLocation, setLocation, setError: setLocationError };
 }
