@@ -4,7 +4,6 @@ import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { forgotPassword } from '../../services/auth.password';
 import { colors, spacing, typography, componentStyles } from '../../theme';
-import ScreenBackground from '../../components/ScreenBackground';
 
 const ForgotPasswordScreen: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +22,6 @@ const ForgotPasswordScreen: React.FC = () => {
   };
 
   return (
-  <ScreenBackground>
 	<View style={[componentStyles.card, { width: '100%', maxWidth: 400, alignSelf: 'center', padding: spacing.xl, backgroundColor: colors.white }]}> 
 	  <Text style={[typography.h2, { color: colors.primary, textAlign: 'center', marginBottom: spacing.md }]}>Mot de passe oublié</Text>
 	  <Text style={[typography.body, { color: colors.darkGray, textAlign: 'center', marginBottom: spacing.lg }]}>Entrez votre email pour recevoir le lien de réinitialisation.</Text>
@@ -45,7 +43,6 @@ const ForgotPasswordScreen: React.FC = () => {
 		/>
 	  </View>
 	</View>
-  </ScreenBackground>
   );
 };
 

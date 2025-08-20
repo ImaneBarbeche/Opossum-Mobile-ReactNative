@@ -32,8 +32,6 @@ export default function FileUploadButton({ onUploaded, token }: Props) {
       Toast.show({ type: "error", text1: "Format non supporté", text2: "JPEG/PNG/WebP uniquement" });
       return;
     }
-    // Pour la taille, il faut récupérer la taille du fichier (option selon la lib RN)
-    // Ici on ne le fait pas, à ajouter selon besoin.
 
     // Upload
     try {
