@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /**
    * Fonction login
    * Appelle le service login, met à jour l'utilisateur et l'état loading
-   * Bloque l'accès si l'utilisateur n'est pas ACTIVE
+   * Bloque l'accès si l'utilisateur n'est pas ACTIF
    */
   const handleLogin = async (data: LoginRequest) => {
     setLoading(true);

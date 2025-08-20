@@ -117,6 +117,7 @@ export async function logout(): Promise<{ message: string }> {
     throw error;
   }
 }
+
 export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
   try {
     const response = await fetch(AUTH_ENDPOINTS.refresh, {
