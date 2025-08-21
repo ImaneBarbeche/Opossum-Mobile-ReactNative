@@ -98,7 +98,7 @@ const MapScreen: React.FC = () => {
     // Ajout owner si présent
     owner: m.user ?? m.owner ?? null,
   }));
-  // const [nearbyListings, setNearbyListings] = React.useState<any[]>([]);
+  
   const { token } = useAuth();
 
   // Fonction pour calculer le rayon (en km) à partir de la région de la carte
