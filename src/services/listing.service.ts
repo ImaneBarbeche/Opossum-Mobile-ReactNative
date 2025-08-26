@@ -29,27 +29,29 @@ export const getUserListings = async (
       params,
     });
     // Mapping pour compatibilité front : extrait les champs attendus à la racine
-    const listings = (response.data.data?.content || []).map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description ?? '',
-      type: item.type,
-      category: item.category,
-      status: item.status,
-      latitude: item.location?.latitude ?? null,
-      longitude: item.location?.longitude ?? null,
-      address: item.location?.address ?? '',
-      city: item.location?.city ?? '',
-      photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
-      thumbnailUrl: item.thumbnailUrl ?? '',
-      contactPhone: item.contactInfo?.phone ?? '',
-      contactEmail: item.contactInfo?.email ?? '',
-      userId: item.userId ?? '',
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      resolvedAt: item.resolvedAt,
-      owner: item.owner,
-    }));
+    const listings = (response.data.data?.content || []).map((item: any) => {
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description ?? '',
+        type: item.type,
+        category: item.category,
+        status: item.status,
+        latitude: item.location?.latitude ?? null,
+        longitude: item.location?.longitude ?? null,
+        address: item.location?.address ?? '',
+        city: item.location?.city ?? '',
+        photoUrl: item.photoUrl ?? item.thumbnailUrl ?? '',
+        thumbnailUrl: item.thumbnailUrl ?? '',
+        contactPhone: item.contactInfo?.phone ?? '',
+        contactEmail: item.contactInfo?.email ?? '',
+        userId: item.userId ?? '',
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        resolvedAt: item.resolvedAt,
+        owner: item.owner,
+      };
+    });
     return listings;
   } catch (error) {
     throw error;

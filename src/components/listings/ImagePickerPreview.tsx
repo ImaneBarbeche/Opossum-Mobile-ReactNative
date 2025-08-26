@@ -16,7 +16,7 @@ const ImagePickerPreview: React.FC<ImagePickerPreviewProps> = ({ images, onRemov
         <Ionicons name="camera" size={64} color={colors.primary} />
       )}
       {images.map((img, idx) => (
-        <View key={idx} style={{ margin: 4, position: 'relative' }}>
+        <View key={img.id} style={{ margin: 4, position: 'relative' }}>
           <Image source={{ uri: img.thumbnail || img.url }} style={{ width: 80, height: 80, borderRadius: 40 }} />
           <TouchableOpacity
             style={{ position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 2 }}

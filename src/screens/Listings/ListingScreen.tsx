@@ -109,7 +109,9 @@ const ListingScreen: React.FC = () => {
       <TouchableOpacity
         style={{ marginHorizontal: 8, marginVertical: 6 }}
         activeOpacity={0.9}
-        onPress={() => navigation.navigate("ObjectDetail", { id: item.id })}
+        onPress={() => {
+          navigation.navigate("ObjectDetail", { id: item.id });
+        }}
       >
         <View style={[listingScreenStyles.card, { position: 'relative' }]}> 
           {/* Badges en haut à droite */}
